@@ -40,7 +40,7 @@
         </path>
     </target>
 
-    <target name="compile" depends="init">
+    <target name="compile" depends="init" description="Compile">
         <mkdir dir="${build}/main"/>
         <copy todir="${build}/main">
             <fileset dir="${src}/main" excludes="**/*.java"/>
@@ -52,7 +52,7 @@
         </javac>
     </target>
 
-    <target name="compile-test" depends="compile">
+    <target name="compile-test" depends="compile" description="Compile tests">
         <mkdir dir="${build}/test"/>
         <copy todir="${build}/test">
             <fileset dir="${src}/test" excludes="**/*.java"/>
@@ -64,7 +64,7 @@
         </javac>
     </target>
 
-    <target name="test">
+    <target name="test" description="Run JUnit tests">
         <antcall target="junit"/>
         <antcall target="test-rejar"/>
     </target>
@@ -82,13 +82,13 @@
         </junit>
     </target>
 
-    <target name="clean" depends="init">
+    <target name="clean" depends="init" description="Clean">
         <delete dir="${build}"/>
         <delete dir="${dist}"/>
         <delete dir="${javadoc}"/>
     </target>
 
-    <target name="jar" depends="compile">
+    <target name="jar" depends="compile" description="Create Jar">
         <mkdir dir="${dist}"/>
 	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
         <jarjar jarfile="${jarfile}">
