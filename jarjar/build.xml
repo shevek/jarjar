@@ -15,7 +15,7 @@
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
 
-    <property name="version" value="0.1"/>
+    <property name="version" value="0.2"/>
     <property name="jarfile" value="${dist}/jarjar-${version}.jar"/>
 
     <property name="test.jar" value="${build}/rejar.jar"/>
