@@ -36,13 +36,10 @@ public class JdkRegexEngine implements RegexEngine
                 return re.matcher("foo").groupCount();
             }
             public Matcher getMatcher(String value) {
-                return getMatcher(value, 0);
-            }
-            public Matcher getMatcher(String value, final int index) {
                 final java.util.regex.Matcher match = re.matcher(value);
                 return new Matcher() {
-                    public boolean find() {
-                        return match.find(index);
+                    public boolean matches() {
+                        return match.matches();
                     }
                     public int start() {
                         return match.start();

@@ -29,17 +29,15 @@ class Wildcard
     private static RegexEngine REGEX = MyRegexEngine.getInstance();
     
     public static final int STYLE_DESC = 0;
-    public static final int STYLE_DESC_ANYWHERE = 1;
-    public static final int STYLE_IDENTIFIER = 2;
+    public static final int STYLE_IDENTIFIER = 1;
 
     private static Pattern dots  = REGEX.compile("\\.");
     private static Pattern tilde = REGEX.compile("~");
     private static Pattern dstar = REGEX.compile("\\*\\*");
     private static Pattern star  = REGEX.compile("\\*");
 
-    private Pattern pattern1;
-    private Pattern pattern2;
-    private Pattern pattern3;
+    private Pattern descPattern;
+    private Pattern identifierPattern;
     private int count;
 
     private ArrayList parts = new ArrayList(16); // kept for debugging
@@ -49,7 +47,7 @@ class Wildcard
     public Wildcard(String pattern, String result) {
         compilePattern(pattern);
         compileResult(result);
-        // System.err.println(this);
+        System.err.println(this);
     }
 
     public boolean matches(String value, int style) {
@@ -58,36 +56,15 @@ class Wildcard
 
     public String replace(String value, int style) {
         Matcher matcher = getPattern(style).getMatcher(value);
-        return (matcher.find()) ? replace(value, style, matcher) : value;
-    }
-
-    public String replaceAll(String value, int style) {
-        String orig = value;
-        Pattern p = getPattern(style);
-        int count = 0;
-        int index = 0;
-        while (index < value.length()) {
-            if (count++ > 50)
-                throw new RuntimeException("Infinite loop detected processing \"" + orig + "\"");
-            Matcher matcher = p.getMatcher(value, index);
-            if (matcher.find()) {
-                value = replace(value, style, matcher);
-                index = matcher.end();
-            } else {
-                break;
-            }
-        }
-        return value;
+        return (matcher.matches()) ? replace(value, style, matcher) : value;
     }
 
     private Pattern getPattern(int style) {
         switch (style) {
         case STYLE_DESC:
-            return pattern1;
-        case STYLE_DESC_ANYWHERE:
-            return pattern2;
+            return descPattern;
         case STYLE_IDENTIFIER:
-            return pattern3;
+            return identifierPattern;
         default:
             throw new IllegalArgumentException("Unknown style " + style);
         }
@@ -148,20 +125,19 @@ class Wildcard
         p1 = dstar.replaceAll(p1, "(.+?)");
         p1 = star.replaceAll(p1, "([^/]+?)");
 
-        String p3 = p1;
-        p3 = tilde.replaceAll(p3, "\\.");
+        String p2 = p1;
+        p2 = tilde.replaceAll(p2, "\\.");
         p1 = tilde.replaceAll(p1, "/");
         p1 = "(\\[*L)" + p1 + "(;)";   // TODO: optional semicolon?
 
-        String p2 = p1;
         p1 = "\\A" + p1 + "\\Z";
-        p3 = "\\b(L?)" + p3 + "()\\b";
+        p2 = "\\A()" + p2 + "()\\b\\Z";
+        // p2 = "\\b(L?)" + p2 + "()\\b";
 
-        pattern1 = REGEX.compile(p1);
-        pattern2 = REGEX.compile(p2);
-        pattern3 = REGEX.compile(p3);
+        descPattern = REGEX.compile(p1);
+        identifierPattern = REGEX.compile(p2);
 
-        count = pattern1.groupCount();
+        count = descPattern.groupCount();
     }
 
     private void compileResult(String value) {
@@ -218,9 +194,8 @@ class Wildcard
     }
 
     public String toString() {
-        return "Wildcard{pattern1=" + pattern1 +
-            ",pattern2=" + pattern2 +
-            ",pattern3=" + pattern3 +
+        return "Wildcard{descPattern=" + descPattern +
+            ",identifierPattern=" + identifierPattern +
             ",parts=" + parts + "}";
     }
 }

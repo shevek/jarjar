@@ -36,19 +36,6 @@ class RulesImpl implements Rules
         wildcards = PatternElement.createWildcards(ruleList);
     }
 
-    private String transform(String value, String className) {
-        String oldValue = value;
-        value = fixPath(value);
-        if (value.equals(oldValue)) {
-            for (int i = 0; i < wildcards.length; i++) {
-                // value = wildcards[i].replaceAll(value, Wildcard.STYLE_DESC_ANYWHERE);
-                // value = wildcards[i].replaceAll(value, Wildcard.STYLE_IDENTIFIER);
-                value = wildcards[i].replace(value, Wildcard.STYLE_IDENTIFIER);
-            }
-        }
-        return value;
-    }
-
     public String fixPath(String path) {
         int slash = path.lastIndexOf('/');
         String end;
@@ -69,14 +56,17 @@ class RulesImpl implements Rules
             return desc;
         String value = (String)cache.get(desc);
         if (value == null) {
-            value = desc;
-            for (int i = 0; i < wildcards.length; i++) {
-                String oldValue = value;
-                value = wildcards[i].replace(value, Wildcard.STYLE_DESC);
-                if (!value.equals(oldValue))
-                    break;
-            }
+            value = replaceHelper(desc, Wildcard.STYLE_DESC);
             cache.put(desc, value);
+        }
+        return value;
+    }
+
+    private String replaceHelper(String value, int style) {
+        for (int i = 0; i < wildcards.length; i++) {
+            String test = wildcards[i].replace(value, style);
+            if (!test.equals(value))
+                return test;
         }
         return value;
     }
@@ -121,9 +111,16 @@ class RulesImpl implements Rules
     }
 
     public String fixString(String className, String value) {
-        String newValue = transform(value, className);
-        if (verbose && !newValue.equals(value))
-            System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
+        String newValue = fixPath(value);
+        if (newValue.equals(value))
+            newValue = replaceHelper(newValue, Wildcard.STYLE_IDENTIFIER);
+        if (verbose) {
+            if (newValue.equals(value)) {
+                // System.err.println("Kept -> " + className + " \"" + value + "\"");
+            } else {
+                System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
+            }
+        }
         return newValue;
     }
 

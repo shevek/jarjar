@@ -20,15 +20,11 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.regex.*;
 import java.io.*;
 import java.util.*;
 
 class RulesFileParser
 {
-    private static RegexEngine REGEX = MyRegexEngine.getInstance();
-    private static Pattern WS = REGEX.compile("\\s+");
-
     private RulesFileParser() {
     }
 
@@ -46,7 +42,7 @@ class RulesFileParser
         int c = 1;
         String line;
         while ((line = br.readLine()) != null) {
-            List parts = RegexUtils.split(WS, line);
+            List parts = splitOnWhitespace(line);
             if (parts.size() < 2)
                 error(c, parts);
             String type = (String)parts.get(0);
@@ -73,5 +69,13 @@ class RulesFileParser
 
     private static void error(int line, List parts) {
         throw new IllegalArgumentException("Error on line " + line + ": " + parts);
+    }
+
+    private static List splitOnWhitespace(String line) {
+        List list = new ArrayList();
+        Enumeration e = new StringTokenizer(line);
+        while (e.hasMoreElements())
+            list.add(e.nextElement());
+        return list;
     }
 }

@@ -39,14 +39,11 @@ public class GnuRegexEngine implements RegexEngine
                 public int groupCount() {
                     return re.getNumSubs();
                 }
-                public Matcher getMatcher(String value) {
-                    return getMatcher(value, 0);
-                }
-                public Matcher getMatcher(String value, int index) {
-                    final REMatch match = re.getMatch(value, index);
+                public Matcher getMatcher(final String value) {
+                    final REMatch match = re.getMatch(value, 0);
                     return new Matcher() {
-                        public boolean find() {
-                            return match != null;
+                        public boolean matches() {
+                            return re.isMatch(value); // TODO?
                         }
                         public int start() {
                             return match.getStartIndex();

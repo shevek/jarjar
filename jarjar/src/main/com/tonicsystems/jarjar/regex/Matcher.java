@@ -22,7 +22,7 @@ package com.tonicsystems.jarjar.regex;
 
 public interface Matcher
 {
-    boolean find();
+    boolean matches();
     int start();
     int end();
     String group(int index);

@@ -26,5 +26,4 @@ public interface Pattern
     boolean matches(String value);
     int groupCount();
     Matcher getMatcher(String value);
-    Matcher getMatcher(String value, int index);
 }
