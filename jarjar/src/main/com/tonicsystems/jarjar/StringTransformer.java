@@ -1,5 +1,5 @@
 /*
-  Jar Jar Links - A utility to repackage and embed third-party jar files
+  Jar Jar Links - A utility to repackage and embed Java libraries
   Copyright (C) 2004  Tonic Systems, Inc.
 
   This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,14 @@ public interface StringTransformer
     static final String GENERATED_NAME = "com.tonicsystems.jarjar.GeneratedStringTransformer";
     
     public static final String MANIFEST_ATTRIBUTE = "JarJarStringTransformer";
-    
+
+    /**
+     * Transform a string literal value. Most implementations will return either
+     * the value unmodified or delegate to the default transformer, based on which
+     * Class the literal originates from, but more complex algorithms are possible.
+     * @param value the original string value
+     * @param className the original, untransformed name of the Class the value originated from
+     * @param def the default transformer, provided for delegation
+     */
     String transform(String value, String className, StringTransformer def);
 }

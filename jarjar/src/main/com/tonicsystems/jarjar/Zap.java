@@ -1,5 +1,5 @@
 /*
-  Jar Jar Links - A utility to repackage and embed third-party jar files
+  Jar Jar Links - A utility to repackage and embed Java libraries
   Copyright (C) 2004  Tonic Systems, Inc.
 
   This program is free software; you can redistribute it and/or modify
