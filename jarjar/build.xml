@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project name="Jar Jar Links" default="compile">
+    <property file="${user.home}/build.properties" />
+    <property file="build.properties" />
+
+    <property name="src" location="src"/>
+    <property name="lib" location="lib"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+
+    <property name="javadoc" location="${dist}/javadoc"/>
+    <property name="javadoc.access" value="public"/>
+
+    <property name="compile.debug" value="true"/>
+    <property name="compile.deprecation" value="false"/>
+    <property name="compile.optimize" value="false"/>
+
+    <property name="version" value="0.1"/>
+    <property name="jarfile" value="${dist}/jarjar-${version}.jar"/>
+
+    <property name="test.jar" value="${build}/rejar.jar"/>
+
+    <target name="init">
+        <tstamp/>
+        <path id="path.build">
+            <fileset dir="${lib}" includes="**/*.jar"/>
+        </path>
+        <path id="path.run">
+            <path refid="path.build"/>
+            <pathelement path="${build}/main"/>
+            <pathelement path="${build}/dev"/>
+        </path>
+        <path id="path.test">
+            <path refid="path.run"/>
+            <pathelement path="${build}/test"/>
+        </path>
+    </target>
+
+    <target name="compile" depends="init">
+        <mkdir dir="${build}/main"/>
+        <copy todir="${build}/main">
+            <fileset dir="${src}/main" excludes="**/*.java"/>
+        </copy>
+        <javac srcdir="${src}/main" destdir="${build}/main"
+          debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
+             <compilerarg compiler="jikes" value="-nowarn"/>
+             <classpath refid="path.build"/>
+        </javac>
+    </target>
+
+    <target name="compile-test" depends="compile">
+        <mkdir dir="${build}/test"/>
+        <copy todir="${build}/test">
+            <fileset dir="${src}/test" excludes="**/*.java"/>
+        </copy>
+        <javac srcdir="${src}/test" destdir="${build}/test" debug="true" optimize="false" deprecation="false">
+             <classpath refid="path.run"/>
+        </javac>
+    </target>
+
+    <target name="test">
+        <antcall target="junit"/>
+        <antcall target="test-foo"/>
+        <antcall target="test-rejar"/>
+    </target>
+
+    <target name="junit" depends="compile-test">
+        <junit>
+            <!-- <jvmarg value="-Xint"/> -->
+            <!-- <jvmarg value="-Xprof"/> -->
+            <!-- <jvmarg value="-server"/> -->
+            <formatter type="plain" usefile="false"/>
+            <classpath refid="path.test"/>
+            <batchtest>
+                <fileset dir="${src}/test" includes="**/*Test.java"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="test-foo" depends="compile-test">
+        <delete file="${build}/foo.jar"/>
+        <delete file="${build}/bar.jar"/>
+        <delete file="${build}/baz.jar"/>
+        <delete file="${build}/quux.jar"/>
+        <delete file="${build}/foobar.jar"/>
+        <delete file="${build}/foobarbaz.jar"/>
+        <delete file="${build}/foobarbazquux.jar"/>
+
+        <jar jarfile="${build}/foo.jar">
+            <manifest>
+                <attribute name="JarJarStringTransformer" value="foo.FooStringTransformer"/>
+            </manifest>
+            <fileset dir="${build}/test" includes="foo/**"/>
+        </jar>
+        <jar jarfile="${build}/bar.jar">
+            <manifest>
+                <attribute name="JarJarStringTransformer" value="bar.BarStringTransformer"/>
+            </manifest>
+            <fileset dir="${build}/test" includes="bar/**"/>
+        </jar>
+        <jar jarfile="${build}/baz.jar">
+            <manifest>
+                <attribute name="JarJarStringTransformer" value="baz.BazStringTransformer"/>
+            </manifest>
+            <fileset dir="${build}/test" includes="baz/**"/>
+        </jar>
+        <jar jarfile="${build}/quux.jar">
+            <manifest>
+                <attribute name="JarJarStringTransformer" value="quux.QuuxStringTransformer"/>
+            </manifest>
+            <fileset dir="${build}/test" includes="quux/**"/>
+        </jar>
+
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
+
+        <jarjar jarfile="${build}/foobar.jar">
+            <zipfileset src="${build}/foo.jar"/>
+            <zipfileset src="${build}/bar.jar"/>
+            <rule pattern="foo.**" result="foo.x.@1"/>
+            <rule pattern="bar.**" result="bar.x.@1"/>
+        </jarjar>
+
+        <jarjar jarfile="${build}/foobarbaz.jar">
+            <zipfileset src="${build}/foobar.jar"/>
+            <zipfileset src="${build}/baz.jar"/>
+            <rule pattern="foo.**" result="foo.y.@1"/>
+            <rule pattern="bar.**" result="bar.y.@1"/>
+        </jarjar>
+
+        <jarjar jarfile="${build}/foobarbazquux.jar">
+            <zipfileset src="${build}/foobarbaz.jar"/>
+            <zipfileset src="${build}/quux.jar"/>
+            <rule pattern="foo.**" result="foo.z.@1"/>
+            <rule pattern="bar.**" result="bar.z.@1"/>
+        </jarjar>
+
+        <java classname="foo.z.y.x.Foo" classpath="${build}/foobarbazquux.jar" failonerror="yes" output="${build}/foo.txt"/>
+        <condition property="foo.failed">
+            <not><filesmatch file1="${build}/foo.txt" file2="${src}/test/foo.txt"/></not>
+        </condition>
+        <fail if="foo.failed" message="${build}/foo.txt does not match ${src}/test/foo.txt"/>
+    </target>
+
+    <target name="clean" depends="init">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+        <delete dir="${javadoc}"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist}"/>
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
+        <jarjar jarfile="${jarfile}">
+            <fileset dir="${build}/main"/>
+            <zipfileset src="${lib}/asm.jar"/>
+            <zipfileset src="${lib}/cglib.jar"/>
+            <zipfileset src="${lib}/gnu-regexp.jar"/>
+            <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.asm.@1"/>
+            <rule pattern="net.sf.cglib.**" result="com.tonicsystems.cglib.@1"/>
+            <rule pattern="gnu.**" result="com.tonicsystems.@0"/>
+            <zap pattern="net.sf.cglib.reflect.**"/>
+            <zap pattern="net.sf.cglib.proxy.**"/>
+            <zap pattern="net.sf.cglib.beans.**"/>
+            <zap pattern="net.sf.cglib.util.**"/>
+            <zap pattern="net.sf.cglib.transform.*.**"/>
+        </jarjar>
+    </target>
+
+    <target name="test-rejar" depends="jar">
+	<taskdef name="jarjar2" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${jarfile}"/>
+        <jarjar2 jarfile="${test.jar}">
+            <fileset dir="${build}/main"/>
+            <zipfileset src="${lib}/asm.jar"/>
+            <zipfileset src="${lib}/cglib.jar"/>
+            <zipfileset src="${lib}/gnu-regexp.jar"/>
+            <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.asm.@1"/>
+            <rule pattern="net.sf.cglib.**" result="com.tonicsystems.cglib.@1"/>
+            <rule pattern="gnu.**" result="com.tonicsystems.@0"/>
+            <zap pattern="net.sf.cglib.reflect.**"/>
+            <zap pattern="net.sf.cglib.proxy.**"/>
+            <zap pattern="net.sf.cglib.beans.**"/>
+            <zap pattern="net.sf.cglib.util.**"/>
+            <zap pattern="net.sf.cglib.transform.*.**"/>
+        </jarjar2>
+        <delete file="${test.jar}"/>
+    </target>
+
+    <target name="thirdparty" depends="compile">
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
+        <delete file="${test.jar}"/>
+        <jarjar jarfile="${test.jar}" verbose="yes">
+            <zipfileset src="${thirdparty}"/>
+            <rule pattern="com.**" result="xxx.@0"/>
+            <rule pattern="net.**" result="xxx.@0"/>
+            <rule pattern="org.**" result="xxx.@0"/>
+            <rule pattern="edu.**" result="xxx.@0"/>
+        </jarjar>
+        <delete file="${test.jar}"/>
+    </target>
+
+    <!-- TODO: reference ant javadocs -->
+    <target name="javadoc" depends="compile" description="Generate the javadoc">
+        <mkdir dir="${javadoc}"/>
+        <javadoc 
+          sourcepath="${src}/main"
+          destdir="${javadoc}"
+          access="${javadoc.access}"
+          failonerror="true"
+          packagenames="com.tonicsystems.jarjar.*"
+          classpathref="path.run"
+          Author="true"
+          Version="true"
+          Use="true"
+        />
+    </target>
+
+    <target name="dist" depends="clean,test,javadoc">
+        <!-- TODO -->
+    </target>
+</project>
