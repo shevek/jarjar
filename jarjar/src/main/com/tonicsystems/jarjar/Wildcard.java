@@ -56,7 +56,7 @@ class Wildcard
 
     public String replace(String value, int style) {
         Matcher matcher = getPattern(style).getMatcher(value);
-        return (matcher.matches()) ? replace(value, style, matcher) : value;
+        return (matcher.matches()) ? replace(value, style, matcher) : null;
     }
 
     private Pattern getPattern(int style) {

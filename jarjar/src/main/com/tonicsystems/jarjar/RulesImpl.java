@@ -77,7 +77,7 @@ class RulesImpl implements Rules
     private String replaceHelper(String value, int style) {
         for (int i = 0; i < wildcards.length; i++) {
             String test = wildcards[i].replace(value, style);
-            if (!test.equals(value))
+            if (test != null)
                 return test;
         }
         return value;
