@@ -38,7 +38,7 @@ implements Iterator
 
     private File parent;
     private Enumeration entries;
-    private ZipFile prevZip;
+    private Map zipFiles = new HashMap();
     private ZipFile zip;
     private Object next;
     
@@ -46,8 +46,9 @@ implements Iterator
     {
         this.parent = parent;
         StringTokenizer st = new StringTokenizer(classPath, ":");
-        while (st.hasMoreTokens())
+        while (st.hasMoreTokens()) {
             parts.add(st.nextElement());
+        }
         advance();
     }
 
@@ -59,22 +60,18 @@ implements Iterator
     public void close()
     throws IOException
     {
-        if (prevZip != null) {
-            prevZip.close();
-            prevZip = null;
+        if (zipFiles != null) {
+            for (Iterator it = zipFiles.values().iterator(); it.hasNext();) {
+                ((ZipFile)it.next()).close();
+            }
         }
     }
     
-    public ZipFile getZipFile()
-    {
-        return zip;
-    }
-
     public InputStream getInputStream(Object obj)
     throws IOException
     {
         if (obj instanceof ZipEntry) {
-            return zip.getInputStream((ZipEntry)obj);
+            return ((ZipFile)zipFiles.get(obj)).getInputStream((ZipEntry)obj);
         } else {
             return new BufferedInputStream(new FileInputStream((File)obj));
         }
@@ -97,14 +94,13 @@ implements Iterator
     private void advance()
     {
         try {
-            close();
             if (entries == null) {
-                prevZip = zip;
                 if (parts.size() == 0) {
                     next = null;
                     return;
                 }
 
+                zip = null;
                 String part = (String)parts.removeFirst();
                 File file = new File(part);
                 if (!file.isAbsolute())
@@ -117,8 +113,6 @@ implements Iterator
                         zip = new JarFile(file);
                     } else if (ext.equalsIgnoreCase(".zip")) {
                         zip = new ZipFile(file);
-                    } else {
-                        zip = null;
                     }
                     if (zip != null)
                         entries = zip.entries();
@@ -132,16 +126,20 @@ implements Iterator
                     }
                 }
             }
+
             boolean foundClass = false;
             while (entries.hasMoreElements()) {
                 next = entries.nextElement();
-                if (foundClass = isClassFile(getName(next)))
+                if (foundClass = isClassFile(getName(next))) {
+                    if (zip != null)
+                        zipFiles.put(next, zip);
                     break;
+                }
             }
-            if (!foundClass)
-                next = null;
-            if (!entries.hasMoreElements())
+            if (!foundClass) {
                 entries = null;
+                advance();
+            }
         } catch (IOException e) {
             throw new WrappedIOException(e);
         }

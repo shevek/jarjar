@@ -64,6 +64,7 @@ public class DepFind
             // System.err.println("d0: " + cls);
             new ClassReader(cp.getInputStream(cls)).accept(gatherNamesVisitor, true);
         }
+        cp.close();
         
         DepFindVisitor depFind = new DepFindVisitor(names);
         cp = new ClassPathIterator(curDir, args[1]);
@@ -73,8 +74,9 @@ public class DepFind
                 // System.err.println("d1: " + cls);
                 new ClassReader(cp.getInputStream(cls)).accept(depFind, true);
             } catch (DepFindException e) {
-                System.out.println(e.getClassName() + "\t =>  " + e.getDependency());
+                System.out.println(e.getClassName() + " (" + e.getDependency() + ")");
             }
         }
+        cp.close();
     }
 }
