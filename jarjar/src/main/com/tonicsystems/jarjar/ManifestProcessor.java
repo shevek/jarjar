@@ -20,17 +20,25 @@
 
 package com.tonicsystems.jarjar;
 
-import java.io.*;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import java.io.IOException;
+import java.util.*;
 
-// TODO: get rid of this
-class DepKillJarProcessor
-extends JarTransformer
+class ManifestProcessor implements JarProcessor
 {
-    public DepKillJarProcessor(String[] packageNames)
-    {
-        t = new DepKillTransformer(packageNames);
+    private static final String MANIFEST_PATH = "META-INF/MANIFEST.MF";
+    private static final ManifestProcessor INSTANCE = new ManifestProcessor();
+
+    public static ManifestProcessor getInstance() {
+        return INSTANCE;
+    }
+    
+    private ManifestProcessor() {
+    }
+
+    public boolean process(EntryStruct struct) throws IOException {
+        if (struct.file != null && struct.name.equalsIgnoreCase(MANIFEST_PATH))
+            return false;
+        return true;
     }
 }
+    

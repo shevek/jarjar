@@ -20,30 +20,21 @@
 
 package com.tonicsystems.jarjar;
 
+import java.io.IOException;
 import java.util.*;
 
-public class JarJarTask extends AntJarProcessor
+class ResourceProcessor implements JarProcessor
 {
-    private List patterns = new ArrayList();
+    private Rules rules;
 
-    public void addConfiguredRule(Rule rule) {
-        if (rule.getPattern() == null || rule.getResult() == null)
-            throw new IllegalArgumentException("The <rule> element requires both \"pattern\" and \"result\" attributes.");
-        patterns.add(rule);
+    public ResourceProcessor(Rules rules) {
+        this.rules = rules;
     }
 
-    public void addConfiguredZap(Zap zap) {
-        if (zap.getPattern() == null)
-            throw new IllegalArgumentException("The <zap> element requires a \"pattern\" attribute.");
-        patterns.add(zap);
-    }
-
-    protected JarProcessor getJarProcessor() {
-        return new MainProcessor(patterns, verbose);
-    }
-
-    protected void cleanHelper() {
-        super.cleanHelper();
-        patterns.clear();
+    public boolean process(EntryStruct struct) throws IOException {
+        if (!struct.name.endsWith(".class"))
+            struct.name = rules.fixPath(struct.name);
+        return true;
     }
 }
+    

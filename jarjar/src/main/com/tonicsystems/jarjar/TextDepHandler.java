@@ -22,8 +22,7 @@ package com.tonicsystems.jarjar;
 
 import java.io.*;
 
-public class TextDepHandler
-implements DepHandler
+public class TextDepHandler implements DepHandler
 {
     private Writer w;
     

@@ -20,30 +20,34 @@
 
 package com.tonicsystems.jarjar;
 
+import java.io.IOException;
 import java.util.*;
 
-public class JarJarTask extends AntJarProcessor
+class ZapProcessor implements JarProcessor
 {
-    private List patterns = new ArrayList();
+    private List zapList = new ArrayList();
 
-    public void addConfiguredRule(Rule rule) {
-        if (rule.getPattern() == null || rule.getResult() == null)
-            throw new IllegalArgumentException("The <rule> element requires both \"pattern\" and \"result\" attributes.");
-        patterns.add(rule);
+    public ZapProcessor(List zapList) {
+        for (Iterator it = zapList.iterator(); it.hasNext();) {
+            Zap zap = (Zap)it.next();
+            this.zapList.add(new Wildcard(zap.getPattern(), ""));
+        }
     }
 
-    public void addConfiguredZap(Zap zap) {
-        if (zap.getPattern() == null)
-            throw new IllegalArgumentException("The <zap> element requires a \"pattern\" attribute.");
-        patterns.add(zap);
+    public boolean process(EntryStruct struct) throws IOException {
+        if (struct.name.endsWith(".class"))
+            return !zap("L" + struct.name.substring(0, struct.name.length() - 6) + ";");
+        return true;
     }
-
-    protected JarProcessor getJarProcessor() {
-        return new MainProcessor(patterns, verbose);
-    }
-
-    protected void cleanHelper() {
-        super.cleanHelper();
-        patterns.clear();
+    
+    private boolean zap(String desc) {
+        // TODO: optimize
+        for (Iterator it = zapList.iterator(); it.hasNext();) {
+            if (((Wildcard)it.next()).matches(desc, Wildcard.STYLE_DESC)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
+    

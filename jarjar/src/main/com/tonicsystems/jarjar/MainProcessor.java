@@ -23,66 +23,51 @@ package com.tonicsystems.jarjar;
 import java.util.*;
 import java.io.IOException;
 
-class MainProcessor extends JarTransformer
+class MainProcessor implements JarProcessor
 {
-    private static final String MANIFEST_PATH = "META-INF/MANIFEST.MF";
-
-    private RulesImpl rules;
-    private List zapList;
     private boolean verbose;
+    private JarProcessor chain;
     
-    public MainProcessor(List ruleList, List zapList, boolean verbose) {
-        rules = new RulesImpl(ruleList, verbose);
-        t = new PackageTransformer(rules);
-        this.zapList = zapList;
+    public MainProcessor(List patterns, boolean verbose) {
         this.verbose = verbose;
-    }
-    
-    private static String nameFromPath(String path) {
-        String name = path.replace('/', '.');
-        return name.substring(0, name.length() - 6);
+        List zapList = new ArrayList();
+        List killList = new ArrayList();
+        List ruleList = new ArrayList();
+        for (Iterator it = patterns.iterator(); it.hasNext();) {
+            PatternElement pattern = (PatternElement)it.next();
+            if (pattern instanceof Zap) {
+                zapList.add(pattern);
+            } else if (pattern instanceof Rule) {
+                ruleList.add(pattern);
+            } else if (pattern instanceof DepKill) {
+                killList.add(pattern);
+            }
+        }
+        Rules rules = new RulesImpl(ruleList, verbose);
+        chain = new JarProcessorChain(new JarProcessor[]{
+            ManifestProcessor.getInstance(),
+            new ZapProcessor(zapList),
+            new JarTransformerChain(new ClassTransformer[]{
+                // TODO
+                // new DepKillTransformer(killList),
+                new PackageTransformer(rules),
+            }),
+            new ResourceProcessor(rules),
+        });
     }
 
     public boolean process(EntryStruct struct) throws IOException {
-        if (struct.file != null && struct.name.equalsIgnoreCase(MANIFEST_PATH)) {
-            // TODO: merge manifests?
-            if (verbose)
-                System.err.println("Ignored " + struct.name);
-            return false;
-        }
-        String oldPath = struct.name;
-        if (struct.name.endsWith(".class")) {
-            String oldClassName = nameFromPath(struct.name);
-            if (zap("L" + struct.name.substring(0, struct.name.length() - 6) + ";")) {
-                if (verbose)
-                    System.err.println("Zapping " + oldClassName);
-                return false;
-            }
-            super.process(struct);
-            // TODO: ensure that we don't end up with duplicate names?
-            String newClassName = nameFromPath(struct.name);
-            if (verbose && !oldClassName.equals(newClassName))
-                System.err.println("Renamed " + oldClassName + " -> " + newClassName);
-        } else {
-            struct.name = rules.fixPath(struct.name);
-            if (verbose) {
-                if (struct.name.equals(oldPath)) {
-                    System.err.println("Skipped " + struct.name);
-                } else {
-                    System.err.println("Renamed " + oldPath + " -> " + struct.name);
+        String name = struct.name;
+        boolean result = chain.process(struct);
+        if (verbose) {
+            if (result) {
+                if (name.equals(struct.name)) {
+                    System.err.println("Renamed " + name + " -> " + struct.name);
                 }
+            } else {
+                System.err.println("Removed " + name);
             }
         }
-        return true;
-    }
-
-    private boolean zap(String desc) {
-        // TODO: optimize
-        for (Iterator it = zapList.iterator(); it.hasNext();) {
-            if (((Wildcard)it.next()).matches(desc, Wildcard.STYLE_DESC)) {
-                return true;
-            }
-        }
-        return false;
+        return result;
     }
 }

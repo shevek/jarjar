@@ -21,29 +21,22 @@
 package com.tonicsystems.jarjar;
 
 import java.util.*;
+import java.io.IOException;
+import org.objectweb.asm.ClassVisitor;
 
-public class JarJarTask extends AntJarProcessor
+class JarTransformerChain extends JarTransformer
 {
-    private List patterns = new ArrayList();
-
-    public void addConfiguredRule(Rule rule) {
-        if (rule.getPattern() == null || rule.getResult() == null)
-            throw new IllegalArgumentException("The <rule> element requires both \"pattern\" and \"result\" attributes.");
-        patterns.add(rule);
+    private ClassTransformer[] chain;
+    
+    public JarTransformerChain(ClassTransformer[] chain) {
+        this.chain = chain;
+        for (int i = chain.length - 1; i > 0; i--) {
+            chain[i - 1].setTarget(chain[i]);
+        }
     }
 
-    public void addConfiguredZap(Zap zap) {
-        if (zap.getPattern() == null)
-            throw new IllegalArgumentException("The <zap> element requires a \"pattern\" attribute.");
-        patterns.add(zap);
-    }
-
-    protected JarProcessor getJarProcessor() {
-        return new MainProcessor(patterns, verbose);
-    }
-
-    protected void cleanHelper() {
-        super.cleanHelper();
-        patterns.clear();
+    protected ClassVisitor transform(ClassVisitor v) {
+        chain[chain.length - 1].setTarget(v);
+        return chain[0];
     }
 }

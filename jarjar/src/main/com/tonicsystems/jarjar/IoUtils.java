@@ -24,8 +24,7 @@ import java.io.*;
 
 class IoUtils
 {
-    private IoUtils()
-    {
+    private IoUtils() {
     }
     
     public static byte[] toByteArray(InputStream is, byte[] buf) throws IOException {

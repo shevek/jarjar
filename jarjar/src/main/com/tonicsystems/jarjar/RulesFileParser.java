@@ -29,30 +29,19 @@ class RulesFileParser
     private static RegexEngine REGEX = MyRegexEngine.getInstance();
     private static Pattern WS = REGEX.compile("\\s+");
 
-    private List ruleList;
-    private List zapList;
-    private List killList;
-
-    public void parse(File file) throws IOException {
-        parse(new FileReader(file));
+    private RulesFileParser() {
     }
 
-    public void parse(String value) throws IOException {
-        parse(new StringReader(value));
+    public static List parse(File file) throws IOException {
+        return parse(new FileReader(file));
     }
 
-    public List getRuleList() {
-        return ruleList;
+    public static List parse(String value) throws IOException {
+        return parse(new StringReader(value));
     }
 
-    public List getZapList() {
-        return zapList;
-    }
-
-    private void parse(Reader r) throws IOException {
-        ruleList = new ArrayList();
-        zapList = new ArrayList();
-        killList = new ArrayList();
+    private static List parse(Reader r) throws IOException {
+        List patterns = new ArrayList();
         BufferedReader br = new BufferedReader(r);
         int c = 1;
         String line;
@@ -65,19 +54,21 @@ class RulesFileParser
             if (type.equals("rule")) {
                 if (parts.size() < 3)
                     error(c, parts);
-                ruleList.add(element = new Rule());
+                element = new Rule();
                 ((Rule)element).setResult((String)parts.get(2));
             } else if (type.equals("zap")) {
-                zapList.add(element = new Zap());
+                element = new Zap();
             } else if (type.equals("depkill")) {
-                killList.add(element = new DepKill());
+                element = new DepKill();
             } else {
                 error(c, parts);
             }
             element.setPattern((String)parts.get(1));
+            patterns.add(element);
             c++;
         }
         r.close();
+        return patterns;
     }
 
     private static void error(int line, List parts) {

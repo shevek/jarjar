@@ -25,8 +25,7 @@ import java.util.zip.*;
 import java.io.*;
 import java.util.jar.*;
 
-class ClassPathIterator
-implements Iterator
+class ClassPathIterator implements Iterator
 {
     private LinkedList parts = new LinkedList();
 

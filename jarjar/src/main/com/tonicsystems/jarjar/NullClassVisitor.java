@@ -25,8 +25,7 @@ import org.objectweb.asm.CodeVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 
-class NullClassVisitor
-implements ClassVisitor
+class NullClassVisitor implements ClassVisitor
 {
     private static final NullClassVisitor INSTANCE = new NullClassVisitor();
 

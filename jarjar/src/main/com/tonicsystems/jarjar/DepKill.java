@@ -20,7 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-public class DepKill
-extends PatternElement
+public class DepKill extends PatternElement
 {
 }

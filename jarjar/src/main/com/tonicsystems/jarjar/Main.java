@@ -79,16 +79,12 @@ public class Main
 
     private boolean find;
     private boolean verbose;
-    private List ruleList;
-    private List zapList;
+    private List patterns;
 
     public void setRules(File file) throws IOException {
         if (file == null)
             throw new IllegalArgumentException("rules cannot be null");
-        RulesFileParser parser = new RulesFileParser();
-        parser.parse(file);
-        ruleList = parser.getRuleList();
-        zapList = parser.getZapList();
+        patterns = RulesFileParser.parse(file);
     }
 
     public void setFind(boolean find) {
@@ -102,7 +98,7 @@ public class Main
     public void run(String from, String to) throws IOException {
         if (from == null || to == null)
             throw new IllegalArgumentException("arguments cannot be null");
-        if ((ruleList == null) ^ find)
+        if ((patterns == null) ^ find)
             throw new IllegalArgumentException("find and rules cannot be used together");
 
         if (find) {
@@ -110,7 +106,7 @@ public class Main
             new DepFind().run(from, to, new TextDepHandler(w));
             w.flush();
         } else {
-            JarProcessor proc = new MainProcessor(ruleList, zapList, verbose);
+            JarProcessor proc = new MainProcessor(patterns, verbose);
             StandaloneJarProcessor.run(new File(from), new File(to), proc);
         }
     }
