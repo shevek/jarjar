@@ -116,6 +116,17 @@ extends AbstractClassTransformer
         }
     }
 
+    private static void pop(CodeVisitor cv, String desc)
+    {
+        switch (desc.charAt(0)) {
+        case 'D':
+        case 'J':
+            cv.visitInsn(Constants.POP2);
+        default:
+            cv.visitInsn(Constants.POP);
+        }
+    }
+                
     public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs)
     {
         // TODO: attrs?
@@ -156,14 +167,27 @@ extends AbstractClassTransformer
                 cv.visitTypeInsn(opcode, desc);
             }
         }
-                
+
         public void visitFieldInsn(int opcode, String owner, String name, String desc)
         {
             if (checkName(owner) || checkDesc(desc)) {
                 // System.err.println("visitFieldInsn " + owner + ", " + desc);
-                if (opcode == Constants.GETFIELD || opcode == Constants.PUTFIELD)
+                switch (opcode) {
+                case Constants.GETFIELD:
                     cv.visitInsn(Constants.POP);
-                replace(cv, desc);
+                    replace(cv, desc);
+                    break;
+                case Constants.PUTFIELD:
+                    pop(cv, desc);
+                    cv.visitInsn(Constants.POP);
+                    break;
+                case Constants.GETSTATIC:
+                    replace(cv, desc);
+                    break;
+                case Constants.PUTSTATIC:
+                    pop(cv, desc);
+                    break;
+                }
             } else {
                 cv.visitFieldInsn(opcode, owner, name, desc);
             }
