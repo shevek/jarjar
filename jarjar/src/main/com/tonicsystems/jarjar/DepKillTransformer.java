@@ -20,10 +20,11 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.AbstractClassTransformer;
 import com.tonicsystems.jarjar.cglib.Signature;
 import java.util.*;
 import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassAdapter;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.CodeAdapter;
 import org.objectweb.asm.CodeVisitor;
 import org.objectweb.asm.Constants;
@@ -31,13 +32,14 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
 class DepKillTransformer
-extends AbstractClassTransformer
+extends ClassAdapter
 {
     private static final Type TYPE_OBJECT = Type.getType(Object.class);
     private String[] packageNames;
 
     public DepKillTransformer(String[] packageNames)
     {
+        super(null);
         this.packageNames = new String[packageNames.length];
         for (int i = 0; i < packageNames.length; i++) {
             // TODO: check that package is valid
@@ -48,6 +50,10 @@ extends AbstractClassTransformer
                 sb.append('/');
             this.packageNames[i] = sb.toString();
         }
+    }
+
+    public void setTarget(ClassVisitor target) {
+        cv = target;
     }
 
     private boolean checkDesc(String desc)

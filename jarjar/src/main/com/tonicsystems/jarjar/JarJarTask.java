@@ -20,9 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.ClassReaderGenerator;
-import com.tonicsystems.jarjar.cglib.DebuggingClassWriter;
-import com.tonicsystems.jarjar.cglib.TransformingClassGenerator;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -101,11 +98,15 @@ public class JarJarTask extends Jar
                         System.err.println("Zapping " + oldClassName);
                     return;
                 }
-                DebuggingClassWriter w =
-                    new DebuggingClassWriter(false);
-                ClassReaderGenerator gen =
-                    new ClassReaderGenerator(new ClassReader(is), Attributes.getDefaultAttributes(), false);
-                new TransformingClassGenerator(gen, t).generateClass(w);
+
+
+                ClassReader reader = new ClassReader(is);
+                is.close();
+                
+                GetNameClassWriter w = new GetNameClassWriter(false);
+                t.setTarget(w);
+
+                reader.accept(t, Attributes.getDefaultAttributes(), false);
 
                 String newClassName = w.getClassName();
                 if (classNameToClassName.containsKey(oldClassName))

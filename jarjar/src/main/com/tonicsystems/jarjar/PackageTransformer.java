@@ -20,22 +20,28 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.AbstractClassTransformer;
 import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassAdapter;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.CodeAdapter;
 import org.objectweb.asm.CodeVisitor;
 import org.objectweb.asm.Label;
 
 class PackageTransformer
-extends AbstractClassTransformer
+extends ClassAdapter
 {
     private Rules rules;
     private String className;
     
     public PackageTransformer(Rules rules) {
+        super(null);
         this.rules = rules;
     }
     
+    public void setTarget(ClassVisitor target) {
+        cv = target;
+    }
+
     private String[] fixNames(String[] names) {
         if (names == null)
             return null;

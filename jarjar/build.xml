@@ -19,7 +19,7 @@
     <property name="compile.bootclasspath" value=""/>  <!-- value="lib/rt.jar" -->
     <property name="compile.extdirs" value=""/>
 
-    <property name="version" value="0.3-dev"/>
+    <property name="version" value="0.4-dev"/>
     <property name="jarfile" value="${dist}/jarjar-${version}.jar"/>
 
     <property name="test.jar" value="${build}/rejar.jar"/>
@@ -64,10 +64,7 @@
         </javac>
     </target>
 
-    <target name="test" description="Run JUnit tests">
-        <antcall target="junit"/>
-        <antcall target="test-rejar"/>
-    </target>
+    <target name="test" depends="junit,test-rejar" description="Run tests"/>
 
     <target name="junit" depends="compile-test">
         <junit>
@@ -82,7 +79,7 @@
         </junit>
     </target>
 
-    <target name="clean" depends="init" description="Clean">
+    <target name="clean" description="Clean">
         <delete dir="${build}"/>
         <delete dir="${dist}"/>
         <delete dir="${javadoc}"/>

@@ -20,7 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.ClassNameReader;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -54,9 +53,8 @@ public class DepFind
         ClassPathIterator cp = new ClassPathIterator(curDir, args[0]);
         while (cp.hasNext()) {
             Object cls = cp.next();
-            Object source = cp.getSource(cls);
-            String name = ClassNameReader.getClassName(new ClassReader(cp.getInputStream(cls)));
-            classes.put(name.replace('.', '/'), source);
+            classes.put(new ClassHeaderReader(cp.getInputStream(cls)).getClassName(),
+                        cp.getSource(cls));
         }
         cp.close();
         

@@ -20,7 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.NullClassVisitor;
 import com.tonicsystems.jarjar.cglib.Signature;
 import java.io.*;
 import java.util.*;
@@ -103,7 +102,7 @@ extends NullClassVisitor
     {
         public DepFindCodeVisitor()
         {
-            super(NullClassVisitor.INSTANCE.visitMethod(0, null, null, null, null)); // TODO: ugly
+            super(NullCodeVisitor.getInstance());
         }
         
         public void visitTypeInsn(int opcode, String desc)
