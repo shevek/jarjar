@@ -20,33 +20,12 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.*;
 
-class AnnotationAdapter implements AnnotationVisitor
+// TODO: line numbers
+interface StringVisitor
 {
-    protected AnnotationVisitor av;
-    
-    public AnnotationAdapter(AnnotationVisitor av) {
-        this.av = av;
-    }
-
-    public void visit(String name, Object value) {
-        av.visit(name, value);
-    }
-
-    public AnnotationVisitor visitAnnotation(String name, String desc) {
-        return av.visitAnnotation(name, desc);
-    }
-
-    public AnnotationVisitor visitArray(String name) {
-        return av.visitArray(name);
-    }
-
-    public void visitEnd() {
-        av.visitEnd();
-    }
-
-    public void visitEnum(String name, String desc, String value) {
-        av.visitEnum(name, desc, value);
-    }
+    void visitStart(String className);
+    void visitString(String value, int line);
+    void visitEnd();
 }

@@ -45,14 +45,6 @@ abstract public class AbstractDepHandler implements DepHandler
         }
     }
 
-    private static int commonPrefixLength(String s1, String s2) {
-        for (int i = 0, len = Math.min(s1.length(), s2.length()); i < len; i++) {
-            if (s1.charAt(i) != s2.charAt(i))
-                return i;
-        }
-        return s1.length();
-    }
-    
     abstract protected void handle(String from, String to) throws IOException;
 
     public void handleStart() throws IOException { }

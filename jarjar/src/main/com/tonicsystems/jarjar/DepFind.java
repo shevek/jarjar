@@ -23,7 +23,6 @@ package com.tonicsystems.jarjar;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
-import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 

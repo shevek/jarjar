@@ -56,15 +56,15 @@ class RulesImpl implements Rules
     }
     
     private String fixDesc(String desc, boolean allowGenerics) {
-        int last = desc.length() - 1;
-        if (desc.charAt(last) != ';')
+        if (desc.charAt(desc.length() - 1) != ';')
             return desc;
         String value = (String)cache.get(desc);
         if (value == null) {
-            if (allowGenerics && (desc.charAt(last - 1) == '>')) {
+            if (allowGenerics && (desc.charAt(desc.length() - 2) == '>')) {
+                // TODO: this is broken
                 int lt = desc.indexOf('<');
                 String main = replaceHelper(desc.substring(0, lt) + ";", Wildcard.STYLE_DESC);
-                String param = replaceHelper(desc.substring(lt + 1, last - 1), Wildcard.STYLE_DESC);
+                String param = replaceHelper(desc.substring(lt + 1, desc.length() - 2), Wildcard.STYLE_DESC);
                 value = main.substring(0, main.length() - 1) + "<" + param + ">;";
             } else {
                 value = replaceHelper(desc, Wildcard.STYLE_DESC);

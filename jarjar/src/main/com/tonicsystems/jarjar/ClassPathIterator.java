@@ -40,6 +40,10 @@ class ClassPathIterator implements Iterator
     private Map sources = new HashMap();
     private ZipFile zip;
     private Object next;
+
+    public ClassPathIterator(String classPath) {
+        this(new File(System.getProperty("user.dir")), classPath);
+    }
     
     public ClassPathIterator(File parent, String classPath) {
         this.parent = parent;

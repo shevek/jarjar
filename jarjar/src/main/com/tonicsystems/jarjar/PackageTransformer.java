@@ -149,10 +149,12 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         }
     }
 
-    private class AnnotationFixer extends AnnotationAdapter
+    private class AnnotationFixer implements AnnotationVisitor
     {
+        private AnnotationVisitor av;
+        
         public AnnotationFixer(AnnotationVisitor av) {
-            super(av);
+            this.av = av;
         }
         
         public void visit(String name, Object value) {
@@ -163,8 +165,15 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
             return fixAnnotation(av.visitAnnotation(name, rules.fixDesc(desc)));
         }
 
+        public AnnotationVisitor visitArray(String name) {
+            return fixAnnotation(av.visitArray(name));
+        }
+
         public void visitEnum(String name, String desc, String value) {
             av.visitEnum(name, rules.fixDesc(desc), (String)fixValue(value));
+        }
+
+        public void visitEnd() {
         }
     }
 

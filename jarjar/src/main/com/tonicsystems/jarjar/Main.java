@@ -34,15 +34,18 @@ public class Main
             return;
         }
 
-        Getopt g = new Getopt("jarjar", args, ":fhv", new LongOpt[]{
+        Getopt g = new Getopt("jarjar", args, ":fhvs", new LongOpt[]{
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("verbose", LongOpt.NO_ARGUMENT, null, 'v'), 
             new LongOpt("rules", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("find", LongOpt.NO_ARGUMENT, null, 'f'),
+            new LongOpt("strings", LongOpt.NO_ARGUMENT, null, 's'),
             new LongOpt("level", LongOpt.REQUIRED_ARGUMENT, null, 3),
             new LongOpt("style", LongOpt.REQUIRED_ARGUMENT, null, 4),
         });
 
+        boolean find = false;
+        boolean strings = false;
         try {
             Main main = new Main();
             int c;
@@ -65,14 +68,15 @@ public class Main
                     String style = g.getOptarg();
                     if ("simple".equals(style)) {
                         main.setStyle(STYLE_SIMPLE);
-                    } else if ("dot".equals(style)) {
-                        main.setStyle(STYLE_DOT);
                     } else {
                         throw new IllegalArgumentException("unknown style " + style);
                     }
                     break;
+                case 's':
+                    strings = true;
+                    break;
                 case 'f':
-                    main.setFind(true);
+                    find = true;
                     break;
                 case 'h':
                     help();
@@ -82,12 +86,20 @@ public class Main
                     break;
                 }
             }
+            if (find && strings)
+                throw new IllegalArgumentException("find and strings cannot be used together");
             int index = g.getOptind();
             int argCount = args.length - index;
             if (argCount == 2) {
-                main.run(args[index], args[index + 1]);
-            } else if (argCount == 1 && main.find) {
-                main.run(args[index], args[index]);
+                if (find) {
+                    main.find(args[index], args[index + 1]);
+                } else {
+                    main.run(args[index], args[index + 1]);
+                }
+            } else if (find) {
+                main.find(args[index]);
+            } else if (strings) {
+                main.strings(args[index]);
             } else {
                 System.err.println("jarjar: expected two arguments");
             }
@@ -103,9 +115,7 @@ public class Main
     }
 
     public static final int STYLE_SIMPLE = 0;
-    public static final int STYLE_DOT = 1;
 
-    private boolean find;
     private boolean verbose;
     private List patterns;
     private int level = DepHandler.LEVEL_CLASS;
@@ -129,35 +139,39 @@ public class Main
         patterns = new ArrayList(rules);
     }
 
-    public void setFind(boolean find) {
-        this.find = find;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void find(String arg) throws IOException {
+        find(arg, arg);
+    }
+    
+    public void find(String from, String to) throws IOException {
+        if (from == null || to == null)
+            throw new IllegalArgumentException("arguments cannot be null");
+        if (patterns != null)
+            throw new IllegalArgumentException("rules cannot be used with find");
+        PrintWriter w = new PrintWriter(System.out);
+        DepHandler handler = new TextDepHandler(w, level);
+        new DepFind().run(from, to, handler);
+        w.flush();
+    }
+
+    public void strings(String arg) throws IOException {
+        if (arg == null)
+            throw new IllegalArgumentException("arguments cannot be null");
+        if (patterns != null)
+            throw new IllegalArgumentException("rules cannot be used with strings");
+        new StringDumper().run(arg, new PrintWriter(System.out));
     }
 
     public void run(String from, String to) throws IOException {
         if (from == null || to == null)
             throw new IllegalArgumentException("arguments cannot be null");
-        if ((patterns == null) ^ find)
-            throw new IllegalArgumentException("find and rules cannot be used together");
-
-        if (find) {
-            PrintWriter w = new PrintWriter(System.out);
-            DepHandler handler;
-            switch (style) {
-            case STYLE_DOT:
-                handler = new DotDepHandler(w, level);
-                break;
-            default:
-                handler = new TextDepHandler(w, level);
-            }
-            new DepFind().run(from, to, handler);
-            w.flush();
-        } else {
-            JarProcessor proc = new MainProcessor(patterns, verbose);
-            StandaloneJarProcessor.run(new File(from), new File(to), proc);
-        }
+        if (patterns == null)
+            throw new IllegalArgumentException("rules are required");
+        JarProcessor proc = new MainProcessor(patterns, verbose);
+        StandaloneJarProcessor.run(new File(from), new File(to), proc);
     }
 }

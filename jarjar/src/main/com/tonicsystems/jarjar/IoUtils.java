@@ -26,7 +26,29 @@ class IoUtils
 {
     private IoUtils() {
     }
-    
+
+    public static String escapeStringLiteral(String value) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("\"");
+        char[] chars = value.toCharArray();
+        for (int i = 0, size = chars.length; i < size; i++) {
+            char ch = chars[i];
+            switch (ch) {
+            case '\n': sb.append("\\n"); break;
+            case '\r': sb.append("\\r"); break;
+            case '\b': sb.append("\\b"); break;
+            case '\f': sb.append("\\f"); break;
+            case '\t': sb.append("\\t"); break;
+            case '\"': sb.append("\\\""); break;
+            case '\\': sb.append("\\\\"); break;
+            default:
+                sb.append(ch);
+            }
+        }
+        sb.append("\"");
+        return sb.toString();
+    }
+
     public static byte[] toByteArray(InputStream is, byte[] buf) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         pipe(is, baos, buf);
