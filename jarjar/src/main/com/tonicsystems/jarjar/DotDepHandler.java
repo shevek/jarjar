@@ -20,14 +20,29 @@
 
 package com.tonicsystems.jarjar;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
 
-public interface DepHandler
+public class DotDepHandler extends AbstractDepHandler
 {
-    public static final int LEVEL_CLASS = 0;
-    public static final int LEVEL_JAR = 1;
+    private PrintWriter w;
+    
+    public DotDepHandler(PrintWriter w, int level) {
+        super(level);
+        this.w = w;
+    }
+    
+    public void handleStart() throws IOException {
+        w.println("digraph G {");
+    }
+    
+    protected void handle(String from, String to) throws IOException {
+        w.println("    " + from + " -> " + to);
+    }
 
-    void handleStart() throws IOException;
-    void handle(PathClass from, PathClass to) throws IOException;
-    void handleEnd() throws IOException;
+    public void handleEnd() throws IOException {
+        w.println("}");
+    }
 }
+
+

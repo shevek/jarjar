@@ -60,7 +60,8 @@ class ClassHeaderReader
 
             Map items = new TreeMap();
             for (int i = 1; i < constant_pool_count; i++) {
-                switch (data.readUnsignedByte()) {
+                int tag = data.readUnsignedByte();
+                switch (tag) {
                 case 9:  // Fieldref
                 case 10: // Methodref
                 case 11: // InterfaceMethodref
@@ -72,6 +73,7 @@ class ClassHeaderReader
                 case 5:  // Long
                 case 6:  // Double
                     skipFully(data, 8);
+                    i++;
                     break;
                 case 1:  // Utf8
                     items.put(new Integer(i), data.readUTF());
@@ -81,6 +83,9 @@ class ClassHeaderReader
                     break;
                 case 8:  // String
                     skipFully(data, 2);
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown constant pool tag " + tag);
                 }
             }
 
@@ -99,6 +104,9 @@ class ClassHeaderReader
     }
 
     private static String readClass(int index, Map items) {
+        if (items.get(new Integer(index)) == null) {
+            throw new IllegalArgumentException("cannot find index " + index + " in " + items);
+        }
         return readString(((Integer)items.get(new Integer(index))).intValue(), items);
     }
 

@@ -48,8 +48,7 @@ class MainProcessor implements JarProcessor
             ManifestProcessor.getInstance(),
             new ZapProcessor(zapList),
             new JarTransformerChain(new ClassTransformer[]{
-                // TODO
-                // new DepKillTransformer(killList),
+                new DepKillTransformer(killList),
                 new PackageTransformer(rules),
             }),
             new ResourceProcessor(rules),

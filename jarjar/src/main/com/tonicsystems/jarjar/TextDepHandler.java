@@ -21,18 +21,18 @@
 package com.tonicsystems.jarjar;
 
 import java.io.*;
+import java.util.*;
 
-public class TextDepHandler implements DepHandler
+public class TextDepHandler extends AbstractDepHandler
 {
-    private Writer w;
+    private PrintWriter w;
     
-    public TextDepHandler(Writer w) {
+    public TextDepHandler(PrintWriter w, int level) {
+        super(level);
         this.w = w;
     }
     
-    public void handle(PathClass from, PathClass to) throws IOException {
-        w.write(from + " -> " + to + '\n'); // TODO: line separator
+    protected void handle(String from, String to) throws IOException {
+        w.println(from + " -> " + to);
     }
 }
-
-

@@ -45,7 +45,8 @@ public class DepFind
                             cp.getSource(cls));
             }
             cp.close();
-        
+
+            handler.handleStart();
             cp = new ClassPathIterator(curDir, from);
             while (cp.hasNext()) {
                 Object cls = cp.next();
@@ -53,6 +54,7 @@ public class DepFind
                 new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source, handler), true);
             }
             cp.close();
+            handler.handleEnd();
         } catch (WrappedIOException e) {
             throw (IOException)e.getCause();
         }

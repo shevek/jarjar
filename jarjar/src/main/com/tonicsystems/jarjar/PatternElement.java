@@ -20,6 +20,8 @@
 
 package com.tonicsystems.jarjar;
 
+import java.util.*;
+
 abstract public class PatternElement
 {
     private String pattern;
@@ -30,5 +32,16 @@ abstract public class PatternElement
 
     public String getPattern() {
         return pattern;
+    }
+
+    static Wildcard[] createWildcards(List patterns) {
+        Wildcard[] wildcards = new Wildcard[patterns.size()];
+        int i = 0;
+        for (Iterator it = patterns.iterator(); it.hasNext();) {
+            PatternElement pattern = (PatternElement)it.next();
+            String result = (pattern instanceof Rule) ? ((Rule)pattern).getResult() : "";
+            wildcards[i++] = new Wildcard(pattern.getPattern(), result);
+        }
+        return wildcards;
     }
 }

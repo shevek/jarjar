@@ -20,14 +20,34 @@
 
 package com.tonicsystems.jarjar;
 
-import java.io.IOException;
-
-public interface DepHandler
+class Pair
 {
-    public static final int LEVEL_CLASS = 0;
-    public static final int LEVEL_JAR = 1;
+    private Object o1;
+    private Object o2;
+        
+    public Pair(Object o1, Object o2) {
+        this.o1 = o1;
+        this.o2 = o2;
+    }
 
-    void handleStart() throws IOException;
-    void handle(PathClass from, PathClass to) throws IOException;
-    void handleEnd() throws IOException;
+    public Object getObject1() {
+        return o1;
+    }
+
+    public Object getObject2() {
+        return o2;
+    }
+
+    public int hashCode() {
+        return o1.hashCode() ^ o2.hashCode();
+    }
+
+    public boolean equals(Object o) {
+        if (o == null)
+            return false;
+        if (!(o instanceof Pair))
+            return false;
+        Pair other = (Pair)o;
+        return o1.equals(other.o1) && o2.equals(other.o2);
+    }
 }

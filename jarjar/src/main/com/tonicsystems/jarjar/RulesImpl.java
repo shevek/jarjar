@@ -33,12 +33,7 @@ class RulesImpl implements Rules
 
     public RulesImpl(List ruleList, boolean verbose) {
         this.verbose = verbose;
-        wildcards = new Wildcard[ruleList.size()];
-        int i = 0;
-        for (Iterator it = ruleList.iterator(); it.hasNext();) {
-            Rule rule = (Rule)it.next();
-            wildcards[i++] = new Wildcard(rule.getPattern(), rule.getResult());
-        }
+        wildcards = PatternElement.createWildcards(ruleList);
     }
 
     private String transform(String value, String className) {

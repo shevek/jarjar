@@ -33,20 +33,11 @@ import org.objectweb.asm.Type;
 class DepKillTransformer extends ClassAdapter implements ClassTransformer
 {
     private static final Type TYPE_OBJECT = Type.getType(Object.class);
-    private String[] packageNames;
+    private Wildcard[] wildcards;
 
-    public DepKillTransformer(String[] packageNames) {
+    public DepKillTransformer(List patterns) {
         super(null);
-        this.packageNames = new String[packageNames.length];
-        for (int i = 0; i < packageNames.length; i++) {
-            // TODO: check that package is valid
-            StringBuffer sb = new StringBuffer();
-            sb.append('L');
-            sb.append(packageNames[i].replace('.', '/'));
-            if (sb.charAt(sb.length() - 1) != '/')
-                sb.append('/');
-            this.packageNames[i] = sb.toString();
-        }
+        wildcards = PatternElement.createWildcards(patterns);
     }
 
     public void setTarget(ClassVisitor target) {
@@ -54,24 +45,16 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
     }
 
     private boolean checkDesc(String desc) {
-        for (int i = 0; i < packageNames.length; i++) {
-            if (desc.startsWith(packageNames[i])) {
+        for (int i = 0; i < wildcards.length; i++) {
+            if (wildcards[i].matches(desc, Wildcard.STYLE_DESC))
                 return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean checkMethodDesc(String methodDesc) {
-        for (int i = 0; i < packageNames.length; i++) {
-            if (methodDesc.indexOf(packageNames[i]) >= 0) {
-                return true;
-            }
         }
         return false;
     }
 
     private String fixMethodDesc(String methodDesc) {
+        if (wildcards.length == 0)
+            return methodDesc;
         Type[] args = Type.getArgumentTypes(methodDesc);
         for (int i = 0; i < args.length; i++)
             args[i] = eraseType(args[i]);
@@ -83,6 +66,8 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
     }
 
     private boolean checkName(String name) {
+        if (wildcards.length == 0)
+            return false;
         return checkDesc("L" + name + ";");
     }
 
@@ -125,7 +110,7 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
                 
     public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
         // TODO: attrs?
-        if (exceptions != null) {
+        if (exceptions != null && wildcards.length > 0) {
             List exceptionList = new ArrayList(exceptions.length);
             for (int i = 0; i < exceptions.length; i++) {
                 if (!checkName(exceptions[i]))
@@ -213,12 +198,8 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
                     cv.visitInsn((args[i].getSize() == 2) ? Constants.POP2 : Constants.POP);
                 replace(cv, Type.getReturnType(desc).getDescriptor());
 
-            } else if (checkMethodDesc(desc)) {
-                // System.err.println("visitMethodInsn " + owner + ", " + desc + " (" + name + ")");
-                desc = fixMethodDesc(desc);
-
             } else {
-                cv.visitMethodInsn(opcode, owner, name, desc);
+                cv.visitMethodInsn(opcode, owner, name, fixMethodDesc(desc));
             }
         }
 

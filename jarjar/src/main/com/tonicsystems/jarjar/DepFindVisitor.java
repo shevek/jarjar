@@ -41,9 +41,9 @@ class DepFindVisitor extends NullClassVisitor
         this.handler = handler;
     }
 
-    public void visit(int access, String name, String superName, String[] interfaces, String sourceFile) {
+    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
         curName = name;
-        curPathClass = new PathClass(curName, source);
+        curPathClass = new PathClass(source, curName);
     }
 
     private void checkDesc(String desc) {

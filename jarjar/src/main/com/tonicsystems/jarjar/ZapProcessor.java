@@ -25,13 +25,10 @@ import java.util.*;
 
 class ZapProcessor implements JarProcessor
 {
-    private List zapList = new ArrayList();
+    private Wildcard[] wildcards;
 
     public ZapProcessor(List zapList) {
-        for (Iterator it = zapList.iterator(); it.hasNext();) {
-            Zap zap = (Zap)it.next();
-            this.zapList.add(new Wildcard(zap.getPattern(), ""));
-        }
+        wildcards = PatternElement.createWildcards(zapList);
     }
 
     public boolean process(EntryStruct struct) throws IOException {
@@ -42,10 +39,9 @@ class ZapProcessor implements JarProcessor
     
     private boolean zap(String desc) {
         // TODO: optimize
-        for (Iterator it = zapList.iterator(); it.hasNext();) {
-            if (((Wildcard)it.next()).matches(desc, Wildcard.STYLE_DESC)) {
+        for (int i = 0; i < wildcards.length; i++) {
+            if (wildcards[i].matches(desc, Wildcard.STYLE_DESC))
                 return true;
-            }
         }
         return false;
     }
