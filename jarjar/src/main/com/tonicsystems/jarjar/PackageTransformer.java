@@ -198,8 +198,7 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         return writer.toString();
     }
     
-    private class SignatureFixer
-    extends SignatureAdapter
+    private class SignatureFixer extends SignatureAdapter
     {
         public SignatureFixer(SignatureWriter sw) {
             super(sw);

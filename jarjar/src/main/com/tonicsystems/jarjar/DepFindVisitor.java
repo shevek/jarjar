@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
+import org.objectweb.asm.signature.*;
 
 // TODO: annotations
 class DepFindVisitor extends NullClassVisitor
@@ -45,7 +46,7 @@ class DepFindVisitor extends NullClassVisitor
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         curName = name;
         curPathClass = new PathClass(source, curName);
-        checkSignature(signature);
+        checkSignature(signature, false);
         checkName(superName);
         if (interfaces != null) {
             for (int i = 0; i < interfaces.length; i++)
@@ -53,9 +54,33 @@ class DepFindVisitor extends NullClassVisitor
         }
     }
 
-    private void checkSignature(String signature) {
-        // TODO
+    private void checkSignature(String signature, boolean type) {
+        if (signature != null) {
+            SignatureReader reader = new SignatureReader(signature);
+            SignatureVisitor checker = new SignatureChecker();
+            if (type) {
+                reader.acceptType(checker);
+            } else {
+                reader.accept(checker);
+            }    
+        }
     }
+
+    private class SignatureChecker extends NullSignatureVisitor
+    {
+        public void visitTypeVariable(String name) {
+            checkName(name);
+        }
+
+        public void visitClassType(String name) {
+            checkName(name);
+        }
+    
+        public void visitInnerClassType(String name) {
+            checkName(name);
+        }
+    };
+    
 
     private void checkDesc(String desc) {
         int index = desc.indexOf('L');
@@ -94,7 +119,7 @@ class DepFindVisitor extends NullClassVisitor
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         checkMethodDesc(desc);
-        checkSignature(signature);
+        checkSignature(signature, false);
         if (exceptions != null) {
             for (int i = 0; i < exceptions.length; i++)
                 checkName(exceptions[i]);
@@ -104,16 +129,13 @@ class DepFindVisitor extends NullClassVisitor
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         checkDesc(desc);
-        checkSignature(signature);
+        checkSignature(signature, true);
         return null; // TODO?
     }
 
-    private class DepFindMethodVisitor extends MethodAdapter {
-
-        public DepFindMethodVisitor() {
-            super(NullMethodVisitor.getInstance());
-        }
-        
+    // TODO: annotations
+    private class DepFindMethodVisitor extends NullMethodVisitor
+    {
         public void visitTypeInsn(int opcode, String desc) {
             if (desc.charAt(0) == '[') {
                 checkDesc(desc);
@@ -142,7 +164,7 @@ class DepFindVisitor extends NullClassVisitor
 
         public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
             checkDesc(desc);
-            checkSignature(signature);
+            checkSignature(signature, true);
         }
     }
 }
