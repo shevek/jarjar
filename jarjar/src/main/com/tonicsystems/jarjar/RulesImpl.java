@@ -46,7 +46,12 @@ class RulesImpl implements Rules
             end = path.substring(slash + 1);
             path = path.substring(0, slash + 1) + RESOURCE_SUFFIX;
         }
+        boolean absolute = path.startsWith("/");
+        if (absolute)
+            path = path.substring(1);
         path = fixName(path);
+        if (absolute)
+            path = "/" + path;
         path = path.substring(0, path.length() - RESOURCE_SUFFIX.length()) + end;
         return path;
     }
