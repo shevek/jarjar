@@ -31,15 +31,15 @@ class NullMethodVisitor implements MethodVisitor
     }
 
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        return null;
+        return NullAnnotationVisitor.getInstance();
     }
 
     public AnnotationVisitor visitAnnotationDefault() {
-        return null;
+        return NullAnnotationVisitor.getInstance();
     }
     
     public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-        return null;
+        return NullAnnotationVisitor.getInstance();
     }
     
     public void visitAttribute(Attribute attr) { }

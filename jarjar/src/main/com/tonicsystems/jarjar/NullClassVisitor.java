@@ -43,7 +43,7 @@ class NullClassVisitor implements ClassVisitor
     }
 
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        return null;
+        return NullAnnotationVisitor.getInstance();
     }
     
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) { }
