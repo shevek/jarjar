@@ -22,14 +22,28 @@ package com.tonicsystems.jarjar;
 
 import org.objectweb.asm.*;
 
-class NullCodeVisitor implements CodeVisitor
+class NullMethodVisitor implements MethodVisitor
 {
-    private static final NullCodeVisitor INSTANCE = new NullCodeVisitor();
+    private static final NullMethodVisitor INSTANCE = new NullMethodVisitor();
 
-    public static NullCodeVisitor getInstance() {
+    public static NullMethodVisitor getInstance() {
         return INSTANCE;
     }
-        
+
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        return null;
+    }
+
+    public AnnotationVisitor visitAnnotationDefault() {
+        return null;
+    }
+    
+    public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+        return null;
+    }
+    
+    public void visitAttribute(Attribute attr) { }
+    public void visitEnd() { }
     public void visitFieldInsn(int opcode, String owner, String name, String desc) { }
     public void visitIincInsn(int var, int increment) { }
     public void visitInsn(int opcode) { }
@@ -38,7 +52,7 @@ class NullCodeVisitor implements CodeVisitor
     public void visitLabel(Label label) { }
     public void visitLdcInsn(Object cst) { }
     public void visitLineNumber(int line, Label start) { }
-    public void visitLocalVariable(String name, String desc, Label start, Label end, int index) { }
+    public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) { }
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) { }
     public void visitMaxs(int maxStack, int maxLocals) { }
     public void visitMethodInsn(int opcode, String owner, String name, String desc) { }
@@ -47,5 +61,4 @@ class NullCodeVisitor implements CodeVisitor
     public void visitTryCatchBlock(Label start, Label end, Label handler, String type) { }
     public void visitTypeInsn(int opcode, String desc) { }
     public void visitVarInsn(int opcode, int var) { }
-    public void visitAttribute(Attribute attrs) { }
 }

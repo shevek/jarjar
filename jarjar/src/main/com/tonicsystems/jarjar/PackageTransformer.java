@@ -20,12 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassAdapter;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.CodeAdapter;
-import org.objectweb.asm.CodeVisitor;
-import org.objectweb.asm.Label;
+import org.objectweb.asm.*;
 
 class PackageTransformer extends ClassAdapter implements ClassTransformer
 {
@@ -59,50 +54,115 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         }
     }
     
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         className = name.replace('/', '.');
-        cv.visit(version, access, rules.fixName(name), rules.fixName(superName), fixNames(interfaces), sourceFile);
+        cv.visit(version, access, rules.fixName(name), rules.fixSignature(signature), rules.fixName(superName), fixNames(interfaces));
     }
 
     public void visitAttribute(Attribute attr) {
         cv.visitAttribute(rules.fixAttribute(attr));
     }
 
-    public void visitField(int access, String name, String desc, Object value, Attribute attrs) {
-        cv.visitField(access, name, rules.fixDesc(desc), fixValue(value), rules.fixAttribute(attrs));
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        return new AnnotationFixer(cv.visitAnnotation(rules.fixDesc(desc), visible));
+    }
+    
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        return new FieldFixer(cv.visitField(access, name, rules.fixDesc(desc), rules.fixSignature(signature), fixValue(value)));
     }
 
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
         cv.visitInnerClass(rules.fixName(name), rules.fixName(outerName), innerName, access);
     }
 
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
-        CodeVisitor inner = cv.visitMethod(access, name, rules.fixMethodDesc(desc), fixNames(exceptions), rules.fixAttribute(attrs));
-        return new CodeAdapter(inner) {
-            public void visitTypeInsn(int opcode, String desc) {
-                cv.visitTypeInsn(opcode, (desc.charAt(0) == '[') ? rules.fixDesc(desc) : rules.fixName(desc));
-            }
-            public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                cv.visitFieldInsn(opcode, rules.fixName(owner), name, rules.fixDesc(desc));
-            }
-            public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                cv.visitMethodInsn(opcode, rules.fixName(owner), name, rules.fixMethodDesc(desc));
-            }
-            public void visitLdcInsn(Object cst) {
-                cv.visitLdcInsn(fixValue(cst));
-            }
-            public void visitMultiANewArrayInsn(String desc, int dims) {
-                cv.visitMultiANewArrayInsn(rules.fixDesc(desc), dims);
-            }
-            public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-                cv.visitTryCatchBlock(start, end, handler, rules.fixName(type));
-            }
-            public void visitLocalVariable(String name, String desc, Label start, Label end, int index) {
-                cv.visitLocalVariable(name, rules.fixDesc(desc), start, end, index);
-            }
-            public void visitAttribute(Attribute attr) {
-                cv.visitAttribute(rules.fixAttribute(attr));
-            }
-        };
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        return new MethodFixer(cv.visitMethod(access, name, rules.fixMethodDesc(desc), rules.fixSignature(signature), fixNames(exceptions)));
+    }
+
+    private class FieldFixer implements FieldVisitor
+    {
+        private FieldVisitor fv;
+
+        public FieldFixer(FieldVisitor fv) {
+            this.fv = fv;
+        }
+
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            return new AnnotationFixer(fv.visitAnnotation(rules.fixDesc(desc), visible));
+        }
+        
+        public void visitAttribute(Attribute attr) {
+            fv.visitAttribute(rules.fixAttribute(attr));
+        }
+        
+        public void visitEnd() {
+            fv.visitEnd();
+        }
+    }
+
+    private class MethodFixer extends MethodAdapter
+    {
+        public MethodFixer(MethodVisitor mv) {
+            super(mv);
+        }
+
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            return new AnnotationFixer(mv.visitAnnotation(rules.fixDesc(desc), visible));
+        }
+
+        public AnnotationVisitor visitAnnotationDefault() {
+            return new AnnotationFixer(mv.visitAnnotationDefault());
+        }
+
+        public void visitTypeInsn(int opcode, String desc) {
+            mv.visitTypeInsn(opcode, (desc.charAt(0) == '[') ? rules.fixDesc(desc) : rules.fixName(desc));
+        }
+
+        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+            mv.visitFieldInsn(opcode, rules.fixName(owner), name, rules.fixDesc(desc));
+        }
+
+        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+            mv.visitMethodInsn(opcode, rules.fixName(owner), name, rules.fixMethodDesc(desc));
+        }
+
+        public void visitLdcInsn(Object cst) {
+            mv.visitLdcInsn(fixValue(cst));
+        }
+
+        public void visitMultiANewArrayInsn(String desc, int dims) {
+            mv.visitMultiANewArrayInsn(rules.fixDesc(desc), dims);
+        }
+
+        public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+            mv.visitTryCatchBlock(start, end, handler, rules.fixName(type));
+        }
+
+        public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+            mv.visitLocalVariable(name, rules.fixDesc(desc), rules.fixSignature(signature), start, end, index);
+        }
+
+        public void visitAttribute(Attribute attr) {
+            mv.visitAttribute(rules.fixAttribute(attr));
+        }
+    }
+
+    private class AnnotationFixer extends AnnotationAdapter
+    {
+        public AnnotationFixer(AnnotationVisitor av) {
+            super(av);
+        }
+        
+        public void visit(String name, Object value) {
+            av.visit(name, fixValue(value));
+        }
+
+        public AnnotationVisitor visitAnnotation(String name, String desc) {
+            return new AnnotationFixer(av.visitAnnotation(name, rules.fixDesc(desc)));
+        }
+
+        public void visitEnum(String name, String desc, String value) {
+            av.visitEnum(name, rules.fixDesc(desc), (String)fixValue(value));
+        }
     }
 }

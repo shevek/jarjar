@@ -25,7 +25,6 @@ import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.attrs.Attributes;
 
 abstract class JarTransformer implements JarProcessor
 {
@@ -35,7 +34,7 @@ abstract class JarTransformer implements JarProcessor
             ClassReader reader = new ClassReader(struct.in);
             struct.in.close();
             GetNameClassWriter w = new GetNameClassWriter(true);
-            reader.accept(transform(w), Attributes.getDefaultAttributes(), false);
+            reader.accept(transform(w), false);
             struct.in = new ByteArrayInputStream(w.toByteArray());
             struct.name = pathFromName(w.getClassName());
         }

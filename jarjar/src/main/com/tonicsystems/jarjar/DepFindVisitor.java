@@ -31,7 +31,7 @@ class DepFindVisitor extends NullClassVisitor
     private Map classes;
     private String source;
     private String curName;
-    private CodeVisitor code = new DepFindCodeVisitor();
+    private MethodVisitor code = new DepFindMethodVisitor();
     private DepHandler handler;
     private PathClass curPathClass;
     
@@ -80,7 +80,7 @@ class DepFindVisitor extends NullClassVisitor
         }
     }
 
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         checkMethodDesc(desc);
         if (exceptions != null) {
             for (int i = 0; i < exceptions.length; i++)
@@ -89,14 +89,15 @@ class DepFindVisitor extends NullClassVisitor
         return code;
     }
 
-    public void visitField(int access, String name, String desc, Object value, Attribute attrs) {
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         checkDesc(desc);
+        return null; // TODO?
     }
 
-    private class DepFindCodeVisitor extends CodeAdapter {
+    private class DepFindMethodVisitor extends MethodAdapter {
 
-        public DepFindCodeVisitor() {
-            super(NullCodeVisitor.getInstance());
+        public DepFindMethodVisitor() {
+            super(NullMethodVisitor.getInstance());
         }
         
         public void visitTypeInsn(int opcode, String desc) {
@@ -125,7 +126,7 @@ class DepFindVisitor extends NullClassVisitor
             checkName(type);
         }
 
-        public void visitLocalVariable(String name, String desc, Label start, Label end, int index) {
+        public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
             checkDesc(desc);
         }
 

@@ -20,16 +20,33 @@
 
 package com.tonicsystems.jarjar;
 
-import java.util.List;
-import org.objectweb.asm.Attribute;
+import org.objectweb.asm.AnnotationVisitor;
 
-interface Rules
+class AnnotationAdapter implements AnnotationVisitor
 {
-    String fixPath(String path);
-    String fixDesc(String desc);
-    String fixName(String name);
-    String fixMethodDesc(String desc);
-    String fixString(String className, String value);
-    Attribute fixAttribute(Attribute attrs);
-    String fixSignature(String signature);
+    protected AnnotationVisitor av;
+    
+    public AnnotationAdapter(AnnotationVisitor av) {
+        this.av = av;
+    }
+
+    public void visit(String name, Object value) {
+        av.visit(name, value);
+    }
+
+    public AnnotationVisitor visitAnnotation(String name, String desc) {
+        return av.visitAnnotation(name, desc);
+    }
+
+    public AnnotationVisitor visitArray(String name) {
+        return av.visitArray(name);
+    }
+
+    public void visitEnd() {
+        av.visitEnd();
+    }
+
+    public void visitEnum(String name, String desc, String value) {
+        av.visitEnum(name, desc, value);
+    }
 }

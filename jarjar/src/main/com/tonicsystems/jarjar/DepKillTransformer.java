@@ -24,10 +24,11 @@ import java.util.*;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.CodeAdapter;
-import org.objectweb.asm.CodeVisitor;
-import org.objectweb.asm.Constants;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodAdapter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 class DepKillTransformer extends ClassAdapter implements ClassTransformer
@@ -71,45 +72,44 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
         return checkDesc("L" + name + ";");
     }
 
-    private static void replace(CodeVisitor cv, String desc) {
+    private static void replace(MethodVisitor mv, String desc) {
         switch (desc.charAt(0)) {
         case 'V':
             break;
         case 'D':
-            cv.visitInsn(Constants.DCONST_0);
+            mv.visitInsn(Opcodes.DCONST_0);
             break;
         case 'F':
-            cv.visitInsn(Constants.FCONST_0);
+            mv.visitInsn(Opcodes.FCONST_0);
             break;
         case 'J':
-            cv.visitInsn(Constants.LCONST_0);
+            mv.visitInsn(Opcodes.LCONST_0);
             break;
         case 'C':
         case 'S':
         case 'B':
         case 'I':
         case 'Z':
-            cv.visitInsn(Constants.ICONST_0);
+            mv.visitInsn(Opcodes.ICONST_0);
             break;
         case 'L':
         case '[':
-            cv.visitInsn(Constants.ACONST_NULL);
+            mv.visitInsn(Opcodes.ACONST_NULL);
             break;
         }
     }
 
-    private static void pop(CodeVisitor cv, String desc) {
+    private static void pop(MethodVisitor mv, String desc) {
         switch (desc.charAt(0)) {
         case 'D':
         case 'J':
-            cv.visitInsn(Constants.POP2);
+            mv.visitInsn(Opcodes.POP2);
         default:
-            cv.visitInsn(Constants.POP);
+            mv.visitInsn(Opcodes.POP);
         }
     }
                 
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
-        // TODO: attrs?
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         if (exceptions != null && wildcards.length > 0) {
             List exceptionList = new ArrayList(exceptions.length);
             for (int i = 0; i < exceptions.length; i++) {
@@ -118,65 +118,62 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
             }
             exceptions = (String[])exceptionList.toArray(new String[exceptionList.size()]);
         }
-        return new DepKillCodeVisitor(cv.visitMethod(access, name, fixMethodDesc(desc), exceptions, attrs));
+        return new DepKillMethodVisitor(cv.visitMethod(access, name, fixMethodDesc(desc), signature, exceptions));
     }
 
-    public void visitField(int access, String name, String desc, Object value, Attribute attrs) {
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         if (checkDesc(desc)) {
             // System.err.println("visitField " + desc);
             desc = TYPE_OBJECT.getDescriptor();
         }
-        super.visitField(access, name, desc, value, attrs);
+        return super.visitField(access, name, desc, signature, value);
     }
 
-    private class DepKillCodeVisitor extends CodeAdapter
+    private class DepKillMethodVisitor extends MethodAdapter
     {
-        public DepKillCodeVisitor(CodeVisitor cv)
-        {
-            super(cv);
+        public DepKillMethodVisitor(MethodVisitor mv) {
+            super(mv);
         }
 
-        public void visitTypeInsn(int opcode, String desc)
-        {
+        public void visitTypeInsn(int opcode, String desc) {
             if ((desc.charAt(0) == '[') ? checkDesc(desc) : checkName(desc)) {
                 // System.err.println("visitTypeInsn " + desc);
                 switch (opcode) {
-                case Constants.NEW:
-                case Constants.ANEWARRAY:
-                    cv.visitInsn(Constants.ACONST_NULL);
+                case Opcodes.NEW:
+                case Opcodes.ANEWARRAY:
+                    mv.visitInsn(Opcodes.ACONST_NULL);
                     break;
-                case Constants.CHECKCAST:
-                case Constants.INSTANCEOF:
-                    cv.visitInsn(Constants.ICONST_0);
+                case Opcodes.CHECKCAST:
+                case Opcodes.INSTANCEOF:
+                    mv.visitInsn(Opcodes.ICONST_0);
                     break;
                 }
             } else {
-                cv.visitTypeInsn(opcode, desc);
+                mv.visitTypeInsn(opcode, desc);
             }
         }
 
-        public void visitFieldInsn(int opcode, String owner, String name, String desc)
-        {
+        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
             if (checkName(owner) || checkDesc(desc)) {
                 // System.err.println("visitFieldInsn " + owner + ", " + desc);
                 switch (opcode) {
-                case Constants.GETFIELD:
-                    cv.visitInsn(Constants.POP);
-                    replace(cv, desc);
+                case Opcodes.GETFIELD:
+                    mv.visitInsn(Opcodes.POP);
+                    replace(mv, desc);
                     break;
-                case Constants.PUTFIELD:
-                    pop(cv, desc);
-                    cv.visitInsn(Constants.POP);
+                case Opcodes.PUTFIELD:
+                    pop(mv, desc);
+                    mv.visitInsn(Opcodes.POP);
                     break;
-                case Constants.GETSTATIC:
-                    replace(cv, desc);
+                case Opcodes.GETSTATIC:
+                    replace(mv, desc);
                     break;
-                case Constants.PUTSTATIC:
-                    pop(cv, desc);
+                case Opcodes.PUTSTATIC:
+                    pop(mv, desc);
                     break;
                 }
             } else {
-                cv.visitFieldInsn(opcode, owner, name, desc);
+                mv.visitFieldInsn(opcode, owner, name, desc);
             }
         }
 
@@ -184,50 +181,49 @@ class DepKillTransformer extends ClassAdapter implements ClassTransformer
             if (checkName(owner)) {
                 // System.err.println("visitMethodInsn " + owner + ", " + desc + " (" + name + ")");
                 switch (opcode) {
-                case Constants.INVOKEINTERFACE:
-                case Constants.INVOKEVIRTUAL:
-                    cv.visitInsn(Constants.POP);
+                case Opcodes.INVOKEINTERFACE:
+                case Opcodes.INVOKEVIRTUAL:
+                    mv.visitInsn(Opcodes.POP);
                     break;
-                case Constants.INVOKESPECIAL:
+                case Opcodes.INVOKESPECIAL:
                     throw new IllegalStateException("Cannot remove invocation of " + owner + "." + desc);
-                case Constants.INVOKESTATIC:
+                case Opcodes.INVOKESTATIC:
                 }
 
                 Type[] args = Type.getArgumentTypes(desc);
                 for (int i = 0; i < args.length; i++)
-                    cv.visitInsn((args[i].getSize() == 2) ? Constants.POP2 : Constants.POP);
-                replace(cv, Type.getReturnType(desc).getDescriptor());
+                    mv.visitInsn((args[i].getSize() == 2) ? Opcodes.POP2 : Opcodes.POP);
+                replace(mv, Type.getReturnType(desc).getDescriptor());
 
             } else {
-                cv.visitMethodInsn(opcode, owner, name, fixMethodDesc(desc));
+                mv.visitMethodInsn(opcode, owner, name, fixMethodDesc(desc));
             }
         }
 
         public void visitMultiANewArrayInsn(String desc, int dims) {
             if (checkDesc(desc)) {
                 // System.err.println("visitMultiANewArrayInsn " + desc);
-                cv.visitInsn(Constants.ACONST_NULL);
+                mv.visitInsn(Opcodes.ACONST_NULL);
             } else {
-                cv.visitMultiANewArrayInsn(desc, dims);
+                mv.visitMultiANewArrayInsn(desc, dims);
             }
         }
 
         public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
             if (!checkName(type))
-                cv.visitTryCatchBlock(start, end, handler, type);
+                mv.visitTryCatchBlock(start, end, handler, type);
         }
 
-        public void visitLocalVariable(String name, String desc, Label start, Label end, int index) {
+        public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
             if (checkDesc(desc)) {
                 // System.err.println("visitLocalVariable " + desc);
                 desc = TYPE_OBJECT.getDescriptor();
             }
-            cv.visitLocalVariable(name, desc, start, end, index);
+            mv.visitLocalVariable(name, desc, signature, start, end, index);
         }
 
         public void visitAttribute(Attribute attr) {
-            // TODO?
-            cv.visitAttribute(attr);
+            mv.visitAttribute(attr);
         }
     }
 }

@@ -124,8 +124,13 @@ class RulesImpl implements Rules
         return newValue;
     }
 
-    public Attribute fixAttribute(Attribute attrs) {
+    public Attribute fixAttribute(Attribute attr) {
         // TODO?
-        return attrs;
+        return attr;
+    }
+
+    public String fixSignature(String signature) {
+        // TODO
+        return signature;
     }
 }
