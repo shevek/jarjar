@@ -20,9 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.*;
-
-// TODO: line numbers
 interface StringVisitor
 {
     void visitStart(String className);

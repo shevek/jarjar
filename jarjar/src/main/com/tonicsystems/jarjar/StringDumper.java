@@ -44,9 +44,9 @@ class StringDumper
                             needName = false;
                         }
                         pw.print("\t");
-                        pw.print(IoUtils.escapeStringLiteral(value));
                         if (line >= 0)
-                            pw.print(" (" + line + ")");
+                            pw.print(line + ": ");
+                        pw.print(IoUtils.escapeStringLiteral(value));
                         pw.println();
                     }
                 }

@@ -26,6 +26,7 @@ class StringReader
 extends NullClassVisitor
 {
     private StringVisitor sv;
+    private int line = -1;
 
     public StringReader(StringVisitor sv) {
         this.sv = sv;
@@ -49,15 +50,15 @@ extends NullClassVisitor
 
     private void handleObject(Object value) {
         if (value instanceof String)
-            sv.visitString((String)value, -1); // TODO
+            sv.visitString((String)value, line);
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        line = -1;
         sv.visitStart(name);
     }
 
     public void visitEnd() {
-        // TODO
         sv.visitEnd();
     }
 
@@ -87,10 +88,7 @@ extends NullClassVisitor
                 handleObject(cst);
             }
             public void visitLineNumber(int line, Label start) {
-                // TODO
-            }
-            public void visitLabel(Label label) {
-                // TODO
+                StringReader.this.line = line;
             }
         };
     }
