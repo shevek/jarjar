@@ -143,6 +143,10 @@ class RulesImpl implements Rules
     }
 
     public String fixSignature(String signature) {
-        return (signature != null) ? fixMethodDesc(signature, true) : signature;
+        if (signature == null)
+            return null;
+        if (signature.charAt(0) == '(')
+            return fixMethodDesc(signature, true);
+        return fixDesc(signature, true);
     }
 }

@@ -31,6 +31,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+// TODO: annotations
 class DepKillTransformer extends ClassAdapter implements ClassTransformer
 {
     private static final Type TYPE_OBJECT = Type.getType(Object.class);

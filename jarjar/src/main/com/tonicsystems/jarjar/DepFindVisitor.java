@@ -26,6 +26,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
 
+// TODO: annotations
 class DepFindVisitor extends NullClassVisitor
 {
     private Map classes;
@@ -41,9 +42,19 @@ class DepFindVisitor extends NullClassVisitor
         this.handler = handler;
     }
 
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         curName = name;
         curPathClass = new PathClass(source, curName);
+        checkSignature(signature);
+        checkName(superName);
+        if (interfaces != null) {
+            for (int i = 0; i < interfaces.length; i++)
+                checkName(interfaces[i]);
+        }
+    }
+
+    private void checkSignature(String signature) {
+        // TODO
     }
 
     private void checkDesc(String desc) {
@@ -53,6 +64,7 @@ class DepFindVisitor extends NullClassVisitor
     }
 
     private void checkMethodDesc(String methodDesc) {
+        checkDesc(Type.getReturnType(methodDesc).getDescriptor());
         Type[] args = Type.getArgumentTypes(methodDesc);
         for (int i = 0; i < args.length; i++)
             checkDesc(args[i].getDescriptor());
@@ -82,6 +94,7 @@ class DepFindVisitor extends NullClassVisitor
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         checkMethodDesc(desc);
+        checkSignature(signature);
         if (exceptions != null) {
             for (int i = 0; i < exceptions.length; i++)
                 checkName(exceptions[i]);
@@ -91,6 +104,7 @@ class DepFindVisitor extends NullClassVisitor
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         checkDesc(desc);
+        checkSignature(signature);
         return null; // TODO?
     }
 
@@ -128,8 +142,7 @@ class DepFindVisitor extends NullClassVisitor
 
         public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
             checkDesc(desc);
+            checkSignature(signature);
         }
-
-        // TODO: attributes
     }
 }
