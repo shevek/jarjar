@@ -43,6 +43,7 @@ class NullMethodVisitor implements MethodVisitor
     }
     
     public void visitAttribute(Attribute attr) { }
+    public void visitCode() { }
     public void visitEnd() { }
     public void visitFieldInsn(int opcode, String owner, String name, String desc) { }
     public void visitIincInsn(int var, int increment) { }

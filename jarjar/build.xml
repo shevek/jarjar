@@ -19,7 +19,7 @@
     <property name="compile.bootclasspath" value=""/>  <!-- value="lib/rt.jar" -->
     <property name="compile.extdirs" value=""/>
 
-    <property name="version" value="0.4"/>
+    <property name="version" value="0.5-dev"/>
     <property name="jarfile" value="${dist}/jarjar-${version}.jar"/>
 
     <property name="test.jar" value="${build}/rejar.jar"/>

@@ -21,6 +21,7 @@
 package com.tonicsystems.jarjar;
 
 import org.objectweb.asm.*;
+import org.objectweb.asm.signature.*;
 
 class PackageTransformer extends ClassAdapter implements ClassTransformer
 {
@@ -53,10 +54,10 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
             return value;
         }
     }
-    
+
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         className = name.replace('/', '.');
-        cv.visit(version, access, rules.fixName(name), rules.fixSignature(signature), rules.fixName(superName), fixNames(interfaces));
+        cv.visit(version, access, rules.fixName(name), fixSignature(signature, SIG_CLASS), rules.fixName(superName), fixNames(interfaces));
     }
 
     public void visitAttribute(Attribute attr) {
@@ -68,7 +69,8 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
     }
     
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        FieldVisitor fv = new FieldFixer(cv.visitField(access, name, rules.fixDesc(desc), rules.fixSignature(signature), fixValue(value)));
+        
+        FieldVisitor fv = new FieldFixer(cv.visitField(access, name, rules.fixDesc(desc), fixSignature(signature, SIG_TYPE), fixValue(value)));
         return (fv != null) ? new FieldFixer(fv) : null;
     }
 
@@ -77,7 +79,7 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor mv = cv.visitMethod(access, name, rules.fixMethodDesc(desc), rules.fixSignature(signature), fixNames(exceptions));
+        MethodVisitor mv = cv.visitMethod(access, name, rules.fixMethodDesc(desc), fixSignature(signature, SIG_METHOD), fixNames(exceptions));
         return (mv != null) ? new MethodFixer(mv) : null;
     }
 
@@ -141,7 +143,7 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         }
 
         public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-            mv.visitLocalVariable(name, rules.fixDesc(desc), rules.fixSignature(signature), start, end, index);
+            mv.visitLocalVariable(name, rules.fixDesc(desc), fixSignature(signature, SIG_TYPE), start, end, index);
         }
 
         public void visitAttribute(Attribute attr) {
@@ -174,10 +176,114 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         }
 
         public void visitEnd() {
+            av.visitEnd();
         }
     }
 
     private AnnotationVisitor fixAnnotation(AnnotationVisitor av) {
         return (av != null) ? new AnnotationFixer(av) : null;
+    }
+
+    private static final int SIG_CLASS = 0;
+    private static final int SIG_METHOD = 1;
+    private static final int SIG_TYPE = 2;
+
+    private String fixSignature(String signature, int type) {
+        if (signature == null)
+            return null;
+        SignatureReader reader = new SignatureReader(signature);
+        SignatureWriter writer = new SignatureWriter();
+        SignatureFixer fixer = new SignatureFixer(writer);
+        if (type == SIG_CLASS) {
+            reader.acceptClass(fixer);
+        } else if (type == SIG_METHOD) {
+            reader.acceptMethod(fixer);
+        } else {
+            reader.acceptType(fixer);
+        }
+        return writer.toString();
+    }
+    
+    private class SignatureFixer
+    implements TypeSignatureVisitor, ClassSignatureVisitor, MethodSignatureVisitor
+    {
+        private SignatureWriter sw;
+        
+        public SignatureFixer(SignatureWriter sw) {
+            this.sw = sw;
+        }
+        
+        public void visitFormalTypeParameter(String name) {
+            sw.visitFormalTypeParameter(name);
+        }
+    
+        public TypeSignatureVisitor visitClassBound() {
+            sw.visitClassBound();
+            return this;
+        }
+    
+        public TypeSignatureVisitor visitInterfaceBound() {
+            sw.visitInterfaceBound();
+            return this;
+        }
+        
+        public void visitBaseType(char descriptor) {
+            sw.visitBaseType(descriptor);
+        }
+    
+        public void visitTypeVariable(String name) {
+            sw.visitTypeVariable(rules.fixName(name));
+        }
+    
+        public TypeSignatureVisitor visitArrayType() {
+            sw.visitArrayType();
+            return this;
+        }
+    
+        public void visitClassType(String name) {
+            sw.visitClassType(rules.fixName(name));
+        }
+    
+        public void visitInnerClassType(String name) {
+            sw.visitInnerClassType(rules.fixName(name));
+        }
+    
+        public void visitTypeArgument() {
+            sw.visitTypeArgument();
+        }
+    
+        public TypeSignatureVisitor visitTypeArgument(char wildcard) {
+            sw.visitTypeArgument(wildcard);
+            return this;
+        }
+    
+        public void visitEnd() {
+            sw.visitEnd();
+        }
+    
+        public TypeSignatureVisitor visitSuperclass() {
+            sw.visitSuperclass();
+            return this;
+        }
+    
+        public TypeSignatureVisitor visitInterface() {
+            sw.visitInterface();
+            return this;
+        }
+    
+        public TypeSignatureVisitor visitParameterType() {
+            sw.visitParameterType();
+            return this;
+        }
+    
+        public TypeSignatureVisitor visitReturnType() {
+            sw.visitReturnType();
+            return this;
+        }
+    
+        public TypeSignatureVisitor visitExceptionType() {
+            sw.visitExceptionType();
+            return this;
+        }
     }
 }
