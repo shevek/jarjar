@@ -47,7 +47,7 @@ class Wildcard
     public Wildcard(String pattern, String result) {
         compilePattern(pattern);
         compileResult(result);
-        System.err.println(this);
+        // System.err.println(this);
     }
 
     public boolean matches(String value, int style) {
