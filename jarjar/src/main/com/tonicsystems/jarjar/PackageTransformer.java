@@ -20,7 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
-import net.sf.cglib.transform.AbstractClassTransformer;
+import com.tonicsystems.jarjar.cglib.AbstractClassTransformer;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.CodeAdapter;
 import org.objectweb.asm.CodeVisitor;
@@ -31,7 +31,6 @@ extends AbstractClassTransformer
 {
     private Rules rules;
     private String className;
-    private boolean isStringTransformer;
     
     public PackageTransformer(Rules rules) {
         this.rules = rules;
@@ -55,15 +54,9 @@ extends AbstractClassTransformer
         }
     }
     
-    public void visit(int access, String name, String superName, String[] interfaces, String sourceFile) {
+    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
         className = name.replace('/', '.');
-        isStringTransformer = false;
-        for (int i = 0; i < interfaces.length; i++) {
-            if (interfaces[i].equals("com/tonicsystems/jarjar/StringTransformer"))
-                isStringTransformer = true;
-            break;
-        }
-        cv.visit(access, rules.fixName(name), rules.fixName(superName), fixNames(interfaces), sourceFile);
+        cv.visit(version, access, rules.fixName(name), rules.fixName(superName), fixNames(interfaces), sourceFile);
     }
 
     public void visitAttribute(Attribute attr) {
@@ -80,8 +73,6 @@ extends AbstractClassTransformer
 
     public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
         CodeVisitor inner = cv.visitMethod(access, name, rules.fixMethodDesc(desc), fixNames(exceptions), rules.fixAttribute(attrs));
-        if (isStringTransformer)
-            return inner;
         return new CodeAdapter(inner) {
             public void visitTypeInsn(int opcode, String desc) {
                 cv.visitTypeInsn(opcode, (desc.charAt(0) == '[') ? rules.fixDesc(desc) : rules.fixName(desc));

@@ -20,13 +20,13 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.cglib.NullClassVisitor;
+import com.tonicsystems.jarjar.cglib.Signature;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
-import net.sf.cglib.core.Signature;
-import net.sf.cglib.transform.NullClassVisitor;
 
 class DepFindVisitor
 extends NullClassVisitor

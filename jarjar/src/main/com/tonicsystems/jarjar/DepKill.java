@@ -20,12 +20,12 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.cglib.ClassReaderGenerator;
+import com.tonicsystems.jarjar.cglib.DebuggingClassWriter;
+import com.tonicsystems.jarjar.cglib.TransformingClassGenerator;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.jar.*;
-import net.sf.cglib.core.DebuggingClassWriter;
-import net.sf.cglib.transform.ClassReaderGenerator;
-import net.sf.cglib.transform.TransformingClassGenerator;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -70,8 +70,7 @@ public class DepKill
                 ClassReader reader = new ClassReader(in);
                 in.close();
                 
-                int[] version = reader.getVersion();
-                ClassWriter w = new DebuggingClassWriter(true, version[0], version[1]);
+                ClassWriter w = new DebuggingClassWriter(true);
                 new TransformingClassGenerator(new ClassReaderGenerator(reader, null, false), t).generateClass(w);
                 out.write(w.toByteArray());
             

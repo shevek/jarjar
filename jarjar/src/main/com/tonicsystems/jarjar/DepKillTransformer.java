@@ -20,19 +20,20 @@
 
 package com.tonicsystems.jarjar;
 
-import net.sf.cglib.core.Constants;
-import net.sf.cglib.core.Signature;
-import net.sf.cglib.transform.AbstractClassTransformer;
+import com.tonicsystems.jarjar.cglib.AbstractClassTransformer;
+import com.tonicsystems.jarjar.cglib.Signature;
+import java.util.*;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.CodeAdapter;
 import org.objectweb.asm.CodeVisitor;
+import org.objectweb.asm.Constants;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import java.util.*;
 
 class DepKillTransformer
 extends AbstractClassTransformer
 {
+    private static final Type TYPE_OBJECT = Type.getType(Object.class);
     private String[] packageNames;
 
     public DepKillTransformer(String[] packageNames)
@@ -80,7 +81,7 @@ extends AbstractClassTransformer
 
     private Type eraseType(Type type)
     {
-        return checkDesc(type.getDescriptor()) ? Constants.TYPE_OBJECT : type;
+        return checkDesc(type.getDescriptor()) ? TYPE_OBJECT : type;
     }
 
     private boolean checkName(String name)
@@ -145,7 +146,7 @@ extends AbstractClassTransformer
     {
         if (checkDesc(desc)) {
             // System.err.println("visitField " + desc);
-            desc = Constants.TYPE_OBJECT.getDescriptor();
+            desc = TYPE_OBJECT.getDescriptor();
         }
         super.visitField(access, name, desc, value, attrs);
     }
@@ -254,7 +255,7 @@ extends AbstractClassTransformer
         {
             if (checkDesc(desc)) {
                 // System.err.println("visitLocalVariable " + desc);
-                desc = Constants.TYPE_OBJECT.getDescriptor();
+                desc = TYPE_OBJECT.getDescriptor();
             }
             cv.visitLocalVariable(name, desc, start, end, index);
         }

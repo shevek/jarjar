@@ -29,7 +29,6 @@ class RulesImpl implements Rules
     
     private Wildcard[] wildcards;
     private HashMap cache = new HashMap();
-    private StringTransformer st;
     private StringTransformer def;
     private boolean verbose;
 
@@ -42,7 +41,7 @@ class RulesImpl implements Rules
             wildcards[i++] = new Wildcard(rule.getPattern(), rule.getResult());
         }
         def = new StringTransformer() {
-            public String transform(String value, String className, StringTransformer def) {
+            public String transform(String value, String className) {
                 String oldValue = value;
                 value = fixPath(value);
                 if (value.equals(oldValue)) {
@@ -54,10 +53,6 @@ class RulesImpl implements Rules
                 return value;
             }
         };
-    }
-
-    public void setStringTransformer(StringTransformer st) {
-        this.st = (st != null) ? st : def;
     }
 
     public String fixPath(String path) {
@@ -132,7 +127,7 @@ class RulesImpl implements Rules
     }
 
     public String fixString(String className, String value) {
-        String newValue = st.transform(value, className, def);
+        String newValue = def.transform(value, className);
         if (verbose && !newValue.equals(value))
             System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
         return newValue;

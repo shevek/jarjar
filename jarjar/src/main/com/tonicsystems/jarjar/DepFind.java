@@ -20,15 +20,13 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.cglib.ClassNameReader;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
-import net.sf.cglib.core.ClassNameReader;
-import net.sf.cglib.core.TypeUtils;
-import net.sf.cglib.transform.NullClassVisitor;
 
 public class DepFind
 {
