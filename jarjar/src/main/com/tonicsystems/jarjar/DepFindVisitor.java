@@ -23,6 +23,7 @@ package com.tonicsystems.jarjar;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
 import net.sf.cglib.core.Signature;
 import net.sf.cglib.transform.NullClassVisitor;
@@ -30,13 +31,16 @@ import net.sf.cglib.transform.NullClassVisitor;
 class DepFindVisitor
 extends NullClassVisitor
 {
-    private Set names;
+    private Map classes;
+    private String source;
     private String curName;
     private CodeVisitor code = new DepFindCodeVisitor();
     
-    public DepFindVisitor(Set names)
+    public DepFindVisitor(Map classes, Object source)
+    throws IOException
     {
-        this.names = names;
+        this.classes = classes;
+        this.source = getSourceName(source);
     }
 
     public void visit(int access, String name, String superName, String[] interfaces, String sourceFile)
@@ -59,10 +63,24 @@ extends NullClassVisitor
             checkDesc(args[i].getDescriptor());
     }
 
+    private String getSourceName(Object source)
+    throws IOException
+    {
+        if (source instanceof ZipFile) {
+            return ((ZipFile)source).getName();
+        } else {
+            return ((File)source).getCanonicalPath();
+        }
+    }
+
     private void checkName(String name)
     {
-        if (names.contains(name))
-            throw new DepFindException(curName, name);
+        try {
+            if (classes.containsKey(name) && !source.equals(getSourceName(classes.get(name))))
+                throw new DepFindException(curName, name);
+        } catch (IOException e) {
+            throw new WrappedIOException(e);
+        }
     }
 
     public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs)

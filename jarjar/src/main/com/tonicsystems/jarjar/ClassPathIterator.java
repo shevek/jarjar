@@ -38,7 +38,7 @@ implements Iterator
 
     private File parent;
     private Enumeration entries;
-    private Map zipFiles = new HashMap();
+    private Map sources = new HashMap();
     private ZipFile zip;
     private Object next;
     
@@ -60,9 +60,11 @@ implements Iterator
     public void close()
     throws IOException
     {
-        if (zipFiles != null) {
-            for (Iterator it = zipFiles.values().iterator(); it.hasNext();) {
-                ((ZipFile)it.next()).close();
+        if (sources != null) {
+            for (Iterator it = sources.values().iterator(); it.hasNext();) {
+                Object obj = it.next();
+                if (obj instanceof ZipFile)
+                    ((ZipFile)obj).close();
             }
         }
     }
@@ -71,10 +73,15 @@ implements Iterator
     throws IOException
     {
         if (obj instanceof ZipEntry) {
-            return ((ZipFile)zipFiles.get(obj)).getInputStream((ZipEntry)obj);
+            return ((ZipFile)sources.get(obj)).getInputStream((ZipEntry)obj);
         } else {
             return new BufferedInputStream(new FileInputStream((File)obj));
         }
+    }
+
+    public Object getSource(Object obj)
+    {
+        return sources.get(obj);
     }
 
     public void remove()
@@ -120,7 +127,11 @@ implements Iterator
                 if (entries == null) {
                     if (file.isDirectory()) {
                         // TODO: could lazily recurse for performance
-                        entries = findClasses(file);
+                        List classes = findClasses(file);
+                        for (Iterator it = classes.iterator(); it.hasNext();) {
+                            sources.put(it.next(), file);
+                        }
+                        entries = Collections.enumeration(classes);
                     } else {
                         throw new IllegalArgumentException("Do not know how to handle " + part);
                     }
@@ -132,7 +143,7 @@ implements Iterator
                 next = entries.nextElement();
                 if (foundClass = isClassFile(getName(next))) {
                     if (zip != null)
-                        zipFiles.put(next, zip);
+                        sources.put(next, zip);
                     break;
                 }
             }
@@ -145,11 +156,11 @@ implements Iterator
         }
     }
 
-    private static Enumeration findClasses(File root)
+    private static List findClasses(File root)
     {
         List collect = new ArrayList();
         findClassesHelper(root, collect);
-        return Collections.enumeration(collect);
+        return collect;
     }
 
     private static void findClassesHelper(File dir, List collect)

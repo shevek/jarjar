@@ -26,6 +26,7 @@ import java.util.zip.ZipEntry;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
+import net.sf.cglib.core.ClassNameReader;
 import net.sf.cglib.core.TypeUtils;
 import net.sf.cglib.transform.NullClassVisitor;
 
@@ -49,30 +50,24 @@ public class DepFind
             System.exit(1);
         }
 
-        final Set names = new HashSet();
-        ClassVisitor gatherNamesVisitor = new NullClassVisitor() {
-            public void visit(int access, String name, String superName, String[] interfaces, String sourceFile) {
-                names.add(name);
-            }
-        };
-
         File curDir = new File(System.getProperty("user.dir"));
 
+        Map classes = new HashMap();
         ClassPathIterator cp = new ClassPathIterator(curDir, args[0]);
         while (cp.hasNext()) {
             Object cls = cp.next();
-            // System.err.println("d0: " + cls);
-            new ClassReader(cp.getInputStream(cls)).accept(gatherNamesVisitor, true);
+            Object source = cp.getSource(cls);
+            String name = ClassNameReader.getClassName(new ClassReader(cp.getInputStream(cls)));
+            classes.put(name.replace('.', '/'), source);
         }
         cp.close();
         
-        DepFindVisitor depFind = new DepFindVisitor(names);
         cp = new ClassPathIterator(curDir, args[1]);
         while (cp.hasNext()) {
             try {
                 Object cls = cp.next();
-                // System.err.println("d1: " + cls);
-                new ClassReader(cp.getInputStream(cls)).accept(depFind, true);
+                Object source = cp.getSource(cls);
+                new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source), true);
             } catch (DepFindException e) {
                 System.out.println(e.getClassName() + " (" + e.getDependency() + ")");
             }
