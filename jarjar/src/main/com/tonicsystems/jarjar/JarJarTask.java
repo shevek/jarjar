@@ -38,6 +38,12 @@ public class JarJarTask extends AntJarProcessor
         patterns.add(zap);
     }
 
+    public void addConfiguredKill(Kill kill) {
+        if (kill.getPattern() == null)
+            throw new IllegalArgumentException("The <kill> element requires a \"pattern\" attribute.");
+        patterns.add(kill);
+    }
+    
     protected JarProcessor getJarProcessor() {
         return new MainProcessor(patterns, verbose);
     }

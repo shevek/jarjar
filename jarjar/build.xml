@@ -19,7 +19,7 @@
     <property name="compile.bootclasspath" value=""/>  <!-- value="lib/rt.jar" -->
     <property name="compile.extdirs" value=""/>
 
-    <property name="version" value="0.4-dev"/>
+    <property name="version" value="0.4"/>
     <property name="jarfile" value="${dist}/jarjar-${version}.jar"/>
 
     <property name="test.jar" value="${build}/rejar.jar"/>
@@ -97,6 +97,7 @@
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
             <manifest>
                 <attribute name="Main-Class" value="com.tonicsystems.jarjar.Main"/>
+                <attribute name="Implementation-Version" value="${version}"/>
             </manifest>
         </jarjar>
     </target>

@@ -1,0 +1,42 @@
+Jar Jar Links - A utility to repackage and embed Java libraries
+Copyright (C) 2004  Tonic Systems, Inc.
+
+Usage:
+
+  java -jar jarjar.jar [--help]
+
+    Prints this help message.
+
+  java -jar jarjar.jar --rules=file [--verbose] <in-jar> <out-jar>
+
+    Transform the <in-jar> jar file, writing a new jar file to <out-jar>.
+    Any existing file named by <out-jar> will be deleted.
+
+    The transformation is defined by a set of rules in the file specified
+    by the rules argument. See below for the format of the rules file.
+
+  java -jar jarjar.jar --find [--level=value] <cp1> [<cp2>] 
+
+    Prints dependencies on classpath <cp2> in classpath <cp1>. If <cp2>
+    is omitted, <cp1> is used for both arguments.
+
+    The level argument can be "class" (default) or "jar". The former
+    prints dependencies between individual classes, while the latter
+    only prints jar->jar dependencies. A "jar" in this context is
+    actually any classpath component, which can be a jar file, a zip
+    file, or a parent directory (see below).
+
+  java -jar jarjar.jar --strings <cp>
+
+    Dumps all string literals in classpath <cp>. Line numbers will be
+    included if the classes have debug information.
+
+Rules file format
+
+  TODO
+
+Classpath format
+
+  The classpath argument is a colon-delimited set of directories, jar
+  files, or zip files. See the following page for more details:
+  http://java.sun.com/j2se/1.5.0/docs/tooldocs/solaris/classpath.html

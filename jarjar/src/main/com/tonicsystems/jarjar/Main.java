@@ -27,6 +27,22 @@ import java.util.*;
 
 public class Main
 {
+    public static final int STYLE_SIMPLE = 0;
+    private static final String HELP;
+
+    static {
+        try {
+            HELP = IoUtils.readIntoString(Main.class.getResourceAsStream("help.txt"));
+        } catch (IOException e) {
+            throw new NestedException(e);
+        }
+    }
+
+    private boolean verbose;
+    private List patterns;
+    private int level = DepHandler.LEVEL_CLASS;
+    private int style = STYLE_SIMPLE;
+
     // TODO: standalone kill?
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
@@ -110,16 +126,8 @@ public class Main
     }
 
     private static void help() {
-        // TODO
-        System.err.println("I see you asked for help"); // TODO
+        System.err.print(HELP);
     }
-
-    public static final int STYLE_SIMPLE = 0;
-
-    private boolean verbose;
-    private List patterns;
-    private int level = DepHandler.LEVEL_CLASS;
-    private int style = STYLE_SIMPLE;
 
     public void setLevel(int level) {
         this.level = level;

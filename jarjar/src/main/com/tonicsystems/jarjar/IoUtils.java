@@ -24,7 +24,18 @@ import java.io.*;
 
 class IoUtils
 {
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    
     private IoUtils() {
+    }
+
+    public static String readIntoString(InputStream in) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        String line = null;
+        while ((line = r.readLine()) != null)
+            sb.append(line).append(LINE_SEPARATOR);
+        return sb.toString();
     }
 
     public static String escapeStringLiteral(String value) {

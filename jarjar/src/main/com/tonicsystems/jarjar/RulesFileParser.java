@@ -33,7 +33,7 @@ class RulesFileParser
     }
 
     public static List parse(String value) throws IOException {
-        return parse(new StringReader(value));
+        return parse(new java.io.StringReader(value));
     }
 
     private static List parse(Reader r) throws IOException {
