@@ -31,12 +31,13 @@ Usage:
     Dumps all string literals in classpath <cp>. Line numbers will be
     included if the classes have debug information.
 
-Rules file format
+Rules file format:
 
   TODO
 
-Classpath format
+Classpath format:
 
   The classpath argument is a colon-delimited set of directories, jar
   files, or zip files. See the following page for more details:
   http://java.sun.com/j2se/1.5.0/docs/tooldocs/solaris/classpath.html
+
