@@ -221,7 +221,6 @@ extends ClassAdapter
                 case Constants.INVOKESTATIC:
                 }
 
-                
                 Type[] args = Type.getArgumentTypes(desc);
                 for (int i = 0; i < args.length; i++)
                     cv.visitInsn((args[i].getSize() == 2) ? Constants.POP2 : Constants.POP);
@@ -248,11 +247,8 @@ extends ClassAdapter
 
         public void visitTryCatchBlock(Label start, Label end, Label handler, String type)
         {
-            if (checkName(type)) {
-                // System.err.println("visitTryCatchBlock " + type);
-            } else {
+            if (!checkName(type))
                 cv.visitTryCatchBlock(start, end, handler, type);
-            }
         }
 
         public void visitLocalVariable(String name, String desc, Label start, Label end, int index)

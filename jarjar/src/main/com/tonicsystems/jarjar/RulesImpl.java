@@ -29,7 +29,6 @@ class RulesImpl implements Rules
     
     private Wildcard[] wildcards;
     private HashMap cache = new HashMap();
-    private StringTransformer def;
     private boolean verbose;
 
     public RulesImpl(List ruleList, boolean verbose) {
@@ -40,19 +39,18 @@ class RulesImpl implements Rules
             Rule rule = (Rule)it.next();
             wildcards[i++] = new Wildcard(rule.getPattern(), rule.getResult());
         }
-        def = new StringTransformer() {
-            public String transform(String value, String className) {
-                String oldValue = value;
-                value = fixPath(value);
-                if (value.equals(oldValue)) {
-                    for (int i = 0; i < wildcards.length; i++) {
-                        value = wildcards[i].replaceAll(value, Wildcard.STYLE_DESC_ANYWHERE);
-                        value = wildcards[i].replaceAll(value, Wildcard.STYLE_IDENTIFIER);
-                    }
-                }
-                return value;
+    }
+
+    private String transform(String value, String className) {
+        String oldValue = value;
+        value = fixPath(value);
+        if (value.equals(oldValue)) {
+            for (int i = 0; i < wildcards.length; i++) {
+                value = wildcards[i].replaceAll(value, Wildcard.STYLE_DESC_ANYWHERE);
+                value = wildcards[i].replaceAll(value, Wildcard.STYLE_IDENTIFIER);
             }
-        };
+        }
+        return value;
     }
 
     public String fixPath(String path) {
@@ -127,7 +125,7 @@ class RulesImpl implements Rules
     }
 
     public String fixString(String className, String value) {
-        String newValue = def.transform(value, className);
+        String newValue = transform(value, className);
         if (verbose && !newValue.equals(value))
             System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
         return newValue;
