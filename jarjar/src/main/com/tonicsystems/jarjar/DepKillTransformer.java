@@ -20,7 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.Signature;
 import java.util.*;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
@@ -78,11 +77,10 @@ extends ClassAdapter
 
     private String fixMethodDesc(String methodDesc)
     {
-        Signature sig = new Signature("foo", methodDesc);
-        Type[] args = sig.getArgumentTypes();
+        Type[] args = Type.getArgumentTypes(methodDesc);
         for (int i = 0; i < args.length; i++)
             args[i] = eraseType(args[i]);
-        return new Signature("foo", eraseType(sig.getReturnType()), args).getDescriptor();
+        return Type.getMethodDescriptor(eraseType(Type.getReturnType(methodDesc)), args);
     }
 
     private Type eraseType(Type type)
@@ -223,11 +221,11 @@ extends ClassAdapter
                 case Constants.INVOKESTATIC:
                 }
 
-                Signature sig = new Signature(name, desc);
-                Type[] args = sig.getArgumentTypes();
+                
+                Type[] args = Type.getArgumentTypes(desc);
                 for (int i = 0; i < args.length; i++)
                     cv.visitInsn((args[i].getSize() == 2) ? Constants.POP2 : Constants.POP);
-                replace(cv, sig.getReturnType().getDescriptor());
+                replace(cv, Type.getReturnType(desc).getDescriptor());
 
             } else if (checkMethodDesc(desc)) {
                 // System.err.println("visitMethodInsn " + owner + ", " + desc + " (" + name + ")");

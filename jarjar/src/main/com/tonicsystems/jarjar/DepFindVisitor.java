@@ -20,7 +20,6 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.cglib.Signature;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -56,8 +55,7 @@ extends NullClassVisitor
 
     private void checkMethodDesc(String methodDesc)
     {
-        Signature sig = new Signature("foo", methodDesc);
-        Type[] args = sig.getArgumentTypes();
+        Type[] args = Type.getArgumentTypes(methodDesc);
         for (int i = 0; i < args.length; i++)
             checkDesc(args[i].getDescriptor());
     }
