@@ -68,7 +68,8 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
     }
     
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        return new FieldFixer(cv.visitField(access, name, rules.fixDesc(desc), rules.fixSignature(signature), fixValue(value)));
+        FieldVisitor fv = new FieldFixer(cv.visitField(access, name, rules.fixDesc(desc), rules.fixSignature(signature), fixValue(value)));
+        return (fv != null) ? new FieldFixer(fv) : null;
     }
 
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
@@ -76,7 +77,8 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        return new MethodFixer(cv.visitMethod(access, name, rules.fixMethodDesc(desc), rules.fixSignature(signature), fixNames(exceptions)));
+        MethodVisitor mv = cv.visitMethod(access, name, rules.fixMethodDesc(desc), rules.fixSignature(signature), fixNames(exceptions));
+        return (mv != null) ? new MethodFixer(mv) : null;
     }
 
     private class FieldFixer implements FieldVisitor
@@ -107,11 +109,11 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         }
 
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            return new AnnotationFixer(mv.visitAnnotation(rules.fixDesc(desc), visible));
+            return fixAnnotation(mv.visitAnnotation(rules.fixDesc(desc), visible));
         }
 
         public AnnotationVisitor visitAnnotationDefault() {
-            return new AnnotationFixer(mv.visitAnnotationDefault());
+            return fixAnnotation(mv.visitAnnotationDefault());
         }
 
         public void visitTypeInsn(int opcode, String desc) {
@@ -158,11 +160,15 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         }
 
         public AnnotationVisitor visitAnnotation(String name, String desc) {
-            return new AnnotationFixer(av.visitAnnotation(name, rules.fixDesc(desc)));
+            return fixAnnotation(av.visitAnnotation(name, rules.fixDesc(desc)));
         }
 
         public void visitEnum(String name, String desc, String value) {
             av.visitEnum(name, rules.fixDesc(desc), (String)fixValue(value));
         }
+    }
+
+    private AnnotationVisitor fixAnnotation(AnnotationVisitor av) {
+        return (av != null) ? new AnnotationFixer(av) : null;
     }
 }
