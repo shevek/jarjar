@@ -22,8 +22,7 @@ package com.tonicsystems.jarjar;
 
 import java.io.IOException;
 
-class WrappedIOException
-extends RuntimeException
+class WrappedIOException extends RuntimeException
 {
     private IOException e;
 

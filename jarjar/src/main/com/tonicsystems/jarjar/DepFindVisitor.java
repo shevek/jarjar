@@ -26,43 +26,35 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
 
-class DepFindVisitor
-extends NullClassVisitor
+class DepFindVisitor extends NullClassVisitor
 {
     private Map classes;
     private String source;
     private String curName;
     private CodeVisitor code = new DepFindCodeVisitor();
     
-    public DepFindVisitor(Map classes, Object source)
-    throws IOException
-    {
+    public DepFindVisitor(Map classes, Object source) throws IOException {
         this.classes = classes;
         this.source = getSourceName(source);
     }
 
-    public void visit(int access, String name, String superName, String[] interfaces, String sourceFile)
-    {
+    public void visit(int access, String name, String superName, String[] interfaces, String sourceFile) {
         curName = name;
     }
 
-    private void checkDesc(String desc)
-    {
+    private void checkDesc(String desc) {
         int index = desc.indexOf('L');
         if (index >= 0)
             checkName(desc.substring(index + 1, desc.length() - 1));
     }
 
-    private void checkMethodDesc(String methodDesc)
-    {
+    private void checkMethodDesc(String methodDesc) {
         Type[] args = Type.getArgumentTypes(methodDesc);
         for (int i = 0; i < args.length; i++)
             checkDesc(args[i].getDescriptor());
     }
 
-    private String getSourceName(Object source)
-    throws IOException
-    {
+    private String getSourceName(Object source) throws IOException {
         if (source instanceof ZipFile) {
             return ((ZipFile)source).getName();
         } else {
@@ -70,8 +62,7 @@ extends NullClassVisitor
         }
     }
 
-    private void checkName(String name)
-    {
+    private void checkName(String name) {
         try {
             if (classes.containsKey(name) && !source.equals(getSourceName(classes.get(name))))
                 throw new DepFindException(curName, name);
@@ -80,8 +71,7 @@ extends NullClassVisitor
         }
     }
 
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs)
-    {
+    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
         checkMethodDesc(desc);
         if (exceptions != null) {
             for (int i = 0; i < exceptions.length; i++)
@@ -90,21 +80,17 @@ extends NullClassVisitor
         return code;
     }
 
-    public void visitField(int access, String name, String desc, Object value, Attribute attrs)
-    {
+    public void visitField(int access, String name, String desc, Object value, Attribute attrs) {
         checkDesc(desc);
     }
 
-    private class DepFindCodeVisitor
-    extends CodeAdapter
-    {
-        public DepFindCodeVisitor()
-        {
+    private class DepFindCodeVisitor extends CodeAdapter {
+
+        public DepFindCodeVisitor() {
             super(NullCodeVisitor.getInstance());
         }
         
-        public void visitTypeInsn(int opcode, String desc)
-        {
+        public void visitTypeInsn(int opcode, String desc) {
             if (desc.charAt(0) == '[') {
                 checkDesc(desc);
             } else {
@@ -112,30 +98,25 @@ extends NullClassVisitor
             }
         }
 
-        public void visitFieldInsn(int opcode, String owner, String name, String desc)
-        {
+        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
             checkName(owner);
             checkDesc(desc);
         }
 
-        public void visitMethodInsn(int opcode, String owner, String name, String desc)
-        {
+        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
             checkName(owner);
             checkMethodDesc(desc);
         }
 
-        public void visitMultiANewArrayInsn(String desc, int dims)
-        {
+        public void visitMultiANewArrayInsn(String desc, int dims) {
             checkDesc(desc);
         }
 
-        public void visitTryCatchBlock(Label start, Label end, Label handler, String type)
-        {
+        public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
             checkName(type);
         }
 
-        public void visitLocalVariable(String name, String desc, Label start, Label end, int index)
-        {
+        public void visitLocalVariable(String name, String desc, Label start, Label end, int index) {
             checkDesc(desc);
         }
 

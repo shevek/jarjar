@@ -30,29 +30,23 @@ class ClassHeaderReader
     private String superClass;
     private String[] interfaces;
 
-    public int getAccess()
-    {
+    public int getAccess() {
         return access;
     }
     
-    public String getClassName()
-    {
+    public String getClassName() {
         return thisClass;
     }
 
-    public String getSuperName()
-    {
+    public String getSuperName() {
         return superClass;
     }
 
-    public String[] getInterfaces()
-    {
+    public String[] getInterfaces() {
         return interfaces;
     }
     
-    public ClassHeaderReader(InputStream in)
-    throws IOException
-    {
+    public ClassHeaderReader(InputStream in) throws IOException {
         try {
             DataInputStream data = new DataInputStream(in);
             int magic = data.readInt();
@@ -104,19 +98,15 @@ class ClassHeaderReader
         }
     }
 
-    private static String readClass(int index, Map items)
-    {
+    private static String readClass(int index, Map items) {
         return readString(((Integer)items.get(new Integer(index))).intValue(), items);
     }
 
-    private static String readString(int index, Map items)
-    {
+    private static String readString(int index, Map items) {
         return (String)items.get(new Integer(index));
     }
     
-    private static void skipFully(DataInput data, int n)
-    throws IOException
-    {
+    private static void skipFully(DataInput data, int n) throws IOException {
         while (n > 0) {
             int amt = data.skipBytes(n);
             if (amt == 0) {

@@ -22,13 +22,11 @@ package com.tonicsystems.jarjar;
 
 import org.objectweb.asm.*;
 
-class NullCodeVisitor
-implements CodeVisitor
+class NullCodeVisitor implements CodeVisitor
 {
     private static final NullCodeVisitor INSTANCE = new NullCodeVisitor();
 
-    public static NullCodeVisitor getInstance()
-    {
+    public static NullCodeVisitor getInstance() {
         return INSTANCE;
     }
         

@@ -24,24 +24,20 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ClassReader;
 import java.io.*;
 
-public class GetNameClassWriter
-extends ClassWriter
+public class GetNameClassWriter extends ClassWriter
 {
     private String className;
     
-    public GetNameClassWriter(boolean computeMaxs)
-    {
+    public GetNameClassWriter(boolean computeMaxs) {
         super(computeMaxs);
     }
 
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile)
-    {
-        className = name.replace('/', '.');
+    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
+        className = name;
         super.visit(version, access, name, superName, interfaces, sourceFile);
     }
     
-    public String getClassName()
-    {
+    public String getClassName() {
         return className;
     }
 }

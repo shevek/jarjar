@@ -20,8 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
-public class Rule
-extends PatternElement
+public class Rule extends PatternElement
 {
     private String result;
 

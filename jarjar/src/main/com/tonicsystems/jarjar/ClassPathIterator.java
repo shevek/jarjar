@@ -42,8 +42,7 @@ implements Iterator
     private ZipFile zip;
     private Object next;
     
-    public ClassPathIterator(File parent, String classPath)
-    {
+    public ClassPathIterator(File parent, String classPath) {
         this.parent = parent;
         StringTokenizer st = new StringTokenizer(classPath, ":");
         while (st.hasMoreTokens()) {
@@ -52,14 +51,11 @@ implements Iterator
         advance();
     }
 
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
         return next != null;
     }
 
-    public void close()
-    throws IOException
-    {
+    public void close() throws IOException {
         if (sources != null) {
             for (Iterator it = sources.values().iterator(); it.hasNext();) {
                 Object obj = it.next();
@@ -69,9 +65,7 @@ implements Iterator
         }
     }
     
-    public InputStream getInputStream(Object obj)
-    throws IOException
-    {
+    public InputStream getInputStream(Object obj) throws IOException {
         if (obj instanceof ZipEntry) {
             return ((ZipFile)sources.get(obj)).getInputStream((ZipEntry)obj);
         } else {
@@ -79,18 +73,15 @@ implements Iterator
         }
     }
 
-    public Object getSource(Object obj)
-    {
+    public Object getSource(Object obj) {
         return sources.get(obj);
     }
 
-    public void remove()
-    {
+    public void remove() {
         throw new UnsupportedOperationException();
     }
 
-    public Object next()
-    {
+    public Object next() {
         if (!hasNext())
             throw new NoSuchElementException();
         Object result = next;
@@ -98,8 +89,7 @@ implements Iterator
         return result;
     }
 
-    private void advance()
-    {
+    private void advance() {
         try {
             if (entries == null) {
                 if (parts.size() == 0) {
@@ -156,15 +146,13 @@ implements Iterator
         }
     }
 
-    private static List findClasses(File root)
-    {
+    private static List findClasses(File root) {
         List collect = new ArrayList();
         findClassesHelper(root, collect);
         return collect;
     }
 
-    private static void findClassesHelper(File dir, List collect)
-    {
+    private static void findClassesHelper(File dir, List collect) {
         File[] files = dir.listFiles(FILTER);
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
@@ -175,13 +163,11 @@ implements Iterator
         }
     }
 
-    private static String getName(Object obj)
-    {
+    private static String getName(Object obj) {
         return (obj instanceof ZipEntry) ? ((ZipEntry)obj).getName() : ((File)obj).getName();
     }
 
-    private static boolean isClassFile(String name)
-    {
+    private static boolean isClassFile(String name) {
         int len = name.length();
         return (len >= 6) && name.substring(len - 6, len).equalsIgnoreCase(".class");
     }

@@ -29,17 +29,11 @@ import org.objectweb.asm.ClassWriter;
 
 public class DepKill
 {
-    public static void main(String[] args)
-    throws Exception
-    {
-        // long t = System.currentTimeMillis();
+    public static void main(String[] args) throws Exception {
         new DepKill(args);
-        // System.err.println("took " + (System.currentTimeMillis() - t) + " ms");
     }
 
-    private DepKill(String[] args)
-    throws Exception
-    {
+    private DepKill(String[] args) throws Exception {
         if (args.length < 2) {
             System.err.println("Syntax: java com.tonicsystems.jarjar.DepKill <input-jar> <package-name> [<package-name> ...] > <output-jar>");
             System.exit(1);
@@ -78,9 +72,7 @@ public class DepKill
         out.close();
     }
 
-    private static void pipe(InputStream in, OutputStream out, byte[] buf)
-    throws IOException
-    {
+    private static void pipe(InputStream in, OutputStream out, byte[] buf) throws IOException {
         for (;;) {
             int amt = in.read(buf);
             if (amt < 0)

@@ -22,25 +22,21 @@ package com.tonicsystems.jarjar;
 
 import java.io.IOException;
 
-class DepFindException
-extends RuntimeException
+class DepFindException extends RuntimeException
 {
     private String className;
     private String dependency;
     
-    public DepFindException(String className, String dependency)
-    {
+    public DepFindException(String className, String dependency) {
         this.className = className;
         this.dependency = dependency;
     }
 
-    public String getClassName()
-    {
+    public String getClassName() {
         return className;
     }
 
-    public String getDependency()
-    {
+    public String getDependency() {
         return dependency;
     }
 }

@@ -30,14 +30,12 @@ import org.objectweb.asm.Constants;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
-class DepKillTransformer
-extends ClassAdapter
+class DepKillTransformer extends ClassAdapter
 {
     private static final Type TYPE_OBJECT = Type.getType(Object.class);
     private String[] packageNames;
 
-    public DepKillTransformer(String[] packageNames)
-    {
+    public DepKillTransformer(String[] packageNames) {
         super(null);
         this.packageNames = new String[packageNames.length];
         for (int i = 0; i < packageNames.length; i++) {
@@ -55,8 +53,7 @@ extends ClassAdapter
         cv = target;
     }
 
-    private boolean checkDesc(String desc)
-    {
+    private boolean checkDesc(String desc) {
         for (int i = 0; i < packageNames.length; i++) {
             if (desc.startsWith(packageNames[i])) {
                 return true;
@@ -65,8 +62,7 @@ extends ClassAdapter
         return false;
     }
 
-    private boolean checkMethodDesc(String methodDesc)
-    {
+    private boolean checkMethodDesc(String methodDesc) {
         for (int i = 0; i < packageNames.length; i++) {
             if (methodDesc.indexOf(packageNames[i]) >= 0) {
                 return true;
@@ -75,26 +71,22 @@ extends ClassAdapter
         return false;
     }
 
-    private String fixMethodDesc(String methodDesc)
-    {
+    private String fixMethodDesc(String methodDesc) {
         Type[] args = Type.getArgumentTypes(methodDesc);
         for (int i = 0; i < args.length; i++)
             args[i] = eraseType(args[i]);
         return Type.getMethodDescriptor(eraseType(Type.getReturnType(methodDesc)), args);
     }
 
-    private Type eraseType(Type type)
-    {
+    private Type eraseType(Type type) {
         return checkDesc(type.getDescriptor()) ? TYPE_OBJECT : type;
     }
 
-    private boolean checkName(String name)
-    {
+    private boolean checkName(String name) {
         return checkDesc("L" + name + ";");
     }
 
-    private static void replace(CodeVisitor cv, String desc)
-    {
+    private static void replace(CodeVisitor cv, String desc) {
         switch (desc.charAt(0)) {
         case 'V':
             break;
@@ -121,8 +113,7 @@ extends ClassAdapter
         }
     }
 
-    private static void pop(CodeVisitor cv, String desc)
-    {
+    private static void pop(CodeVisitor cv, String desc) {
         switch (desc.charAt(0)) {
         case 'D':
         case 'J':
@@ -132,8 +123,7 @@ extends ClassAdapter
         }
     }
                 
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs)
-    {
+    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
         // TODO: attrs?
         if (exceptions != null) {
             List exceptionList = new ArrayList(exceptions.length);
@@ -146,8 +136,7 @@ extends ClassAdapter
         return new DepKillCodeVisitor(cv.visitMethod(access, name, fixMethodDesc(desc), exceptions, attrs));
     }
 
-    public void visitField(int access, String name, String desc, Object value, Attribute attrs)
-    {
+    public void visitField(int access, String name, String desc, Object value, Attribute attrs) {
         if (checkDesc(desc)) {
             // System.err.println("visitField " + desc);
             desc = TYPE_OBJECT.getDescriptor();
@@ -155,8 +144,7 @@ extends ClassAdapter
         super.visitField(access, name, desc, value, attrs);
     }
 
-    private class DepKillCodeVisitor
-    extends CodeAdapter
+    private class DepKillCodeVisitor extends CodeAdapter
     {
         public DepKillCodeVisitor(CodeVisitor cv)
         {
@@ -207,8 +195,7 @@ extends ClassAdapter
             }
         }
 
-        public void visitMethodInsn(int opcode, String owner, String name, String desc)
-        {
+        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
             if (checkName(owner)) {
                 // System.err.println("visitMethodInsn " + owner + ", " + desc + " (" + name + ")");
                 switch (opcode) {
@@ -235,8 +222,7 @@ extends ClassAdapter
             }
         }
 
-        public void visitMultiANewArrayInsn(String desc, int dims)
-        {
+        public void visitMultiANewArrayInsn(String desc, int dims) {
             if (checkDesc(desc)) {
                 // System.err.println("visitMultiANewArrayInsn " + desc);
                 cv.visitInsn(Constants.ACONST_NULL);
@@ -245,14 +231,12 @@ extends ClassAdapter
             }
         }
 
-        public void visitTryCatchBlock(Label start, Label end, Label handler, String type)
-        {
+        public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
             if (!checkName(type))
                 cv.visitTryCatchBlock(start, end, handler, type);
         }
 
-        public void visitLocalVariable(String name, String desc, Label start, Label end, int index)
-        {
+        public void visitLocalVariable(String name, String desc, Label start, Label end, int index) {
             if (checkDesc(desc)) {
                 // System.err.println("visitLocalVariable " + desc);
                 desc = TYPE_OBJECT.getDescriptor();
@@ -260,8 +244,7 @@ extends ClassAdapter
             cv.visitLocalVariable(name, desc, start, end, index);
         }
 
-        public void visitAttribute(Attribute attr)
-        {
+        public void visitAttribute(Attribute attr) {
             // TODO?
             cv.visitAttribute(attr);
         }

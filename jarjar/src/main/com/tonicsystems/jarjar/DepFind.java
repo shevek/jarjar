@@ -29,9 +29,7 @@ import org.objectweb.asm.ClassVisitor;
 
 public class DepFind
 {
-    public static void main(String[] args)
-    throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         try {
             new DepFind(args);
         } catch (WrappedIOException e) {
@@ -39,9 +37,7 @@ public class DepFind
         }
     }
 
-    private DepFind(String[] args)
-    throws Exception
-    {
+    private DepFind(String[] args) throws Exception {
         if (args.length != 2) {
             System.err.println("Syntax: java com.tonicsystems.jarjar.DepFind <find-classpath> <source-classpath>");
             System.exit(1);

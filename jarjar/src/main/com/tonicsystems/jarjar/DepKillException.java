@@ -20,11 +20,9 @@
 
 package com.tonicsystems.jarjar;
 
-public class DepKillException
-extends RuntimeException
+public class DepKillException extends RuntimeException
 {
-    public DepKillException(String msg)
-    {
+    public DepKillException(String msg) {
         super(msg);
     }
 }

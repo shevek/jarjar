@@ -30,8 +30,7 @@ implements ClassVisitor
 {
     private static final NullClassVisitor INSTANCE = new NullClassVisitor();
 
-    public static NullClassVisitor getInstance()
-    {
+    public static NullClassVisitor getInstance() {
         return INSTANCE;
     }
     
@@ -41,8 +40,7 @@ implements ClassVisitor
     public void visitInnerClass(String name, String outerName, String innerName, int access) { }
     public void visitAttribute(Attribute attrs) { }
 
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs)
-    {
+    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
         return NullCodeVisitor.getInstance();
     }
 }

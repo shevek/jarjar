@@ -161,20 +161,17 @@ public class JarJarTask extends Jar
         return false;
     }
 
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         cleanHelper();
     }
 
-    protected void cleanUp()
-    {
+    protected void cleanUp() {
         super.cleanUp();
         cleanHelper();
     }
 
-    private void cleanHelper()
-    {
+    private void cleanHelper() {
         verbose = false;
         ruleList.clear();
         zapList.clear();
