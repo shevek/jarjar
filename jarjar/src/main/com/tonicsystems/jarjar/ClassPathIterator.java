@@ -47,7 +47,7 @@ class ClassPathIterator implements Iterator
     
     public ClassPathIterator(File parent, String classPath) {
         this.parent = parent;
-        StringTokenizer st = new StringTokenizer(classPath, ":");
+        StringTokenizer st = new StringTokenizer(classPath, System.getProperty("path.separator"));
         while (st.hasMoreTokens()) {
             parts.add(st.nextElement());
         }
