@@ -52,11 +52,23 @@ class RulesImpl implements Rules
     }
     
     public String fixDesc(String desc) {
-        if (desc.charAt(desc.length() - 1) != ';')
+        return fixDesc(desc, false);
+    }
+    
+    private String fixDesc(String desc, boolean allowGenerics) {
+        int last = desc.length() - 1;
+        if (desc.charAt(last) != ';')
             return desc;
         String value = (String)cache.get(desc);
         if (value == null) {
-            value = replaceHelper(desc, Wildcard.STYLE_DESC);
+            if (allowGenerics && (desc.charAt(last - 1) == '>')) {
+                int lt = desc.indexOf('<');
+                String main = replaceHelper(desc.substring(0, lt) + ";", Wildcard.STYLE_DESC);
+                String param = replaceHelper(desc.substring(lt + 1, last - 1), Wildcard.STYLE_DESC);
+                value = main.substring(0, main.length() - 1) + "<" + param + ">;";
+            } else {
+                value = replaceHelper(desc, Wildcard.STYLE_DESC);
+            }
             cache.put(desc, value);
         }
         return value;
@@ -79,6 +91,10 @@ class RulesImpl implements Rules
     }
 
     public String fixMethodDesc(String desc) {
+        return fixMethodDesc(desc, false);
+    }
+
+    private String fixMethodDesc(String desc, boolean allowGenerics) {
         String value = (String)cache.get(desc);
         if (value == null) {
             if (desc.indexOf('L') < 0) {
@@ -92,7 +108,9 @@ class RulesImpl implements Rules
                     if (c == 'L') {
                         for (int j = i + 1; j < end; j++) {
                             if (desc.charAt(j) == ';') {
-                                sb.append(fixDesc(desc.substring(i, j + 1)));
+                                if (allowGenerics && j + 1 < end && desc.charAt(j + 1) == '>')
+                                    j += 2;
+                                sb.append(fixDesc(desc.substring(i, j + 1), allowGenerics));
                                 i = j;
                                 break;
                             }
@@ -102,7 +120,7 @@ class RulesImpl implements Rules
                     }
                 }
                 sb.append(')');
-                sb.append(fixDesc(desc.substring(end + 1)));
+                sb.append(fixDesc(desc.substring(end + 1), allowGenerics));
                 value = sb.toString();
             }
             cache.put(desc, value);
@@ -114,13 +132,8 @@ class RulesImpl implements Rules
         String newValue = fixPath(value);
         if (newValue.equals(value))
             newValue = replaceHelper(newValue, Wildcard.STYLE_IDENTIFIER);
-        if (verbose) {
-            if (newValue.equals(value)) {
-                // System.err.println("Kept -> " + className + " \"" + value + "\"");
-            } else {
-                System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
-            }
-        }
+        if (verbose && !newValue.equals(value))
+            System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
         return newValue;
     }
 
@@ -130,7 +143,6 @@ class RulesImpl implements Rules
     }
 
     public String fixSignature(String signature) {
-        // TODO
-        return signature;
+        return (signature != null) ? fixMethodDesc(signature, true) : signature;
     }
 }

@@ -125,6 +125,10 @@ public class Main
         patterns = RulesFileParser.parse(file);
     }
 
+    public void setRules(List rules) {
+        patterns = new ArrayList(rules);
+    }
+
     public void setFind(boolean find) {
         this.find = find;
     }

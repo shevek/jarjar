@@ -40,6 +40,7 @@
         </path>
     </target>
 
+    <!-- TODO: refactor compile tasks -->
     <target name="compile" depends="init" description="Compile">
         <mkdir dir="${build}/main"/>
         <copy todir="${build}/main">
@@ -57,7 +58,7 @@
         <copy todir="${build}/test">
             <fileset dir="${src}/test" excludes="**/*.java"/>
         </copy>
-      <javac srcdir="${src}/main" destdir="${build}/main"
+      <javac srcdir="${src}/test" destdir="${build}/test"
           source="${compile.source}" target="${compile.target}" bootclasspath="${compile.bootclasspath}" extdirs="${compile.extdirs}"
           debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
              <classpath refid="path.run"/>
@@ -109,19 +110,6 @@
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
         </jarjar2>
-        <delete file="${test.jar}"/>
-    </target>
-
-    <target name="thirdparty" depends="compile">
-        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
-        <delete file="${test.jar}"/>
-        <jarjar jarfile="${test.jar}" verbose="yes">
-            <zipfileset src="${thirdparty}"/>
-            <rule pattern="com.**" result="xxx.@0"/>
-            <rule pattern="net.**" result="xxx.@0"/>
-            <rule pattern="org.**" result="xxx.@0"/>
-            <rule pattern="edu.**" result="xxx.@0"/>
-        </jarjar>
         <delete file="${test.jar}"/>
     </target>
 
