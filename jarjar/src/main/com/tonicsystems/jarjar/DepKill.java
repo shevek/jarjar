@@ -79,6 +79,7 @@ public class DepKill
                 pipe(in, out, buf);
             }
         }
+        jar.close();
         out.close();
     }
 
