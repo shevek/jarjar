@@ -87,7 +87,7 @@
 
     <target name="jar" depends="compile" description="Create Jar">
         <mkdir dir="${dist}"/>
-	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
+        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
         <jarjar jarfile="${jarfile}">
             <fileset dir="${build}/main"/>
             <zipfileset src="${lib}/asm.jar"/>
@@ -95,11 +95,14 @@
             <zipfileset src="${lib}/gnu-regexp.jar"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
+            <manifest>
+                <attribute name="Main-Class" value="com.tonicsystems.jarjar.Main"/>
+            </manifest>
         </jarjar>
     </target>
 
     <target name="test-rejar" depends="jar">
-	<taskdef name="jarjar2" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${jarfile}"/>
+        <taskdef name="jarjar2" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${jarfile}"/>
         <jarjar2 jarfile="${test.jar}">
             <fileset dir="${build}/main"/>
             <zipfileset src="${lib}/asm.jar"/>
@@ -112,7 +115,7 @@
     </target>
 
     <target name="thirdparty" depends="compile">
-	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
+        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
         <delete file="${test.jar}"/>
         <jarjar jarfile="${test.jar}" verbose="yes">
             <zipfileset src="${thirdparty}"/>

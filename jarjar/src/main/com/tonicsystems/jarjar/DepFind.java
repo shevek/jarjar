@@ -29,41 +29,32 @@ import org.objectweb.asm.ClassVisitor;
 
 public class DepFind
 {
-    public static void main(String[] args) throws Exception {
+    private File curDir = new File(System.getProperty("user.dir"));
+
+    public void setCurrentDirectory(File curDir) {
+        this.curDir = curDir;
+    }
+
+    public void run(String from, String to, DepHandler handler) throws IOException {
         try {
-            new DepFind(args);
+            Map classes = new HashMap();
+            ClassPathIterator cp = new ClassPathIterator(curDir, to);
+            while (cp.hasNext()) {
+                Object cls = cp.next();
+                classes.put(new ClassHeaderReader(cp.getInputStream(cls)).getClassName(),
+                            cp.getSource(cls));
+            }
+            cp.close();
+        
+            cp = new ClassPathIterator(curDir, from);
+            while (cp.hasNext()) {
+                Object cls = cp.next();
+                Object source = cp.getSource(cls);
+                new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source, handler), true);
+            }
+            cp.close();
         } catch (WrappedIOException e) {
             throw (IOException)e.getCause();
         }
-    }
-
-    private DepFind(String[] args) throws Exception {
-        if (args.length != 2) {
-            System.err.println("Syntax: java com.tonicsystems.jarjar.DepFind <find-classpath> <source-classpath>");
-            System.exit(1);
-        }
-
-        File curDir = new File(System.getProperty("user.dir"));
-
-        Map classes = new HashMap();
-        ClassPathIterator cp = new ClassPathIterator(curDir, args[0]);
-        while (cp.hasNext()) {
-            Object cls = cp.next();
-            classes.put(new ClassHeaderReader(cp.getInputStream(cls)).getClassName(),
-                        cp.getSource(cls));
-        }
-        cp.close();
-        
-        cp = new ClassPathIterator(curDir, args[1]);
-        while (cp.hasNext()) {
-            try {
-                Object cls = cp.next();
-                Object source = cp.getSource(cls);
-                new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source), true);
-            } catch (DepFindException e) {
-                System.out.println(e.getClassName() + " (" + e.getDependency() + ")");
-            }
-        }
-        cp.close();
     }
 }

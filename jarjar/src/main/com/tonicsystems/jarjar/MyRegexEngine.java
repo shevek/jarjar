@@ -20,23 +20,23 @@
 
 package com.tonicsystems.jarjar;
 
-import java.io.IOException;
+import com.tonicsystems.jarjar.regex.*;
 
-class DepFindException extends RuntimeException
+class MyRegexEngine
 {
-    private String className;
-    private String dependency;
-    
-    public DepFindException(String className, String dependency) {
-        this.className = className;
-        this.dependency = dependency;
+    private static RegexEngine REGEX;
+
+    private MyRegexEngine() { }
+
+    static {
+        try {
+            REGEX = new GnuRegexEngine();
+        } catch (NoClassDefFoundError e) {
+            REGEX = new JdkRegexEngine();
+        }
     }
 
-    public String getClassName() {
-        return className;
-    }
-
-    public String getDependency() {
-        return dependency;
+    public static RegexEngine getInstance() {
+        return REGEX;
     }
 }

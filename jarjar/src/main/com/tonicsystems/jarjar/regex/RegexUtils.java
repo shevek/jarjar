@@ -18,26 +18,31 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.regex;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
-import java.io.*;
+import java.util.*;
 
-class GetNameClassWriter extends ClassWriter
+public class RegexUtils
 {
-    private String className;
-    
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
-    }
+    private RegexUtils() { }
 
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
-        className = name;
-        super.visit(version, access, name, superName, interfaces, sourceFile);
-    }
-    
-    public String getClassName() {
-        return className;
+    // TODO: reuse matcher
+    public static List split(Pattern pattern, String value)
+    {
+        List list = new ArrayList();
+        int index = 0;
+        while (index < value.length()) {
+            Matcher matcher = pattern.getMatcher(value, index);
+            if (matcher.find()) {
+                if (matcher.start() > index)
+                    list.add(value.substring(index, matcher.start()));
+                index = matcher.end();
+            } else {
+                break;
+            }
+        }
+        if (index > 0)
+            list.add(value.substring(index));
+        return list;
     }
 }

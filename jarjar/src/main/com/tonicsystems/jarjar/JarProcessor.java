@@ -20,24 +20,9 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
-import java.io.*;
+import java.io.IOException;
 
-class GetNameClassWriter extends ClassWriter
+interface JarProcessor
 {
-    private String className;
-    
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
-    }
-
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
-        className = name;
-        super.visit(version, access, name, superName, interfaces, sourceFile);
-    }
-    
-    public String getClassName() {
-        return className;
-    }
+    boolean process(EntryStruct struct) throws IOException;
 }

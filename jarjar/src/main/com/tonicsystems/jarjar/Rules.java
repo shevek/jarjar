@@ -23,7 +23,7 @@ package com.tonicsystems.jarjar;
 import java.util.List;
 import org.objectweb.asm.Attribute;
 
-public interface Rules
+interface Rules
 {
     String fixPath(String path);
     String fixDesc(String desc);

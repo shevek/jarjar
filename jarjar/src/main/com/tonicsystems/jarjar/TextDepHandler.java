@@ -20,24 +20,20 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
 import java.io.*;
 
-class GetNameClassWriter extends ClassWriter
+public class TextDepHandler
+implements DepHandler
 {
-    private String className;
+    private Writer w;
     
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
-    }
-
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
-        className = name;
-        super.visit(version, access, name, superName, interfaces, sourceFile);
+    public TextDepHandler(Writer w) {
+        this.w = w;
     }
     
-    public String getClassName() {
-        return className;
+    public void handle(PathClass from, PathClass to) throws IOException {
+        w.write(from + " -> " + to + '\n'); // TODO: line separator
     }
 }
+
+

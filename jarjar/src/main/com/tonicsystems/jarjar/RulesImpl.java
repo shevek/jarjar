@@ -46,8 +46,9 @@ class RulesImpl implements Rules
         value = fixPath(value);
         if (value.equals(oldValue)) {
             for (int i = 0; i < wildcards.length; i++) {
-                value = wildcards[i].replaceAll(value, Wildcard.STYLE_DESC_ANYWHERE);
-                value = wildcards[i].replaceAll(value, Wildcard.STYLE_IDENTIFIER);
+                // value = wildcards[i].replaceAll(value, Wildcard.STYLE_DESC_ANYWHERE);
+                // value = wildcards[i].replaceAll(value, Wildcard.STYLE_IDENTIFIER);
+                value = wildcards[i].replace(value, Wildcard.STYLE_IDENTIFIER);
             }
         }
         return value;

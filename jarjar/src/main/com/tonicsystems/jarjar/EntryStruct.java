@@ -20,24 +20,13 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
-import java.io.*;
+import java.io.InputStream;
+import java.io.File;
 
-class GetNameClassWriter extends ClassWriter
+class EntryStruct
 {
-    private String className;
-    
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
-    }
-
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
-        className = name;
-        super.visit(version, access, name, superName, interfaces, sourceFile);
-    }
-    
-    public String getClassName() {
-        return className;
-    }
+    public InputStream in;
+    public String name;
+    public long time;
+    public File file;
 }

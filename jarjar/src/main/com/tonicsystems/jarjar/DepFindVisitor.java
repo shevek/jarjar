@@ -32,14 +32,18 @@ class DepFindVisitor extends NullClassVisitor
     private String source;
     private String curName;
     private CodeVisitor code = new DepFindCodeVisitor();
+    private DepHandler handler;
+    private PathClass curPathClass;
     
-    public DepFindVisitor(Map classes, Object source) throws IOException {
+    public DepFindVisitor(Map classes, Object source, DepHandler handler) throws IOException {
         this.classes = classes;
         this.source = getSourceName(source);
+        this.handler = handler;
     }
 
     public void visit(int access, String name, String superName, String[] interfaces, String sourceFile) {
         curName = name;
+        curPathClass = new PathClass(curName, source);
     }
 
     private void checkDesc(String desc) {
@@ -64,8 +68,13 @@ class DepFindVisitor extends NullClassVisitor
 
     private void checkName(String name) {
         try {
-            if (classes.containsKey(name) && !source.equals(getSourceName(classes.get(name))))
-                throw new DepFindException(curName, name);
+            if (classes.containsKey(name)) {
+                String otherSource = getSourceName(classes.get(name));
+                if (!source.equals(otherSource)) {
+                    // TODO: some escape mechanism?
+                    handler.handle(curPathClass, new PathClass(otherSource, name));
+                }
+            }
         } catch (IOException e) {
             throw new WrappedIOException(e);
         }

@@ -27,7 +27,7 @@ import org.objectweb.asm.CodeAdapter;
 import org.objectweb.asm.CodeVisitor;
 import org.objectweb.asm.Label;
 
-class PackageTransformer extends ClassAdapter
+class PackageTransformer extends ClassAdapter implements ClassTransformer
 {
     private Rules rules;
     private String className;

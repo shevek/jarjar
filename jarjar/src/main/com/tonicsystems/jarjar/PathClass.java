@@ -20,9 +20,29 @@
 
 package com.tonicsystems.jarjar;
 
-public class DepKillException extends RuntimeException
+public class PathClass
 {
-    public DepKillException(String msg) {
-        super(msg);
+    private String classPath;
+    private String className;
+    
+    public PathClass(String classPath, String className)
+    {
+        this.classPath = classPath;
+        this.className = className;
+    }
+
+    public String getClassPath()
+    {
+        return classPath;
+    }
+
+    public String getClassName()
+    {
+        return className;
+    }
+
+    public String toString()
+    {
+        return classPath + "!" + className;
     }
 }

@@ -20,64 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
-import java.io.*;
-import java.util.Enumeration;
-import java.util.jar.*;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-
 public class DepKill
+extends PatternElement
 {
-    public static void main(String[] args) throws Exception {
-        new DepKill(args);
-    }
-
-    private DepKill(String[] args) throws Exception {
-        if (args.length < 2) {
-            System.err.println("Syntax: java com.tonicsystems.jarjar.DepKill <input-jar> <package-name> [<package-name> ...] > <output-jar>");
-            System.exit(1);
-        }
-            
-        String[] packageNames = new String[args.length - 1];
-        System.arraycopy(args, 1, packageNames, 0, packageNames.length);
-
-        
-        DepKillTransformer t = new DepKillTransformer(packageNames);
-        JarFile jar = new JarFile(args[0]);
-        JarOutputStream out = new JarOutputStream(new BufferedOutputStream(System.out));
-
-        byte[] buf = new byte[0x2000];
-        
-        for (Enumeration e = jar.entries(); e.hasMoreElements();) {
-            JarEntry entry = (JarEntry)e.nextElement();
-            InputStream in = jar.getInputStream(entry);
-
-            entry.setCompressedSize(-1);
-            out.putNextEntry(entry);
-            
-            if (entry.getName().endsWith(".class")) {
-                // System.err.println("processing " + entry.getName());
-                ClassReader reader = new ClassReader(in);
-                in.close();
-                ClassWriter w = new ClassWriter(true);
-                t.setTarget(w);
-                reader.accept(t, new Attribute[0], false);
-                out.write(w.toByteArray());
-            } else {
-                pipe(in, out, buf);
-            }
-        }
-        jar.close();
-        out.close();
-    }
-
-    private static void pipe(InputStream in, OutputStream out, byte[] buf) throws IOException {
-        for (;;) {
-            int amt = in.read(buf);
-            if (amt < 0)
-                break;
-            out.write(buf, 0, amt);
-        }
-    }
 }

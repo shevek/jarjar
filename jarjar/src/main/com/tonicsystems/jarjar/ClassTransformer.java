@@ -20,27 +20,9 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.CodeVisitor;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
 
-class NullClassVisitor
-implements ClassVisitor
+interface ClassTransformer extends ClassVisitor
 {
-    private static final NullClassVisitor INSTANCE = new NullClassVisitor();
-
-    public static NullClassVisitor getInstance() {
-        return INSTANCE;
-    }
-    
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) { }
-    public void visitEnd() { }
-    public void visitField(int access, String name, String desc, Object value, Attribute attrs) { }
-    public void visitInnerClass(String name, String outerName, String innerName, int access) { }
-    public void visitAttribute(Attribute attrs) { }
-
-    public CodeVisitor visitMethod(int access, String name, String desc, String[] exceptions, Attribute attrs) {
-        return NullCodeVisitor.getInstance();
-    }
+    void setTarget(ClassVisitor target);
 }

@@ -20,24 +20,26 @@
 
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
 import java.io.*;
 
-class GetNameClassWriter extends ClassWriter
+class IoUtils
 {
-    private String className;
+    private IoUtils()
+    {
+    }
     
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
+    public static byte[] toByteArray(InputStream is, byte[] buf) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pipe(is, baos, buf);
+        return baos.toByteArray();
     }
 
-    public void visit(int version, int access, String name, String superName, String[] interfaces, String sourceFile) {
-        className = name;
-        super.visit(version, access, name, superName, interfaces, sourceFile);
-    }
-    
-    public String getClassName() {
-        return className;
+    public static void pipe(InputStream is, OutputStream out, byte[] buf) throws IOException {
+        for (;;) {
+            int amt = is.read(buf);
+            if (amt < 0)
+                break;
+            out.write(buf, 0, amt);
+        }
     }
 }

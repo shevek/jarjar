@@ -30,7 +30,7 @@ import org.objectweb.asm.Constants;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
-class DepKillTransformer extends ClassAdapter
+class DepKillTransformer extends ClassAdapter implements ClassTransformer
 {
     private static final Type TYPE_OBJECT = Type.getType(Object.class);
     private String[] packageNames;
@@ -204,7 +204,7 @@ class DepKillTransformer extends ClassAdapter
                     cv.visitInsn(Constants.POP);
                     break;
                 case Constants.INVOKESPECIAL:
-                    throw new DepKillException("Cannot remove invocation of " + owner + "." + desc);
+                    throw new IllegalStateException("Cannot remove invocation of " + owner + "." + desc);
                 case Constants.INVOKESTATIC:
                 }
 
