@@ -60,16 +60,20 @@ public class DepFind
 
         ClassPathIterator cp = new ClassPathIterator(curDir, args[0]);
         while (cp.hasNext()) {
-            new ClassReader(cp.getInputStream(cp.next())).accept(gatherNamesVisitor, true);
+            Object cls = cp.next();
+            // System.err.println("d0: " + cls);
+            new ClassReader(cp.getInputStream(cls)).accept(gatherNamesVisitor, true);
         }
         
         DepFindVisitor depFind = new DepFindVisitor(names);
         cp = new ClassPathIterator(curDir, args[1]);
         while (cp.hasNext()) {
             try {
-                new ClassReader(cp.getInputStream(cp.next())).accept(depFind, true);
+                Object cls = cp.next();
+                // System.err.println("d1: " + cls);
+                new ClassReader(cp.getInputStream(cls)).accept(depFind, true);
             } catch (DepFindException e) {
-                System.out.println(e.getClassName()); //  e.getDependency()
+                System.out.println(e.getClassName() + "\t =>  " + e.getDependency());
             }
         }
     }
