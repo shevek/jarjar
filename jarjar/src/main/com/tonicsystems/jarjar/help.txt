@@ -13,7 +13,7 @@ Usage:
     Any existing file named by <out-jar> will be deleted.
 
     The transformation is defined by a set of rules in the file specified
-    by the rules argument. See below for the format of the rules file.
+    by the rules argument. See the manual for format of the rules file.
 
   java -jar jarjar.jar --find [--level=value] <cp1> [<cp2>] 
 
@@ -30,10 +30,6 @@ Usage:
 
     Dumps all string literals in classpath <cp>. Line numbers will be
     included if the classes have debug information.
-
-Rules file format:
-
-  TODO
 
 Classpath format:
 
