@@ -141,6 +141,15 @@ extends AbstractClassTransformer
         return new DepKillCodeVisitor(cv.visitMethod(access, name, fixMethodDesc(desc), exceptions, attrs));
     }
 
+    public void visitField(int access, String name, String desc, Object value, Attribute attrs)
+    {
+        if (checkDesc(desc)) {
+            // System.err.println("visitField " + desc);
+            desc = Constants.TYPE_OBJECT.getDescriptor();
+        }
+        super.visitField(access, name, desc, value, attrs);
+    }
+
     private class DepKillCodeVisitor
     extends CodeAdapter
     {
