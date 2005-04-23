@@ -50,6 +50,8 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
     private Object fixValue(Object value) {
         if (value instanceof String) {
             return rules.fixString(className, (String)value);
+        } else if (value instanceof Type) {
+            return Type.getType(rules.fixDesc(((Type)value).getDescriptor()));
         } else {
             return value;
         }
