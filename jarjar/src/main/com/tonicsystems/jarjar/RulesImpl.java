@@ -134,12 +134,25 @@ class RulesImpl implements Rules
     }
 
     public String fixString(String className, String value) {
-        String newValue = fixPath(value);
+        String newValue = fixClassForName(value);
+        if (newValue.equals(value))
+            newValue = fixPath(value);
         if (newValue.equals(value))
             newValue = replaceHelper(newValue, Wildcard.STYLE_IDENTIFIER);
         if (verbose && !newValue.equals(value))
             System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
         return newValue;
+    }
+
+    private String fixClassForName(String value)
+    {
+        if (value.indexOf('.') >= 0) {
+            String desc1 = value.replace('.', '/');
+            String desc2 = fixDesc(desc1);
+            if (!desc2.equals(desc1))
+                return desc2.replace('/', '.');
+        }
+        return value;
     }
 
     public Attribute fixAttribute(Attribute attr) {
