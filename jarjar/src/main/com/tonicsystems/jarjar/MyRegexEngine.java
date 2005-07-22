@@ -24,17 +24,7 @@ import com.tonicsystems.jarjar.regex.*;
 
 class MyRegexEngine
 {
-    private static RegexEngine REGEX;
-
-    private MyRegexEngine() { }
-
-    static {
-        try {
-            REGEX = new GnuRegexEngine();
-        } catch (NoClassDefFoundError e) {
-            REGEX = new JdkRegexEngine();
-        }
-    }
+    private static RegexEngine REGEX = new GnuRegexEngine();
 
     public static RegexEngine getInstance() {
         return REGEX;
