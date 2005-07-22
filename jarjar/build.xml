@@ -1,68 +1,95 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<project name="Jar Jar Links" default="compile">
+<project name="Jar Jar Links" default="jar">
     <property file="${user.home}/build.properties" />
     <property file="build.properties" />
 
-    <property name="src" location="src"/>
-    <property name="lib" location="lib"/>
-    <property name="build" location="build"/>
-    <property name="dist" location="dist"/>
-
-    <property name="javadoc" location="${dist}/javadoc"/>
     <property name="javadoc.access" value="public"/>
+
+    <property name="compile.source" value="1.3"/>
+    <property name="compile.target" value="1.2"/>
+    <property name="compile.bootclasspath" value="${java.home}/lib/rt.jar"/>
+    <property name="compile.extdirs" value=""/>
 
     <property name="compile.debug" value="true"/>
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
-    <property name="compile.source" value="1.3"/>
-    <property name="compile.target" value="1.2"/>
-    <property name="compile.bootclasspath" value=""/>  <!-- value="lib/rt.jar" -->
-    <property name="compile.extdirs" value=""/>
 
-    <property name="version" value="0.6-dev"/>
-    <property name="jarfile" value="${dist}/jarjar-${version}.jar"/>
+    <property name="version" value="0.6"/>
+    <property name="jarfile" value="dist/jarjar-${version}.jar"/>
 
-    <property name="test.jar" value="${build}/rejar.jar"/>
+    <property name="test.jar" value="build/rejar.jar"/>
 
     <target name="init">
         <tstamp/>
         <path id="path.build">
-            <fileset dir="${lib}" includes="**/*.jar"/>
+            <fileset dir="lib" includes="**/*.jar"/>
         </path>
         <path id="path.run">
             <path refid="path.build"/>
-            <pathelement path="${build}/main"/>
-            <pathelement path="${build}/dev"/>
+            <pathelement path="build/main"/>
+            <pathelement path="build/dev"/>
         </path>
         <path id="path.test">
             <path refid="path.run"/>
-            <pathelement path="${build}/test"/>
+            <pathelement path="build/test"/>
         </path>
     </target>
 
-    <!-- TODO: refactor compile tasks -->
+    <macrodef name="compile">
+        <attribute name="module"/>
+        <attribute name="refid"/>
+        <attribute name="bootclasspath" default=""/>
+        <sequential>
+            <mkdir dir="build/@{module}"/>
+            <copy todir="build/@{module}">
+                <fileset dir="src/@{module}" excludes="**/*.java"/>
+            </copy>
+            <javac srcdir="src/@{module}" destdir="build/@{module}"
+              source="${compile.source}"
+              target="${compile.target}" bootclasspath="@{bootclasspath}" extdirs="${compile.extdirs}"
+              debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
+                 <classpath refid="@{refid}"/>
+            </javac>
+        </sequential>
+    </macrodef>
+
     <target name="compile" depends="init" description="Compile">
-        <mkdir dir="${build}/main"/>
-        <copy todir="${build}/main">
-            <fileset dir="${src}/main" excludes="**/*.java"/>
-        </copy>
-        <javac srcdir="${src}/main" destdir="${build}/main"
-          source="${compile.source}" target="${compile.target}" bootclasspath="${compile.bootclasspath}" extdirs="${compile.extdirs}"
-          debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
-             <classpath refid="path.build"/>
-        </javac>
+        <compile module="main" refid="path.build" bootclasspath="${compile.bootclasspath}"/>
     </target>
 
     <target name="compile-test" depends="compile" description="Compile tests">
-        <mkdir dir="${build}/test"/>
-        <copy todir="${build}/test">
-            <fileset dir="${src}/test" excludes="**/*.java"/>
-        </copy>
-      <javac srcdir="${src}/test" destdir="${build}/test"
-          source="${compile.source}" target="${compile.target}" bootclasspath="${compile.bootclasspath}" extdirs="${compile.extdirs}"
-          debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
-             <classpath refid="path.run"/>
-        </javac>
+        <compile module="test" refid="path.run"/>
+    </target>
+
+    <target name="clean" description="Clean">
+        <delete dir="build"/>
+        <delete dir="dist"/>
+        <delete dir="dist/javadoc"/>
+    </target>
+
+    <target name="jar" depends="compile" description="Create Jar">
+        <mkdir dir="dist"/>
+        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
+        <jarjar jarfile="${jarfile}">
+            <fileset dir="build/main"/>
+            <zipfileset src="lib/asm.jar"/>
+            <zipfileset src="lib/gnu-regexp.jar"/>
+            <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
+            <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
+            <manifest>
+                <attribute name="Main-Class" value="com.tonicsystems.jarjar.Main"/>
+                <attribute name="Implementation-Version" value="${version}"/>
+            </manifest>
+        </jarjar>
+    </target>
+
+    <target name="dist-src" depends="compile" description="Create source distribution">
+        <mkdir dir="dist"/>
+        <zip destfile="dist/jarjar-src-${version}.zip" filesonly="true">
+            <zipfileset dir="src" excludes="**/*.save" prefix="jarjar-${version}/src"/>
+            <zipfileset dir="lib" prefix="jarjar-${version}/lib"/>
+            <zipfileset dir="." includes="build.xml,COPYING" prefix="jarjar-${version}"/>
+        </zip>
     </target>
 
     <target name="test" depends="junit,test-rejar" description="Run tests"/>
@@ -75,39 +102,17 @@
             <formatter type="plain" usefile="false"/>
             <classpath refid="path.test"/>
             <batchtest>
-                <fileset dir="${src}/test" includes="**/*Test.java"/>
+                <fileset dir="src/test" includes="**/*Test.java"/>
             </batchtest>
         </junit>
-    </target>
-
-    <target name="clean" description="Clean">
-        <delete dir="${build}"/>
-        <delete dir="${dist}"/>
-        <delete dir="${javadoc}"/>
-    </target>
-
-    <target name="jar" depends="compile" description="Create Jar">
-        <mkdir dir="${dist}"/>
-        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
-        <jarjar jarfile="${jarfile}">
-            <fileset dir="${build}/main"/>
-            <zipfileset src="${lib}/asm.jar"/>
-            <zipfileset src="${lib}/gnu-regexp.jar"/>
-            <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
-            <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
-            <manifest>
-                <attribute name="Main-Class" value="com.tonicsystems.jarjar.Main"/>
-                <attribute name="Implementation-Version" value="${version}"/>
-            </manifest>
-        </jarjar>
     </target>
 
     <target name="test-rejar" depends="jar">
         <taskdef name="jarjar2" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${jarfile}"/>
         <jarjar2 jarfile="${test.jar}">
-            <fileset dir="${build}/main"/>
-            <zipfileset src="${lib}/asm.jar"/>
-            <zipfileset src="${lib}/gnu-regexp.jar"/>
+            <fileset dir="build/main"/>
+            <zipfileset src="lib/asm.jar"/>
+            <zipfileset src="lib/gnu-regexp.jar"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
         </jarjar2>
@@ -116,10 +121,10 @@
 
     <!-- TODO: reference ant javadocs -->
     <target name="javadoc" depends="compile" description="Generate the javadoc">
-        <mkdir dir="${javadoc}"/>
+        <mkdir dir="dist/javadoc"/>
         <javadoc 
-          sourcepath="${src}/main"
-          destdir="${javadoc}"
+          sourcepath="src/main"
+          destdir="dist/javadoc"
           access="${javadoc.access}"
           failonerror="true"
           packagenames="com.tonicsystems.jarjar.*"
@@ -128,9 +133,5 @@
           Version="true"
           Use="true"
         />
-    </target>
-
-    <target name="dist" depends="clean,test,javadoc">
-        <!-- TODO -->
     </target>
 </project>
