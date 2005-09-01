@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 import java.io.*;
@@ -34,7 +35,7 @@ public class Main
         try {
             HELP = IoUtils.readIntoString(Main.class.getResourceAsStream("help.txt"));
         } catch (IOException e) {
-            throw new NestedException(e);
+            throw new RuntimeIOException(e);
         }
     }
 

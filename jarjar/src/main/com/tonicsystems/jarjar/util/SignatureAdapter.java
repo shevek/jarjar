@@ -18,11 +18,11 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.signature.*;
 
-abstract class SignatureAdapter
+abstract public class SignatureAdapter
 implements SignatureVisitor
 {
     protected SignatureWriter sw;

@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.*;
 

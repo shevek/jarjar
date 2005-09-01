@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import org.objectweb.asm.*;
 
@@ -59,7 +60,7 @@ class StringDumper
             while (cp.hasNext()) {
                 new ClassReader(cp.getInputStream(cp.next())).accept(stringReader, false);
             }
-        } catch (NestedException e) {
+        } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();
         }
     }

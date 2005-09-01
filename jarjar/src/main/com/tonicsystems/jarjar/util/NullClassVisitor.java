@@ -18,7 +18,7 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -26,7 +26,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 
-class NullClassVisitor implements ClassVisitor
+public class NullClassVisitor implements ClassVisitor
 {
     private static final NullClassVisitor INSTANCE = new NullClassVisitor();
 

@@ -18,27 +18,24 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
-import org.objectweb.asm.AnnotationVisitor;
+import java.io.IOException;
 
-class NullAnnotationVisitor implements AnnotationVisitor
+public class JarProcessorChain implements JarProcessor
 {
-    private static final NullAnnotationVisitor INSTANCE = new NullAnnotationVisitor();
-
-    public static NullAnnotationVisitor getInstance() {
-        return INSTANCE;
-    }
-
-    public AnnotationVisitor visitAnnotation(String name, String desc) {
-        return this;
-    }
+    private JarProcessor[] chain;
     
-    public AnnotationVisitor visitArray(String name) {
-        return this;
+    public JarProcessorChain(JarProcessor[] chain) {
+        this.chain = chain;
     }
-    
-    public void visit(String name, Object value) { }
-    public void visitEnum(String name, String desc, String value) { }
-    public void visitEnd() { }
+
+    public boolean process(EntryStruct struct) throws IOException {
+        for (int i = 0; i < chain.length; i++) {
+            if (!chain[i].process(struct))
+                return false;
+        }
+        return true;
+    }
 }
+  

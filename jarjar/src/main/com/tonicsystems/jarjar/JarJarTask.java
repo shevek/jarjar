@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import java.util.*;
 
 public class JarJarTask extends AntJarProcessor

@@ -18,11 +18,11 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.signature.*;
 
-class NullSignatureVisitor
+public class NullSignatureVisitor
 implements SignatureVisitor
 {
     public void visitFormalTypeParameter(String name) {

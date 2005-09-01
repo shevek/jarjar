@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import java.util.*;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;

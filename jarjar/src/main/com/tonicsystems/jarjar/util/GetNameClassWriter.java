@@ -18,22 +18,26 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
-import java.io.IOException;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.ClassReader;
+import java.io.*;
 
-class WrappedIOException extends RuntimeException
+public class GetNameClassWriter extends ClassWriter
 {
-    private IOException e;
-
-    public WrappedIOException(IOException e)
-    {
-        this.e = e;
+    private String className;
+    
+    public GetNameClassWriter(boolean computeMaxs) {
+        super(computeMaxs);
     }
 
-    public Throwable getCause()
-    {
-        return e;
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        className = name;
+        super.visit(version, access, name, signature, superName, interfaces);
     }
-
+    
+    public String getClassName() {
+        return className;
+    }
 }

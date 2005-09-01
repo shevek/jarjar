@@ -18,7 +18,7 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -27,7 +27,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipOutputStream;
 import java.io.*;
 
-class StandaloneJarProcessor
+public class StandaloneJarProcessor
 {
     public static void run(File from, File to, JarProcessor proc) throws IOException {
         JarFile in = new JarFile(from);
@@ -46,11 +46,20 @@ class StandaloneJarProcessor
                 entry.setTime(struct.time);
                 entry.setCompressedSize(-1);
                 out.putNextEntry(entry);
-                IoUtils.pipe(struct.in, out, buf);
+                pipe(struct.in, out, buf);
                 struct.in.close();
             }
         }
         out.close();
         out = null;
+    }
+
+    private static void pipe(InputStream is, OutputStream out, byte[] buf) throws IOException {
+        for (;;) {
+            int amt = is.read(buf);
+            if (amt < 0)
+                break;
+            out.write(buf, 0, amt);
+        }
     }
 }

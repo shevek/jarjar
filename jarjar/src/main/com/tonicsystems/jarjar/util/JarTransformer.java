@@ -18,7 +18,7 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import java.io.*;
 import org.objectweb.asm.Attribute;
@@ -26,7 +26,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ClassVisitor;
 
-abstract class JarTransformer implements JarProcessor
+abstract public class JarTransformer implements JarProcessor
 {
     public boolean process(EntryStruct struct) throws IOException {
         if (struct.name.endsWith(".class")) {

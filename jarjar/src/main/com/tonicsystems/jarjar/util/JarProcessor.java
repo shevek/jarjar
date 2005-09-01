@@ -18,26 +18,11 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
-import java.io.*;
+import java.io.IOException;
 
-class GetNameClassWriter extends ClassWriter
+public interface JarProcessor
 {
-    private String className;
-    
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
-    }
-
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        className = name;
-        super.visit(version, access, name, signature, superName, interfaces);
-    }
-    
-    public String getClassName() {
-        return className;
-    }
+    boolean process(EntryStruct struct) throws IOException;
 }

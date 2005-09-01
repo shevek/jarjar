@@ -18,15 +18,22 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
-import java.io.InputStream;
-import java.io.File;
+import java.io.IOException;
 
-class EntryStruct
+public class RuntimeIOException extends RuntimeException
 {
-    public InputStream in;
-    public String name;
-    public long time;
-    public File file;
+    private IOException e;
+
+    public RuntimeIOException(IOException e)
+    {
+        this.e = e;
+    }
+
+    public Throwable getCause()
+    {
+        return e;
+    }
+
 }

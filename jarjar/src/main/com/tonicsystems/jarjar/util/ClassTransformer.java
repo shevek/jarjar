@@ -18,11 +18,11 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.ClassVisitor;
 
-interface ClassTransformer extends ClassVisitor
+public interface ClassTransformer extends ClassVisitor
 {
     void setTarget(ClassVisitor target);
 }

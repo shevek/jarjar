@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import junit.framework.*;
 import java.util.*;
 import org.objectweb.asm.ClassReader;

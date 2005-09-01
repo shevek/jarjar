@@ -18,11 +18,11 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.*;
 
-class NullMethodVisitor implements MethodVisitor
+public class NullMethodVisitor implements MethodVisitor
 {
     private static final NullMethodVisitor INSTANCE = new NullMethodVisitor();
 

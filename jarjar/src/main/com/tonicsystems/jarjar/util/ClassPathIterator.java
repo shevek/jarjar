@@ -18,14 +18,14 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import java.util.*;
 import java.util.zip.*;
 import java.io.*;
 import java.util.jar.*;
 
-class ClassPathIterator implements Iterator
+public class ClassPathIterator implements Iterator
 {
     private LinkedList parts = new LinkedList();
 
@@ -145,7 +145,7 @@ class ClassPathIterator implements Iterator
                 advance();
             }
         } catch (IOException e) {
-            throw new WrappedIOException(e);
+            throw new RuntimeIOException(e);
         }
     }
 

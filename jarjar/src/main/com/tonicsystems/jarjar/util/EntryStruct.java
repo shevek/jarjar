@@ -18,25 +18,15 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
-import java.util.*;
-import java.io.IOException;
-import org.objectweb.asm.ClassVisitor;
+import java.io.InputStream;
+import java.io.File;
 
-class JarTransformerChain extends JarTransformer
+public class EntryStruct
 {
-    private ClassTransformer[] chain;
-    
-    public JarTransformerChain(ClassTransformer[] chain) {
-        this.chain = chain;
-        for (int i = chain.length - 1; i > 0; i--) {
-            chain[i - 1].setTarget(chain[i]);
-        }
-    }
-
-    protected ClassVisitor transform(ClassVisitor v) {
-        chain[chain.length - 1].setTarget(v);
-        return chain[0];
-    }
+    public InputStream in;
+    public String name;
+    public long time;
+    public File file;
 }

@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -113,7 +114,7 @@ class DepFindVisitor extends NullClassVisitor
                 }
             }
         } catch (IOException e) {
-            throw new WrappedIOException(e);
+            throw new RuntimeIOException(e);
         }
     }
 

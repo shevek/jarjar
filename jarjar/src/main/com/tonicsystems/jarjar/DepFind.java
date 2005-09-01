@@ -20,6 +20,7 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -54,7 +55,7 @@ public class DepFind
             }
             cp.close();
             handler.handleEnd();
-        } catch (WrappedIOException e) {
+        } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();
         }
     }

@@ -18,12 +18,12 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
 import java.io.*;
 import java.util.*;
 
-class ClassHeaderReader
+public class ClassHeaderReader
 {
     private int access;
     private String thisClass;

@@ -18,11 +18,25 @@
   Boston, MA 02111-1307 USA
 */
 
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.util;
 
+import java.util.*;
 import java.io.IOException;
+import org.objectweb.asm.ClassVisitor;
 
-interface JarProcessor
+public class JarTransformerChain extends JarTransformer
 {
-    boolean process(EntryStruct struct) throws IOException;
+    private ClassTransformer[] chain;
+    
+    public JarTransformerChain(ClassTransformer[] chain) {
+        this.chain = chain;
+        for (int i = chain.length - 1; i > 0; i--) {
+            chain[i - 1].setTarget(chain[i]);
+        }
+    }
+
+    protected ClassVisitor transform(ClassVisitor v) {
+        chain[chain.length - 1].setTarget(v);
+        return chain[0];
+    }
 }
