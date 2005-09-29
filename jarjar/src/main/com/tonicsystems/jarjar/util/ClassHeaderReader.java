@@ -58,7 +58,7 @@ public class ClassHeaderReader
             
             int constant_pool_count = data.readUnsignedShort();
 
-            Map items = new TreeMap();
+            Object[] items = new Object[constant_pool_count];
             for (int i = 1; i < constant_pool_count; i++) {
                 int tag = data.readUnsignedByte();
                 switch (tag) {
@@ -76,10 +76,10 @@ public class ClassHeaderReader
                     i++;
                     break;
                 case 1:  // Utf8
-                    items.put(new Integer(i), data.readUTF());
+                    items[i] = data.readUTF();
                     break;
                 case 7:  // Class
-                    items.put(new Integer(i), new Integer(data.readUnsignedShort()));
+                    items[i] = new Integer(data.readUnsignedShort());
                     break;
                 case 8:  // String
                     skipFully(data, 2);
@@ -104,15 +104,15 @@ public class ClassHeaderReader
         }
     }
 
-    private static String readClass(int index, Map items) {
-        if (items.get(new Integer(index)) == null) {
-            throw new IllegalArgumentException("cannot find index " + index + " in " + items);
+    private static String readClass(int index, Object[] items) {
+        if (items[index] == null) {
+            throw new IllegalArgumentException("cannot find index " + index + " in " + Arrays.asList(items));
         }
-        return readString(((Integer)items.get(new Integer(index))).intValue(), items);
+        return readString(((Integer)items[index]).intValue(), items);
     }
 
-    private static String readString(int index, Map items) {
-        return (String)items.get(new Integer(index));
+    private static String readString(int index, Object[] items) {
+        return (String)items[index];
     }
     
     private static void skipFully(DataInput data, int n) throws IOException {
