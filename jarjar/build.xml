@@ -73,6 +73,7 @@
         <jarjar jarfile="${jarfile}">
             <fileset dir="build/main"/>
             <zipfileset src="lib/asm.jar"/>
+            <zipfileset src="lib/asm-commons.jar" includes="org/objectweb/asm/commons/EmptyVisitor.class"/>
             <zipfileset src="lib/gnu-regexp.jar"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
@@ -112,6 +113,7 @@
         <jarjar2 jarfile="${test.jar}">
             <fileset dir="build/main"/>
             <zipfileset src="lib/asm.jar"/>
+            <zipfileset src="lib/asm-commons.jar"/>
             <zipfileset src="lib/gnu-regexp.jar"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>

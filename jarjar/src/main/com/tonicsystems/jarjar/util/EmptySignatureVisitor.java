@@ -22,7 +22,7 @@ package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.signature.*;
 
-public class NullSignatureVisitor
+public class EmptySignatureVisitor
 implements SignatureVisitor
 {
     public void visitFormalTypeParameter(String name) {

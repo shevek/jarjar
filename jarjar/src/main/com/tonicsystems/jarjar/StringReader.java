@@ -22,9 +22,9 @@ package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import org.objectweb.asm.*;
+import org.objectweb.asm.commons.EmptyVisitor;
 
-class StringReader
-extends NullClassVisitor
+class StringReader extends EmptyVisitor
 {
     private StringVisitor sv;
     private int line = -1;
@@ -33,27 +33,19 @@ extends NullClassVisitor
         this.sv = sv;
     }
 
-    private AnnotationVisitor av = new AnnotationVisitor() {
-        public void visit(String name, Object value) {
-            handleObject(value);
-        }
-        public AnnotationVisitor visitAnnotation(String name, String desc) {
-            return this;
-        }
-        public AnnotationVisitor visitArray(String name) {
-            return this;
-        }
-        public void visitEnum(String name, String desc, String value) {
-            handleObject(value);
-        }
-        public void visitEnd() { }
-    };
-
     private void handleObject(Object value) {
         if (value instanceof String)
             sv.visitString((String)value, line);
     }
 
+    public void visit(String name, Object value) {
+        handleObject(value);
+    }
+    
+    public void visitEnum(String name, String desc, String value) {
+        handleObject(value);
+    }
+    
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         line = -1;
         sv.visitStart(name);
@@ -65,38 +57,14 @@ extends NullClassVisitor
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         handleObject(value);
-        return new FieldVisitor() {
-            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-                return av;
-            }
-            public void visitAttribute(Attribute attr) { }
-            public void visitEnd() { }
-        };
+        return this;
     }
 
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        return new NullMethodVisitor() {
-            public AnnotationVisitor visitAnnotationDefault() {
-                return av;
-            }
-            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-                return av;
-            }
-            public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-                return av;
-            }
-            public void visitLdcInsn(Object cst) {
-                handleObject(cst);
-            }
-            public void visitLineNumber(int line, Label start) {
-                StringReader.this.line = line;
-            }
-        };
+    public void visitLdcInsn(Object cst) {
+        handleObject(cst);
     }
-
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        return av;
+    
+    public void visitLineNumber(int line, Label start) {
+        StringReader.this.line = line;
     }
 }
-        
-

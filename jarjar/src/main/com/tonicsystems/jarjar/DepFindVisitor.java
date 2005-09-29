@@ -27,14 +27,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.*;
+import org.objectweb.asm.commons.EmptyVisitor;
 
 // TODO: annotations
-class DepFindVisitor extends NullClassVisitor
+// TODO: field visitor
+class DepFindVisitor extends EmptyVisitor
 {
     private Map classes;
     private String source;
     private String curName;
-    private MethodVisitor code = new DepFindMethodVisitor();
     private DepHandler handler;
     private PathClass curPathClass;
     
@@ -67,7 +68,7 @@ class DepFindVisitor extends NullClassVisitor
         }
     }
 
-    private class SignatureChecker extends NullSignatureVisitor
+    private class SignatureChecker extends EmptySignatureVisitor
     {
         public void visitTypeVariable(String name) {
             checkName(name);
@@ -82,7 +83,6 @@ class DepFindVisitor extends NullClassVisitor
         }
     };
     
-
     private void checkDesc(String desc) {
         int index = desc.indexOf('L');
         if (index >= 0)
@@ -125,7 +125,7 @@ class DepFindVisitor extends NullClassVisitor
             for (int i = 0; i < exceptions.length; i++)
                 checkName(exceptions[i]);
         }
-        return code;
+        return this;
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
@@ -134,38 +134,34 @@ class DepFindVisitor extends NullClassVisitor
         return null; // TODO?
     }
 
-    // TODO: annotations
-    private class DepFindMethodVisitor extends NullMethodVisitor
-    {
-        public void visitTypeInsn(int opcode, String desc) {
-            if (desc.charAt(0) == '[') {
-                checkDesc(desc);
-            } else {
-                checkName(desc);
-            }
-        }
-
-        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-            checkName(owner);
+    public void visitTypeInsn(int opcode, String desc) {
+        if (desc.charAt(0) == '[') {
             checkDesc(desc);
+        } else {
+            checkName(desc);
         }
+    }
 
-        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-            checkName(owner);
-            checkMethodDesc(desc);
-        }
+    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+        checkName(owner);
+        checkDesc(desc);
+    }
 
-        public void visitMultiANewArrayInsn(String desc, int dims) {
-            checkDesc(desc);
-        }
+    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        checkName(owner);
+        checkMethodDesc(desc);
+    }
 
-        public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-            checkName(type);
-        }
+    public void visitMultiANewArrayInsn(String desc, int dims) {
+        checkDesc(desc);
+    }
 
-        public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-            checkDesc(desc);
-            checkSignature(signature, true);
-        }
+    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+        checkName(type);
+    }
+
+    public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+        checkDesc(desc);
+        checkSignature(signature, true);
     }
 }

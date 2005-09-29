@@ -24,6 +24,7 @@ import com.tonicsystems.jarjar.util.*;
 import junit.framework.*;
 import java.util.*;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.commons.EmptyVisitor;
 
 public class GenericsTest
 extends TestCase
@@ -34,7 +35,7 @@ extends TestCase
          rule.setResult("com.tonicsystems.String");
          Rules rules = new RulesImpl(Arrays.asList(new Object[]{ rule }), false);
          PackageTransformer t = new PackageTransformer(rules);
-         t.setTarget(NullClassVisitor.getInstance());
+         t.setTarget(new EmptyVisitor());
          ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
          reader.accept(t, false);
     }
