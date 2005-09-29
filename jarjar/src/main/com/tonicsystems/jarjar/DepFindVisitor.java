@@ -26,11 +26,10 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
-import org.objectweb.asm.signature.*;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
+import org.objectweb.asm.signature.*;
 
-// TODO: annotations
-// TODO: field visitor
 class DepFindVisitor extends EmptyVisitor
 {
     private Map classes;
@@ -39,6 +38,18 @@ class DepFindVisitor extends EmptyVisitor
     private DepHandler handler;
     private PathClass curPathClass;
     
+    private final SignatureVisitor SIG = new EmptySignatureVisitor() {
+        public void visitTypeVariable(String name) {
+            checkName(name);
+        }
+        public void visitClassType(String name) {
+            checkName(name);
+        }
+        public void visitInnerClassType(String name) {
+            checkName(name);
+        }
+    };
+
     public DepFindVisitor(Map classes, Object source, DepHandler handler) throws IOException {
         this.classes = classes;
         this.source = getSourceName(source);
@@ -50,38 +61,19 @@ class DepFindVisitor extends EmptyVisitor
         curPathClass = new PathClass(source, curName);
         checkSignature(signature, false);
         checkName(superName);
-        if (interfaces != null) {
-            for (int i = 0; i < interfaces.length; i++)
-                checkName(interfaces[i]);
-        }
+        checkNames(interfaces);
     }
 
     private void checkSignature(String signature, boolean type) {
         if (signature != null) {
             SignatureReader reader = new SignatureReader(signature);
-            SignatureVisitor checker = new SignatureChecker();
             if (type) {
-                reader.acceptType(checker);
+                reader.acceptType(SIG);
             } else {
-                reader.accept(checker);
+                reader.accept(SIG);
             }    
         }
     }
-
-    private class SignatureChecker extends EmptySignatureVisitor
-    {
-        public void visitTypeVariable(String name) {
-            checkName(name);
-        }
-
-        public void visitClassType(String name) {
-            checkName(name);
-        }
-    
-        public void visitInnerClassType(String name) {
-            checkName(name);
-        }
-    };
     
     private void checkDesc(String desc) {
         int index = desc.indexOf('L');
@@ -118,20 +110,32 @@ class DepFindVisitor extends EmptyVisitor
         }
     }
 
+    private void checkNames(String[] names)
+    {
+        if (names != null) {
+            for (int i = 0; i < names.length; i++)
+                checkName(names[i]);
+        }
+    }
+
+    private void checkType(Object value)
+    {
+        if (value instanceof Type)
+            checkDesc(((Type)value).getDescriptor());
+    }
+
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         checkMethodDesc(desc);
         checkSignature(signature, false);
-        if (exceptions != null) {
-            for (int i = 0; i < exceptions.length; i++)
-                checkName(exceptions[i]);
-        }
+        checkNames(exceptions);
         return this;
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         checkDesc(desc);
         checkSignature(signature, true);
-        return null; // TODO?
+        checkType(value);
+        return this;
     }
 
     public void visitTypeInsn(int opcode, String desc) {
@@ -145,6 +149,10 @@ class DepFindVisitor extends EmptyVisitor
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
         checkName(owner);
         checkDesc(desc);
+    }
+
+    public void visitLdcInsn(Object cst) {
+        checkType(cst);
     }
 
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
@@ -163,5 +171,40 @@ class DepFindVisitor extends EmptyVisitor
     public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
         checkDesc(desc);
         checkSignature(signature, true);
+    }
+
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        checkDesc(desc);
+        return this;
+    }
+
+    public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+        checkDesc(desc);
+        return this;
+    }
+
+    public void visit(String name, Object value) {
+        checkType(value);
+    }
+    
+    public void visitClassType(String name) {
+        checkName(name);
+    }
+
+    public void visitInnerClassType(String name) {
+        checkName(name);
+    }
+
+    public void visitTypeVariable(String name) {
+        // TODO
+    }
+    
+    public AnnotationVisitor visitAnnotation(String name, String desc) {
+        checkDesc(desc);
+        return this;
+    }
+    
+    public void visitEnum(String name, String desc, String value) {
+        checkDesc(desc);
     }
 }
