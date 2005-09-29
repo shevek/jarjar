@@ -91,7 +91,8 @@ public class ClassHeaderReader
 
             access = data.readUnsignedShort();
             thisClass = readClass(data.readUnsignedShort(), items);
-            superClass = readClass(data.readUnsignedShort(), items);
+            int superclassIndex = data.readUnsignedShort();
+            superClass = (superclassIndex == 0) ? null : readClass(superclassIndex, items);
 
             int interfaces_count = data.readUnsignedShort();
             interfaces = new String[interfaces_count];
