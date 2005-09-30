@@ -37,12 +37,13 @@ public class DepFind
 
     public void run(String from, String to, DepHandler handler) throws IOException {
         try {
+            ClassHeaderReader header = new ClassHeaderReader();
             Map classes = new HashMap();
             ClassPathIterator cp = new ClassPathIterator(curDir, to);
             while (cp.hasNext()) {
                 Object cls = cp.next();
-                classes.put(new ClassHeaderReader(cp.getInputStream(cls)).getClassName(),
-                            cp.getSource(cls));
+                header.read(cp.getInputStream(cls));
+                classes.put(header.getClassName(), cp.getSource(cls));
             }
             cp.close();
 

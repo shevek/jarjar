@@ -21,6 +21,7 @@
 package com.tonicsystems.jarjar.util;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class ClassHeaderReader
@@ -29,6 +30,13 @@ public class ClassHeaderReader
     private String thisClass;
     private String superClass;
     private String[] interfaces;
+
+    private InputStream in;
+    private byte[] b = new byte[0x2000];
+    private int[] items = new int[1000];
+    private int bsize = 0;
+    private MyByteArrayInputStream bin = new MyByteArrayInputStream();
+    private DataInputStream data = new DataInputStream(bin);
 
     public int getAccess() {
         return access;
@@ -45,22 +53,31 @@ public class ClassHeaderReader
     public String[] getInterfaces() {
         return interfaces;
     }
-    
-    public ClassHeaderReader(InputStream in) throws IOException {
-        try {
-            DataInputStream data = new DataInputStream(in);
-            int magic = data.readInt();
-            int minorVersion = data.readUnsignedShort();
-            int majorVersion = data.readUnsignedShort();
-            if (magic != 0xCAFEBABE)
-                throw new IOException("Bad magic number");
-            // TODO: check version
-            
-            int constant_pool_count = data.readUnsignedShort();
 
-            Object[] items = new Object[constant_pool_count];
+    public void read(InputStream in) throws IOException {
+        try {
+            this.in = in;
+            bsize = 0;
+            access = 0;
+            thisClass = superClass = null;
+            interfaces = null;
+
+            buffer(10);
+            if (b[0] != (byte)0xCA || b[1] != (byte)0xFE || b[2] != (byte)0xBA || b[3] != (byte)0xBE)
+                throw new IOException("Bad magic number");
+
+            int minorVersion = readUnsignedShort(4);
+            int majorVersion = readUnsignedShort(6);
+            // TODO: check version
+            int constant_pool_count = readUnsignedShort(8);
+            items = (int[])resizeArray(items, constant_pool_count);
+
+            int index = 10;
             for (int i = 1; i < constant_pool_count; i++) {
-                int tag = data.readUnsignedByte();
+                int size;
+                buffer(index + 3); // TODO: reduce calls to buffer
+                int tag = b[index];
+                items[i] = index + 1;
                 switch (tag) {
                 case 9:  // Fieldref
                 case 10: // Methodref
@@ -68,62 +85,101 @@ public class ClassHeaderReader
                 case 3:  // Integer
                 case 4:  // Float
                 case 12: // NameAndType
-                    skipFully(data, 4);
+                    size = 4;
                     break;
                 case 5:  // Long
                 case 6:  // Double
-                    skipFully(data, 8);
+                    size = 8;
                     i++;
                     break;
                 case 1:  // Utf8
-                    items[i] = data.readUTF();
+                    size = 2 + readUnsignedShort(index + 1);
                     break;
                 case 7:  // Class
-                    items[i] = new Integer(data.readUnsignedShort());
-                    break;
                 case 8:  // String
-                    skipFully(data, 2);
+                    size = 2;
                     break;
                 default:
                     throw new IllegalStateException("Unknown constant pool tag " + tag);
                 }
+                index += size + 1;
             }
-
-            access = data.readUnsignedShort();
-            thisClass = readClass(data.readUnsignedShort(), items);
-            int superclassIndex = data.readUnsignedShort();
-            superClass = (superclassIndex == 0) ? null : readClass(superclassIndex, items);
-
-            int interfaces_count = data.readUnsignedShort();
+            buffer(index + 8);
+            access = readUnsignedShort(index);
+            thisClass = readClass(index + 2);
+            superClass = readClass(index + 4);
+            int interfaces_count = readUnsignedShort(index + 6);
+        
+            index += 8;
+            buffer(index + interfaces_count * 2);
             interfaces = new String[interfaces_count];
             for (int i = 0; i < interfaces_count; i++) {
-                interfaces[i] = readClass(data.readUnsignedShort(), items);
+                interfaces[i] = readClass(index);
+                index += 2;
             }
         } finally {
             in.close();
         }
     }
 
-    private static String readClass(int index, Object[] items) {
-        if (items[index] == null) {
-            throw new IllegalArgumentException("cannot find index " + index + " in " + Arrays.asList(items));
-        }
-        return readString(((Integer)items[index]).intValue(), items);
+    private String readClass(int index) throws IOException {
+        index = readUnsignedShort(index);
+        if (index == 0)
+            return null;
+        index = readUnsignedShort(items[index]);
+        bin.readFrom(b, items[index]);
+        return data.readUTF();
     }
 
-    private static String readString(int index, Object[] items) {
-        return (String)items[index];
+    private int readUnsignedShort(int index) {
+        byte[] b = this.b;
+        return ((b[index] & 0xFF) << 8) | (b[index + 1] & 0xFF);
     }
-    
-    private static void skipFully(DataInput data, int n) throws IOException {
-        while (n > 0) {
-            int amt = data.skipBytes(n);
-            if (amt == 0) {
-                data.readByte();
-                n--;
-            } else {
-                n -= amt;
-            }
+
+    private static final int CHUNK = 2048;
+    private void buffer(int amount) throws IOException {
+        if (amount > b.length)
+            b = (byte[])resizeArray(b, b.length * 2);
+        if (amount > bsize) {
+            int rounded = (int)(CHUNK * Math.ceil((float)amount / CHUNK));
+            bsize += read(in, b, bsize, rounded - bsize);
+            if (amount > bsize)
+                throw new EOFException();
+        }
+    }
+
+    private static int read(InputStream in, byte[] b, int off, int len) throws IOException {
+        int total = 0;
+        while (total < len) {
+            int result = in.read(b, off + total, len - total);
+            if (result == -1)
+                break;
+            total += result;
+        }
+        return total;
+    }
+
+    private static Object resizeArray(Object array, int length)
+    {
+        if (Array.getLength(array) < length) {
+            Object newArray = Array.newInstance(array.getClass().getComponentType(), length);
+            System.arraycopy(array, 0, newArray, 0, Array.getLength(array));
+            return newArray;
+        } else {
+            return array;
+        }
+    }
+
+    private static class MyByteArrayInputStream extends ByteArrayInputStream
+    {
+        public MyByteArrayInputStream() {
+            super(new byte[0]);
+        }
+
+        public void readFrom(byte[] buf, int pos) {
+            this.buf = buf;
+            this.pos = pos;
+            count = buf.length;
         }
     }
 }
