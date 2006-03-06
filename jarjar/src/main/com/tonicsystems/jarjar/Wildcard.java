@@ -56,7 +56,12 @@ class Wildcard
 
     public String replace(String value, int style) {
         Matcher matcher = getPattern(style).getMatcher(value);
-        return (matcher.matches()) ? replace(value, style, matcher) : null;
+        if (matcher.matches()) {
+            if (style == STYLE_IDENTIFIER && !checkIdentifierChars(value, false))
+                return null;
+            return replace(value, style, matcher);
+        }
+        return null;
     }
 
     private Pattern getPattern(int style) {
@@ -104,26 +109,17 @@ class Wildcard
     private void compilePattern(String expr) {
         if (expr.equals("**"))
             throw new IllegalArgumentException("'**' is not a valid pattern");
-        for (int i = 0, len = expr.length(); i < len; i++) {
-            char ch = expr.charAt(i);
-            switch (ch) {
-            case '*':
-            case '.':
-                break;
-            default:
-                if (!Character.isJavaIdentifierPart(ch)) {
-                    throw new IllegalArgumentException("Not a valid package pattern: " + expr);
-                }
-            }
-        }
-        if (expr.indexOf("***") >= 0) {
+        if (!checkIdentifierChars(expr, true))
+            throw new IllegalArgumentException("Not a valid package pattern: " + expr);
+        if (expr.indexOf("***") >= 0)
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
-        }
 
         String p1 = expr;
         p1 = dots.replaceAll(p1, "~");
         p1 = dstar.replaceAll(p1, "(.+?)");
         p1 = star.replaceAll(p1, "([^/]+?)");
+        if (p1.endsWith("+?)"))
+            p1 = p1.substring(0, p1.length() - 3) + "*)"; // allow trailing * or ** to match nothing
 
         String p2 = p1;
         p2 = tilde.replaceAll(p2, "\\.");
@@ -131,13 +127,32 @@ class Wildcard
         p1 = "(\\[*L)" + p1 + "(;)";   // TODO: optional semicolon?
 
         p1 = "\\A" + p1 + "\\Z";
-        p2 = "\\A()" + p2 + "()\\b\\Z";
+        p2 = "\\A()" + p2 + "()\\Z";
+        // p2 = "\\A()" + p2 + "()\\b\\Z";
         // p2 = "\\b(L?)" + p2 + "()\\b";
 
         descPattern = REGEX.compile(p1);
         identifierPattern = REGEX.compile(p2);
 
         count = descPattern.groupCount();
+    }
+
+    // TODO: performance
+    private static boolean checkIdentifierChars(String expr, boolean allowStars) {
+        for (int i = 0, len = expr.length(); i < len; i++) {
+            char ch = expr.charAt(i);
+            switch (ch) {
+            case '*':
+                if (!allowStars)
+                    return false;
+            case '.':
+                break;
+            default:
+                if (!Character.isJavaIdentifierPart(ch))
+                    return false;
+            }
+        }
+        return true;
     }
 
     private void compileResult(String value) {
