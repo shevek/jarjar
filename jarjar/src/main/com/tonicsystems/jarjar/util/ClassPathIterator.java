@@ -27,14 +27,19 @@ import java.util.jar.*;
 
 public class ClassPathIterator implements Iterator
 {
-    private LinkedList parts = new LinkedList();
-
-    private static final FileFilter FILTER = new FileFilter() {
-        public boolean accept(File pathname) {
-            return pathname.isDirectory() || isClassFile(getName(pathname));
+    private static final FileFilter CLASS_FILTER = new FileFilter() {
+        public boolean accept(File file) {
+            return file.isDirectory() || hasExtension(getName(file), ".class");
         }
     };
 
+    private static final FileFilter JAR_FILTER = new FileFilter() {
+        public boolean accept(File file) {
+            return hasExtension(getName(file), ".jar");
+        }
+    };
+    
+    private Iterator files;
     private File parent;
     private Enumeration entries;
     private Map sources = new HashMap();
@@ -46,11 +51,36 @@ public class ClassPathIterator implements Iterator
     }
     
     public ClassPathIterator(File parent, String classPath) {
-        this.parent = parent;
         StringTokenizer st = new StringTokenizer(classPath, System.getProperty("path.separator"));
+        List fileList = new ArrayList();
         while (st.hasMoreTokens()) {
-            parts.add(st.nextElement());
+            String part = (String)st.nextElement();
+
+            boolean wildcard = false;
+            if (part.endsWith("/*")) {
+                part = part.substring(0, part.length() - 1);
+                if (part.indexOf('*') >= 0)
+                    throw new IllegalArgumentException("Multiple wildcards are not allowed: " + part);
+                wildcard = true;
+            } else if (part.indexOf('*') >= 0) {
+                throw new IllegalArgumentException("Incorrect wildcard usage: " + part);
+            }
+                
+            File file = new File(part);
+            if (!file.isAbsolute())
+                file = new File(parent, part);
+            if (!file.exists())
+                throw new IllegalArgumentException("File " + file + " does not exist");
+
+            if (wildcard) {
+                if (!file.isDirectory())
+                    throw new IllegalArgumentException("File " + file + " + is not a directory");
+                fileList.addAll(findFiles(file, JAR_FILTER, false, new ArrayList()));
+            } else {
+                fileList.add(file);
+            }
         }
+        this.files = fileList.iterator();
         advance();
     }
 
@@ -94,47 +124,36 @@ public class ClassPathIterator implements Iterator
 
     private void advance() {
         try {
+            
             if (entries == null) {
-                if (parts.size() == 0) {
+                if (!files.hasNext()) {
                     next = null;
                     return;
                 }
-
                 zip = null;
-                String part = (String)parts.removeFirst();
-                File file = new File(part);
-                if (!file.isAbsolute())
-                    file = new File(parent, part);
-
-                int len = part.length();
-                if (len >= 4) {
-                    String ext = part.substring(len - 4, len);
-                    if (ext.equalsIgnoreCase(".jar")) {
-                        zip = new JarFile(file);
-                    } else if (ext.equalsIgnoreCase(".zip")) {
-                        zip = new ZipFile(file);
+                File file = (File)files.next();
+                if (hasExtension(getName(file), ".jar")) {
+                    zip = new JarFile(file);
+                    entries = zip.entries();
+                } else if (hasExtension(getName(file), ".zip")) {
+                    zip = new ZipFile(file);
+                    entries = zip.entries();
+                } else if (file.isDirectory()) {
+                    // TODO: could lazily recurse for performance
+                    List classes = findFiles(file, CLASS_FILTER, true, new ArrayList());
+                    for (Iterator it = classes.iterator(); it.hasNext();) {
+                        sources.put(it.next(), file);
                     }
-                    if (zip != null)
-                        entries = zip.entries();
-                }
-                if (entries == null) {
-                    if (file.isDirectory()) {
-                        // TODO: could lazily recurse for performance
-                        List classes = findClasses(file);
-                        for (Iterator it = classes.iterator(); it.hasNext();) {
-                            sources.put(it.next(), file);
-                        }
-                        entries = Collections.enumeration(classes);
-                    } else {
-                        throw new IllegalArgumentException("Do not know how to handle " + part);
-                    }
+                    entries = Collections.enumeration(classes);
+                } else {
+                    throw new IllegalArgumentException("Do not know how to handle " + file);
                 }
             }
 
             boolean foundClass = false;
             while (entries.hasMoreElements()) {
                 next = entries.nextElement();
-                if (foundClass = isClassFile(getName(next))) {
+                if (foundClass = hasExtension(getName(next), ".class")) {
                     if (zip != null)
                         sources.put(next, zip);
                     break;
@@ -149,29 +168,27 @@ public class ClassPathIterator implements Iterator
         }
     }
 
-    private static List findClasses(File root) {
-        List collect = new ArrayList();
-        findClassesHelper(root, collect);
-        return collect;
-    }
-
-    private static void findClassesHelper(File dir, List collect) {
-        File[] files = dir.listFiles(FILTER);
+    private static List findFiles(File dir, FileFilter filter, boolean recurse, List collect) {
+        File[] files = dir.listFiles(filter);
         for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
-                findClassesHelper(files[i], collect);
+            if (recurse && files[i].isDirectory()) {
+                findFiles(files[i], filter, recurse, collect);
             } else {
                 collect.add(files[i]);
             }
         }
+        return collect;
     }
 
     private static String getName(Object obj) {
         return (obj instanceof ZipEntry) ? ((ZipEntry)obj).getName() : ((File)obj).getName();
     }
 
-    private static boolean isClassFile(String name) {
+    private static boolean hasExtension(String name, String ext) {
         int len = name.length();
-        return (len >= 6) && name.substring(len - 6, len).equalsIgnoreCase(".class");
+        if (name.length() <  ext.length())
+            return false;
+        String actual = name.substring(name.length() - ext.length());
+        return actual.equals(ext) || actual.equals(ext.toUpperCase());
     }
 }
