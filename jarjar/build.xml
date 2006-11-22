@@ -14,9 +14,10 @@
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
 
-    <property name="version" value="0.7"/>
+    <property name="version" value="0.8"/>
     <property name="jarfile" value="dist/jarjar-${version}.jar"/>
     <property name="jarfile.util" value="dist/jarjar-util-${version}.jar"/>
+    <property name="jarfile.mojo" value="dist/jarjar-plugin-${version}.jar"/>
 
     <property name="test.jar" value="build/rejar.jar"/>
 
@@ -98,8 +99,27 @@
         <zip destfile="dist/jarjar-src-${version}.zip" filesonly="true">
             <zipfileset dir="src" excludes="**/*.save" prefix="jarjar-${version}/src"/>
             <zipfileset dir="lib" prefix="jarjar-${version}/lib"/>
+            <zipfileset dir="maven" prefix="jarjar-${version}/maven"/>
             <zipfileset dir="." includes="build.xml,COPYING" prefix="jarjar-${version}"/>
         </zip>
+    </target>
+
+    <target name="mojo" depends="jar" description="Create Maven plugin">
+        <mkdir dir="dist"/>
+        <copy todir="dist/maven">
+            <fileset dir="maven"/>
+            <filterset>
+                <filter token="VERSION" value="${version}"/>
+            </filterset>
+        </copy>
+        <jar jarfile="${jarfile.mojo}">
+            <zipfileset src="${jarfile}"/>
+            <zipfileset dir="dist/maven" prefix="META-INF/maven" includes="plugin.xml"/>
+            <zipfileset
+              dir="dist/maven"
+              prefix="META-INF/maven/com.tonicsystems.jarjar/jarjar-plugin"
+              includes="pom.xml,pom.properties"/>
+        </jar>
     </target>
 
     <target name="test" depends="junit,test-rejar" description="Run tests"/>
