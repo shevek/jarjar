@@ -7,7 +7,7 @@
 
     <property name="compile.source" value="1.3"/>
     <property name="compile.target" value="1.2"/>
-    <property name="compile.bootclasspath" value="${java.home}/lib/rt.jar"/>
+    <property name="compile.bootclasspath" value=""/>
     <property name="compile.extdirs" value=""/>
 
     <property name="compile.debug" value="true"/>
@@ -22,6 +22,7 @@
     <property name="test.jar" value="build/rejar.jar"/>
 
     <target name="init">
+        <echo>bootclasspath ${compile.bootclasspath}</echo>
         <tstamp/>
         <path id="path.build">
             <fileset dir="lib" includes="**/*.jar"/>
