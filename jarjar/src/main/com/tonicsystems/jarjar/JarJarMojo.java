@@ -41,7 +41,7 @@ public class JarJarMojo extends AbstractMojo
 
         try {
             List patterns = null;
-            if (patterns != null) {
+            if (rules != null) {
                 patterns = RulesFileParser.parse(rules);
             } else {
                 patterns = RulesFileParser.parse(rulesFile);
