@@ -80,6 +80,10 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
         cv.visitInnerClass(rules.fixName(name), rules.fixName(outerName), innerName, access);
     }
 
+    public void visitOuterClass(String owner, String name, String desc) {
+        cv.visitOuterClass(rules.fixName(owner), name, (desc != null) ? rules.fixMethodDesc(desc) : null);
+    }
+    
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = cv.visitMethod(access, name, rules.fixMethodDesc(desc), fixSignature(signature, false), fixNames(exceptions));
         return (mv != null) ? new MethodFixer(mv) : null;
