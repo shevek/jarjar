@@ -72,8 +72,7 @@ class PackageTransformer extends ClassAdapter implements ClassTransformer
     }
     
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        
-        FieldVisitor fv = new FieldFixer(cv.visitField(access, name, rules.fixDesc(desc), fixSignature(signature, true), fixValue(value)));
+        FieldVisitor fv = cv.visitField(access, name, rules.fixDesc(desc), fixSignature(signature, true), fixValue(value));
         return (fv != null) ? new FieldFixer(fv) : null;
     }
 

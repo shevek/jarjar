@@ -66,8 +66,8 @@ public class ClassHeaderReader
             if (b[0] != (byte)0xCA || b[1] != (byte)0xFE || b[2] != (byte)0xBA || b[3] != (byte)0xBE)
                 throw new IOException("Bad magic number");
 
-            int minorVersion = readUnsignedShort(4);
-            int majorVersion = readUnsignedShort(6);
+            readUnsignedShort(4); // minorVersion
+            readUnsignedShort(6); // majorVersion
             // TODO: check version
             int constant_pool_count = readUnsignedShort(8);
             items = (int[])resizeArray(items, constant_pool_count);

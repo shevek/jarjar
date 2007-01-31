@@ -40,7 +40,6 @@ public class ClassPathIterator implements Iterator
     };
     
     private Iterator files;
-    private File parent;
     private Enumeration entries;
     private Map sources = new HashMap();
     private ZipFile zip;
@@ -185,7 +184,6 @@ public class ClassPathIterator implements Iterator
     }
 
     private static boolean hasExtension(String name, String ext) {
-        int len = name.length();
         if (name.length() <  ext.length())
             return false;
         String actual = name.substring(name.length() - ext.length());

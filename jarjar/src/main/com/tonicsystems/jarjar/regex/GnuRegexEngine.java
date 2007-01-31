@@ -28,44 +28,57 @@ public class GnuRegexEngine implements RegexEngine
 {
     public Pattern compile(String pattern) {
         try {
-            final RE re = new RE(pattern);
-            return new Pattern() {
-                public String replaceAll(String value, String replace) {
-                    return re.substituteAll(value, replace, 0, RE.REG_NO_INTERPOLATE);
-                }
-                public boolean matches(String value) {
-                    return re.isMatch(value);
-                }
-                public int groupCount() {
-                    return re.getNumSubs();
-                }
-                public Matcher getMatcher(final String value) {
-                    final REMatch match = re.getMatch(value, 0);
-                    return new Matcher() {
-                        public boolean matches() {
-                            return re.isMatch(value); // TODO?
-                        }
-                        public int start() {
-                            return match.getStartIndex();
-                        }
-                        public int end() {
-                            return match.getEndIndex();
-                        }
-                        public String group(int index) {
-                            return match.toString(index);
-                        }
-                    };
-                }
-                public String toString() {
-                    return re.toString();
-                }
-            };
+            return new GnuPattern(new RE(pattern));
         } catch (final REException e) {
             throw new IllegalArgumentException(e.getMessage()) {
                 public Throwable getCause() {
                     return e;
                 }
             };
+        }
+    }
+
+    private static class GnuPattern
+    implements Pattern
+    {
+        private final RE re;
+        
+        public GnuPattern(RE re) {
+            this.re = re;
+        }
+            
+        public String replaceAll(String value, String replace) {
+            return re.substituteAll(value, replace, 0, RE.REG_NO_INTERPOLATE);
+        }
+        
+        public boolean matches(String value) {
+            return re.isMatch(value);
+        }
+        
+        public int groupCount() {
+            return re.getNumSubs();
+        }
+        
+        public Matcher getMatcher(final String value) {
+            final REMatch match = re.getMatch(value, 0);
+            return new Matcher() {
+                public boolean matches() {
+                    return re.isMatch(value); // TODO?
+                }
+                public int start() {
+                    return match.getStartIndex();
+                }
+                public int end() {
+                    return match.getEndIndex();
+                }
+                public String group(int index) {
+                    return match.toString(index);
+                }
+            };
+        }
+        
+        public String toString() {
+            return re.toString();
         }
     }
 }

@@ -29,33 +29,9 @@ class StringDumper
     public StringDumper() {
     }
 
-    public void run(String classPath, final PrintWriter pw) throws IOException {
+    public void run(String classPath, PrintWriter pw) throws IOException {
         try {
-            StringVisitor sv = new StringVisitor() {
-                private String className;
-                private boolean needName;
-                public void visitStart(String className) {
-                    this.className = className;
-                    needName = true;
-                }
-                public void visitString(String value, int line) {
-                    if (value.length() > 0) {
-                        if (needName) {
-                            pw.println(className.replace('/', '.'));
-                            needName = false;
-                        }
-                        pw.print("\t");
-                        if (line >= 0)
-                            pw.print(line + ": ");
-                        pw.print(IoUtils.escapeStringLiteral(value));
-                        pw.println();
-                    }
-                }
-                public void visitEnd() {
-                    pw.flush();
-                }
-            };
-            StringReader stringReader = new StringReader(sv);
+            StringReader stringReader = new StringReader(new DumpStringVisitor(pw));
             ClassPathIterator cp = new ClassPathIterator(classPath);
             while (cp.hasNext()) {
                 new ClassReader(cp.getInputStream(cp.next())).accept(stringReader, false);
@@ -64,4 +40,39 @@ class StringDumper
             throw (IOException)e.getCause();
         }
     }
+
+    private static class DumpStringVisitor
+    implements StringVisitor
+    {
+        private final PrintWriter pw;
+        private String className;
+        private boolean needName;
+
+        public DumpStringVisitor(PrintWriter pw) {
+            this.pw = pw;
+        }
+
+        public void visitStart(String className) {
+            this.className = className;
+            needName = true;
+        }
+
+        public void visitString(String value, int line) {
+            if (value.length() > 0) {
+                if (needName) {
+                    pw.println(className.replace('/', '.'));
+                    needName = false;
+                }
+                pw.print("\t");
+                if (line >= 0)
+                    pw.print(line + ": ");
+                pw.print(IoUtils.escapeStringLiteral(value));
+                pw.println();
+            }
+        }
+
+        public void visitEnd() {
+            pw.flush();
+        }
+    };
 }

@@ -61,9 +61,8 @@ class MainProcessor implements JarProcessor
         boolean result = chain.process(struct);
         if (verbose) {
             if (result) {
-                if (name.equals(struct.name)) {
+                if (!name.equals(struct.name))
                     System.err.println("Renamed " + name + " -> " + struct.name);
-                }
             } else {
                 System.err.println("Removed " + name);
             }
