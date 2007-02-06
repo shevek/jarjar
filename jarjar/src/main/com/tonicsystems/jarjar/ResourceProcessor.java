@@ -26,15 +26,15 @@ import java.util.*;
 
 class ResourceProcessor implements JarProcessor
 {
-    private Rules rules;
+    private PackageTransformer pt;
 
-    public ResourceProcessor(Rules rules) {
-        this.rules = rules;
+    public ResourceProcessor(PackageTransformer pt) {
+        this.pt = pt;
     }
 
     public boolean process(EntryStruct struct) throws IOException {
         if (!struct.name.endsWith(".class"))
-            struct.name = rules.fixPath(struct.name);
+            struct.name = pt.fixPath(struct.name);
         return true;
     }
 }

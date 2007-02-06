@@ -26,7 +26,7 @@ import java.util.Arrays;
 
 class Wildcard
 {
-    private static RegexEngine REGEX = MyRegexEngine.getInstance();
+    private static RegexEngine REGEX = new GnuRegexEngine();
     
     public static final int STYLE_DESC = 0;
     public static final int STYLE_IDENTIFIER = 1;

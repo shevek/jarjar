@@ -33,8 +33,7 @@ extends TestCase
          Rule rule = new Rule();
          rule.setPattern("java.lang.String");
          rule.setResult("com.tonicsystems.String");
-         Rules rules = new RulesImpl(Arrays.asList(new Object[]{ rule }), false);
-         PackageTransformer t = new PackageTransformer(rules);
+         PackageTransformer t = new PackageTransformer(Arrays.asList(new Object[]{ rule }), false);
          t.setTarget(new EmptyVisitor());
          ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
          reader.accept(t, false);

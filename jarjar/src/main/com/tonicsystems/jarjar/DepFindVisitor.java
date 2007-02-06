@@ -30,62 +30,53 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 import org.objectweb.asm.signature.*;
 
-class DepFindVisitor extends EmptyVisitor
+class DepFindVisitor extends DependencyVisitor
 {
     private Map classes;
     private String source;
-    private String curName;
     private DepHandler handler;
     private PathClass curPathClass;
-    
-    private final SignatureVisitor SIG = new EmptySignatureVisitor() {
-        public void visitTypeVariable(String name) {
-            checkName(name);
-        }
-        public void visitClassType(String name) {
-            checkName(name);
-        }
-        public void visitInnerClassType(String name) {
-            checkName(name);
-        }
-    };
 
     public DepFindVisitor(Map classes, Object source, DepHandler handler) throws IOException {
+        super(new EmptyVisitor());
         this.classes = classes;
         this.source = getSourceName(source);
         this.handler = handler;
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        curName = name;
-        curPathClass = new PathClass(source, curName);
-        checkSignature(signature, false);
-        checkName(superName);
-        checkNames(interfaces);
+        curPathClass = new PathClass(source, name);
+        super.visit(version, access, name, signature, superName, interfaces);
     }
 
-    private void checkSignature(String signature, boolean type) {
-        if (signature != null) {
-            SignatureReader reader = new SignatureReader(signature);
-            if (type) {
-                reader.acceptType(SIG);
-            } else {
-                reader.accept(SIG);
-            }    
-        }
-    }
-    
-    private void checkDesc(String desc) {
+    protected String fixDesc(String desc) {
         int index = desc.indexOf('L');
         if (index >= 0)
-            checkName(desc.substring(index + 1, desc.length() - 1));
-    }
-
-    private void checkMethodDesc(String methodDesc) {
-        checkDesc(Type.getReturnType(methodDesc).getDescriptor());
-        Type[] args = Type.getArgumentTypes(methodDesc);
+            fixName(desc.substring(index + 1, desc.length() - 1));
+        return desc;
+    }        
+    
+    protected String fixMethodDesc(String desc) {
+        fixDesc(Type.getReturnType(desc).getDescriptor());
+        Type[] args = Type.getArgumentTypes(desc);
         for (int i = 0; i < args.length; i++)
-            checkDesc(args[i].getDescriptor());
+            fixDesc(args[i].getDescriptor());
+        return desc;
+    }
+    
+    protected String fixName(String name) {
+        try {
+            if (classes.containsKey(name)) {
+                String otherSource = getSourceName(classes.get(name));
+                if (!source.equals(otherSource)) {
+                    // TODO: some escape mechanism?
+                    handler.handle(curPathClass, new PathClass(otherSource, name));
+                }
+            }
+            return name;
+        } catch (IOException e) {
+            throw new RuntimeIOException(e);
+        }
     }
 
     private String getSourceName(Object source) throws IOException {
@@ -95,116 +86,14 @@ class DepFindVisitor extends EmptyVisitor
             return ((File)source).getCanonicalPath();
         }
     }
-
-    private void checkName(String name) {
-        try {
-            if (classes.containsKey(name)) {
-                String otherSource = getSourceName(classes.get(name));
-                if (!source.equals(otherSource)) {
-                    // TODO: some escape mechanism?
-                    handler.handle(curPathClass, new PathClass(otherSource, name));
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeIOException(e);
-        }
-    }
-
-    private void checkNames(String[] names)
-    {
-        if (names != null) {
-            for (int i = 0; i < names.length; i++)
-                checkName(names[i]);
-        }
-    }
-
-    private void checkType(Object value)
-    {
-        if (value instanceof Type)
-            checkDesc(((Type)value).getDescriptor());
-    }
-
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        checkMethodDesc(desc);
-        checkSignature(signature, false);
-        checkNames(exceptions);
-        return this;
-    }
-
-    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        checkDesc(desc);
-        checkSignature(signature, true);
-        checkType(value);
-        return this;
-    }
-
-    public void visitTypeInsn(int opcode, String desc) {
-        if (desc.charAt(0) == '[') {
-            checkDesc(desc);
-        } else {
-            checkName(desc);
-        }
-    }
-
-    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-        checkName(owner);
-        checkDesc(desc);
-    }
-
-    public void visitLdcInsn(Object cst) {
-        checkType(cst);
-    }
-
-    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        checkName(owner);
-        checkMethodDesc(desc);
-    }
-
-    public void visitMultiANewArrayInsn(String desc, int dims) {
-        checkDesc(desc);
-    }
-
-    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        checkName(type);
-    }
-
-    public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-        checkDesc(desc);
-        checkSignature(signature, true);
-    }
-
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        checkDesc(desc);
-        return this;
-    }
-
-    public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-        checkDesc(desc);
-        return this;
-    }
-
-    public void visit(String name, Object value) {
-        checkType(value);
-    }
     
-    public void visitClassType(String name) {
-        checkName(name);
+    protected String fixString(String className, String value) {
+        // TODO?
+        return value;
     }
 
-    public void visitInnerClassType(String name) {
-        checkName(name);
-    }
-
-    public void visitTypeVariable(String name) {
-        // TODO
-    }
-    
-    public AnnotationVisitor visitAnnotation(String name, String desc) {
-        checkDesc(desc);
-        return this;
-    }
-    
-    public void visitEnum(String name, String desc, String value) {
-        checkDesc(desc);
+    protected Attribute fixAttribute(Attribute attrs) {
+        // TODO?
+        return attrs;
     }
 }

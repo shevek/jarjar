@@ -23,203 +23,148 @@ package com.tonicsystems.jarjar;
 import com.tonicsystems.jarjar.util.*;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.*;
+import java.util.*;
 
-class PackageTransformer extends ClassAdapter implements ClassTransformer
+class PackageTransformer extends DependencyVisitor implements ClassTransformer
 {
-    private Rules rules;
-    private String className;
-    
-    public PackageTransformer(Rules rules) {
+    private static final String RESOURCE_SUFFIX = "RESOURCE";
+
+    private Wildcard[] wildcards;
+    private HashMap cache = new HashMap();
+    private boolean verbose;
+
+    public PackageTransformer(List ruleList, boolean verbose) {
         super(null);
-        this.rules = rules;
+        this.verbose = verbose;
+        wildcards = PatternElement.createWildcards(ruleList);
     }
-    
+
     public void setTarget(ClassVisitor target) {
         cv = target;
     }
 
-    private String[] fixNames(String[] names) {
-        if (names == null)
-            return null;
-        String[] fixed = new String[names.length];
-        for (int i = 0; i < names.length; i++) {
-            fixed[i] = rules.fixName(names[i]);
-        }
-        return fixed;
-    }
-
-    private Object fixValue(Object value) {
-        if (value instanceof String) {
-            return rules.fixString(className, (String)value);
-        } else if (value instanceof Type) {
-            return Type.getType(rules.fixDesc(((Type)value).getDescriptor()));
+    // public for ResourceProcessor
+    public String fixPath(String path) {
+        int slash = path.lastIndexOf('/');
+        String end;
+        if (slash < 0) {
+            end = path;
+            path = RESOURCE_SUFFIX;
         } else {
-            return value;
+            end = path.substring(slash + 1);
+            path = path.substring(0, slash + 1) + RESOURCE_SUFFIX;
         }
-    }
-
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        className = name.replace('/', '.');
-        cv.visit(version, access, rules.fixName(name), fixSignature(signature, false), rules.fixName(superName), fixNames(interfaces));
-    }
-
-    public void visitAttribute(Attribute attr) {
-        cv.visitAttribute(rules.fixAttribute(attr));
-    }
-
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        return new AnnotationFixer(cv.visitAnnotation(rules.fixDesc(desc), visible));
+        boolean absolute = path.startsWith("/");
+        if (absolute)
+            path = path.substring(1);
+        path = fixName(path);
+        if (absolute)
+            path = "/" + path;
+        path = path.substring(0, path.length() - RESOURCE_SUFFIX.length()) + end;
+        return path;
     }
     
-    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        FieldVisitor fv = cv.visitField(access, name, rules.fixDesc(desc), fixSignature(signature, true), fixValue(value));
-        return (fv != null) ? new FieldFixer(fv) : null;
-    }
-
-    public void visitInnerClass(String name, String outerName, String innerName, int access) {
-        cv.visitInnerClass(rules.fixName(name), rules.fixName(outerName), innerName, access);
-    }
-
-    public void visitOuterClass(String owner, String name, String desc) {
-        cv.visitOuterClass(rules.fixName(owner), name, (desc != null) ? rules.fixMethodDesc(desc) : null);
-    }
-    
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor mv = cv.visitMethod(access, name, rules.fixMethodDesc(desc), fixSignature(signature, false), fixNames(exceptions));
-        return (mv != null) ? new MethodFixer(mv) : null;
-    }
-
-    private class FieldFixer implements FieldVisitor
-    {
-        private FieldVisitor fv;
-
-        public FieldFixer(FieldVisitor fv) {
-            this.fv = fv;
-        }
-
-        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            return new AnnotationFixer(fv.visitAnnotation(rules.fixDesc(desc), visible));
-        }
-        
-        public void visitAttribute(Attribute attr) {
-            fv.visitAttribute(rules.fixAttribute(attr));
-        }
-        
-        public void visitEnd() {
-            fv.visitEnd();
-        }
-    }
-
-    private class MethodFixer extends MethodAdapter
-    {
-        public MethodFixer(MethodVisitor mv) {
-            super(mv);
-        }
-
-        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            return fixAnnotation(mv.visitAnnotation(rules.fixDesc(desc), visible));
-        }
-
-        public AnnotationVisitor visitAnnotationDefault() {
-            return fixAnnotation(mv.visitAnnotationDefault());
-        }
-
-        public void visitTypeInsn(int opcode, String desc) {
-            mv.visitTypeInsn(opcode, (desc.charAt(0) == '[') ? rules.fixDesc(desc) : rules.fixName(desc));
-        }
-
-        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-            mv.visitFieldInsn(opcode, rules.fixName(owner), name, rules.fixDesc(desc));
-        }
-
-        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-            mv.visitMethodInsn(opcode, rules.fixName(owner), name, rules.fixMethodDesc(desc));
-        }
-
-        public void visitLdcInsn(Object cst) {
-            mv.visitLdcInsn(fixValue(cst));
-        }
-
-        public void visitMultiANewArrayInsn(String desc, int dims) {
-            mv.visitMultiANewArrayInsn(rules.fixDesc(desc), dims);
-        }
-
-        public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-            mv.visitTryCatchBlock(start, end, handler, rules.fixName(type));
-        }
-
-        public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-            mv.visitLocalVariable(name, rules.fixDesc(desc), fixSignature(signature, true), start, end, index);
-        }
-
-        public void visitAttribute(Attribute attr) {
-            mv.visitAttribute(rules.fixAttribute(attr));
-        }
-    }
-
-    private class AnnotationFixer implements AnnotationVisitor
-    {
-        private AnnotationVisitor av;
-        
-        public AnnotationFixer(AnnotationVisitor av) {
-            this.av = av;
-        }
-        
-        public void visit(String name, Object value) {
-            av.visit(name, fixValue(value));
-        }
-
-        public AnnotationVisitor visitAnnotation(String name, String desc) {
-            return fixAnnotation(av.visitAnnotation(name, rules.fixDesc(desc)));
-        }
-
-        public AnnotationVisitor visitArray(String name) {
-            return fixAnnotation(av.visitArray(name));
-        }
-
-        public void visitEnum(String name, String desc, String value) {
-            av.visitEnum(name, rules.fixDesc(desc), (String)fixValue(value));
-        }
-
-        public void visitEnd() {
-            av.visitEnd();
-        }
-    }
-
-    private AnnotationVisitor fixAnnotation(AnnotationVisitor av) {
-        return (av != null) ? new AnnotationFixer(av) : null;
-    }
-
-    private String fixSignature(String signature, boolean type) {
-        if (signature == null)
+    protected String fixName(String name) {
+        if (name == null)
             return null;
-        SignatureReader reader = new SignatureReader(signature);
-        SignatureWriter writer = new SignatureWriter();
-        SignatureFixer fixer = new SignatureFixer(writer);
-        if (type) {
-            reader.acceptType(fixer);
-        } else {
-            reader.accept(fixer);
-        }
-        return writer.toString();
+        String desc = fixDesc("L" + name + ";");
+        return desc.substring(1, desc.length() - 1);
+    }
+
+    protected String fixDesc(String desc) {
+        return fixDesc(desc, false);
     }
     
-    private class SignatureFixer extends SignatureAdapter
+    private String fixDesc(String desc, boolean allowGenerics) {
+        if (desc.charAt(desc.length() - 1) != ';')
+            return desc;
+        String value = (String)cache.get(desc);
+        if (value == null) {
+            if (allowGenerics && (desc.charAt(desc.length() - 2) == '>')) {
+                // TODO: this is broken
+                int lt = desc.indexOf('<');
+                String main = replaceHelper(desc.substring(0, lt) + ";", Wildcard.STYLE_DESC);
+                String param = replaceHelper(desc.substring(lt + 1, desc.length() - 2), Wildcard.STYLE_DESC);
+                value = main.substring(0, main.length() - 1) + "<" + param + ">;";
+            } else {
+                value = replaceHelper(desc, Wildcard.STYLE_DESC);
+            }
+            cache.put(desc, value);
+        }
+        return value;
+    }
+
+    private String replaceHelper(String value, int style) {
+        for (int i = 0; i < wildcards.length; i++) {
+            String test = wildcards[i].replace(value, style);
+            if (test != null)
+                return test;
+        }
+        return value;
+    }
+
+    protected String fixMethodDesc(String desc) {
+        return fixMethodDesc(desc, false);
+    }
+
+    private String fixMethodDesc(String desc, boolean allowGenerics) {
+        String value = (String)cache.get(desc);
+        if (value == null) {
+            if (desc.indexOf('L') < 0) {
+                value = desc;
+            } else {
+                StringBuffer sb = new StringBuffer();
+                sb.append('(');
+                int end = desc.lastIndexOf(')');
+                for (int i = 1; i < end; i++) {
+                    char c = desc.charAt(i);
+                    if (c == 'L') {
+                        for (int j = i + 1; j < end; j++) {
+                            if (desc.charAt(j) == ';') {
+                                if (allowGenerics && j + 1 < end && desc.charAt(j + 1) == '>')
+                                    j += 2;
+                                sb.append(fixDesc(desc.substring(i, j + 1), allowGenerics));
+                                i = j;
+                                break;
+                            }
+                        }
+                    } else {
+                        sb.append(c);
+                    }
+                }
+                sb.append(')');
+                sb.append(fixDesc(desc.substring(end + 1), allowGenerics));
+                value = sb.toString();
+            }
+            cache.put(desc, value);
+        }
+        return value;
+    }
+
+    protected String fixString(String className, String value) {
+        String newValue = fixClassForName(value);
+        if (newValue.equals(value))
+            newValue = fixPath(value);
+        if (newValue.equals(value))
+            newValue = replaceHelper(newValue, Wildcard.STYLE_IDENTIFIER);
+        if (verbose && !newValue.equals(value))
+            System.err.println("Changed " + className + " \"" + value + "\" -> \"" + newValue + "\"");
+        return newValue;
+    }
+
+    private String fixClassForName(String value)
     {
-        public SignatureFixer(SignatureWriter sw) {
-            super(sw);
+        if (value.indexOf('.') >= 0) {
+            String desc1 = value.replace('.', '/');
+            String desc2 = fixDesc(desc1);
+            if (!desc2.equals(desc1))
+                return desc2.replace('/', '.');
         }
+        return value;
+    }
 
-        public void visitTypeVariable(String name) {
-            sw.visitTypeVariable(rules.fixName(name));
-        }
-
-        public void visitClassType(String name) {
-            sw.visitClassType(rules.fixName(name));
-        }
-    
-        public void visitInnerClassType(String name) {
-            sw.visitInnerClassType(rules.fixName(name));
-        }
+    protected Attribute fixAttribute(Attribute attr) {
+        // TODO?
+        return attr;
     }
 }

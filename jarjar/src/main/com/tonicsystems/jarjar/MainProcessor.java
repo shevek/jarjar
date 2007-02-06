@@ -40,19 +40,18 @@ class MainProcessor implements JarProcessor
                 zapList.add(pattern);
             } else if (pattern instanceof Rule) {
                 ruleList.add(pattern);
-            } else if (pattern instanceof DepKill) {
+            } else if (pattern instanceof Kill) {
                 killList.add(pattern);
             }
         }
-        Rules rules = new RulesImpl(ruleList, verbose);
+        if (!killList.isEmpty())
+            System.err.println("Kill rules are no longer supported and will be ignored");
+        PackageTransformer pt = new PackageTransformer(ruleList, verbose);
         chain = new JarProcessorChain(new JarProcessor[]{
             ManifestProcessor.getInstance(),
             new ZapProcessor(zapList),
-            new JarTransformerChain(new ClassTransformer[]{
-                new DepKillTransformer(killList),
-                new PackageTransformer(rules),
-            }),
-            new ResourceProcessor(rules),
+            new JarTransformerChain(new ClassTransformer[]{ pt }),
+            new ResourceProcessor(pt),
         });
     }
 
