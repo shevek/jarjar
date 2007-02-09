@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.zip.ZipOutputStream;
 
 abstract public class AntJarProcessor extends Jar
@@ -56,8 +57,11 @@ abstract public class AntJarProcessor extends Jar
         struct.name = vPath;
         struct.time = lastModified;
         struct.file = fromArchive;
-        if (proc.process(struct))
+        if (proc.process(struct)) {
+            if (mode == 0)
+                mode = ZipFileSet.DEFAULT_FILE_MODE;
             super.zipFile(struct.in, zOut, struct.name, struct.time, struct.file, mode);
+        }
     }
 
     public void reset() {
