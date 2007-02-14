@@ -52,7 +52,8 @@ public class DepFind
             while (cp.hasNext()) {
                 Object cls = cp.next();
                 Object source = cp.getSource(cls);
-                new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source, handler), true);
+                new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source, handler),
+                                                               ClassReader.SKIP_DEBUG);
             }
             cp.close();
             handler.handleEnd();

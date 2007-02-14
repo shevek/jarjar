@@ -34,7 +34,7 @@ class StringDumper
             StringReader stringReader = new StringReader(new DumpStringVisitor(pw));
             ClassPathIterator cp = new ClassPathIterator(classPath);
             while (cp.hasNext()) {
-                new ClassReader(cp.getInputStream(cp.next())).accept(stringReader, false);
+                new ClassReader(cp.getInputStream(cp.next())).accept(stringReader, ClassReader.SKIP_DEBUG);
             }
         } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();

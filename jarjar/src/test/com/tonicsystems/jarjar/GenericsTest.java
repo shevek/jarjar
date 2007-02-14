@@ -36,7 +36,7 @@ extends TestCase
          PackageTransformer t = new PackageTransformer(Arrays.asList(new Object[]{ rule }), false);
          t.setTarget(new EmptyVisitor());
          ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
-         reader.accept(t, false);
+         reader.accept(t, 0);
     }
 
     public GenericsTest(String name) {

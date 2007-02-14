@@ -28,8 +28,8 @@ public class GetNameClassWriter extends ClassWriter
 {
     private String className;
     
-    public GetNameClassWriter(boolean computeMaxs) {
-        super(computeMaxs);
+    public GetNameClassWriter(int flags) {
+        super(flags);
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {

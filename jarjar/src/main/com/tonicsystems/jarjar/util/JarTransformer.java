@@ -33,8 +33,8 @@ abstract public class JarTransformer implements JarProcessor
             // System.err.println("processing " + struct.name);
             ClassReader reader = new ClassReader(struct.in);
             struct.in.close();
-            GetNameClassWriter w = new GetNameClassWriter(true);
-            reader.accept(transform(w), false);
+            GetNameClassWriter w = new GetNameClassWriter(ClassWriter.COMPUTE_MAXS);
+            reader.accept(transform(w), 0);
             struct.in = new ByteArrayInputStream(w.toByteArray());
             struct.name = pathFromName(w.getClassName());
         }
