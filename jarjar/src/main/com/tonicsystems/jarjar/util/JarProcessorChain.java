@@ -24,10 +24,10 @@ import java.io.IOException;
 
 public class JarProcessorChain implements JarProcessor
 {
-    private JarProcessor[] chain;
+    private final JarProcessor[] chain;
     
     public JarProcessorChain(JarProcessor[] chain) {
-        this.chain = chain;
+        this.chain = (JarProcessor[])chain.clone();
     }
 
     public boolean process(EntryStruct struct) throws IOException {

@@ -24,19 +24,21 @@ import com.tonicsystems.jarjar.regex.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+// TODO: eliminate STYLE_IDENTIFIER?
 class Wildcard
 {
     private static RegexEngine REGEX = new GnuRegexEngine();
     
-    public static final int STYLE_DESC = 0;
+    public static final int STYLE_INTERNAL = 0;
     public static final int STYLE_IDENTIFIER = 1;
 
     private static Pattern dots  = REGEX.compile("\\.");
     private static Pattern tilde = REGEX.compile("~");
     private static Pattern dstar = REGEX.compile("\\*\\*");
     private static Pattern star  = REGEX.compile("\\*");
+    private static Pattern estar = REGEX.compile("\\+\\??\\)\\Z");
 
-    private Pattern descPattern;
+    private Pattern internalPattern;
     private Pattern identifierPattern;
     private int count;
 
@@ -45,112 +47,75 @@ class Wildcard
     private int[] refs;
 
     public Wildcard(String pattern, String result) {
-        compilePattern(pattern);
+        if (pattern.equals("**"))
+            throw new IllegalArgumentException("'**' is not a valid pattern");
+        if (!checkIdentifierChars(pattern, ".*"))
+            throw new IllegalArgumentException("Not a valid package pattern: " + pattern);
+        if (pattern.indexOf("***") >= 0)
+            throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
+        internalPattern = compileHelper(pattern, "/");
+        identifierPattern = compileHelper(pattern, "\\.");
+        count = internalPattern.groupCount();
+
         compileResult(result);
         // System.err.println(this);
     }
 
+    private static Pattern compileHelper(String expr, String delim) {
+        String p1 = expr;
+        p1 =  dots.replaceAll(p1, "~");
+        p1 = dstar.replaceAll(p1, "(.+?)");
+        p1 =  star.replaceAll(p1, "([^" + delim + "]+)");
+        p1 = estar.replaceAll(p1, "*)");
+        p1 = tilde.replaceAll(p1, delim);
+        return REGEX.compile("\\A" + p1 + "\\Z");
+    }
+
     public boolean matches(String value, int style) {
-        return getPattern(style).matches(value);
+        return getMatcher(value, style) != null;
     }
 
     public String replace(String value, int style) {
-        Matcher matcher = getPattern(style).getMatcher(value);
-        if (matcher.matches()) {
-            if (style == STYLE_IDENTIFIER && !checkIdentifierChars(value, false))
-                return null;
-            return replace(value, style, matcher);
+        Matcher matcher = getMatcher(value, style);
+        if (matcher != null) {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < strings.length; i++) {
+                if (refs[i] >= 0) {
+                    sb.append(matcher.group(refs[i]));
+                } else {
+                    String literal = strings[i];
+                    if (style == STYLE_INTERNAL)
+                        literal = literal.replace('.', '/');
+                    sb.append(literal);
+                }
+            }
+            return sb.toString();
         }
         return null;
     }
 
-    private Pattern getPattern(int style) {
-        switch (style) {
-        case STYLE_DESC:
-            return descPattern;
-        case STYLE_IDENTIFIER:
-            return identifierPattern;
-        default:
+    private Matcher getMatcher(String value, int style) {
+        Pattern pattern;
+        if (style == STYLE_INTERNAL) {
+            pattern = internalPattern;
+        } else if (style == STYLE_IDENTIFIER) {
+            pattern = identifierPattern;
+        } else {
             throw new IllegalArgumentException("Unknown style " + style);
         }
+        Matcher matcher = pattern.getMatcher(value);
+        if (matcher.matches() && checkIdentifierChars(value, (style == STYLE_INTERNAL) ? "/" : "."))
+            return matcher;
+        return null;
     }
 
-    private String replace(String value, int style, Matcher match) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(value.substring(0, match.start()));
-        sb.append(match.group(1));
-        for (int i = 0; i < strings.length; i++) {
-            int ref = refs[i];
-            if (ref == 0) {
-                String s = match.group(0);
-                s = s.substring(match.group(1).length(),
-                                s.length() - match.group(count).length());
-                sb.append(postProcess(s, style));
-            } else if (ref > 0) {
-                sb.append(postProcess(match.group(ref + 1), style));
-            } else {
-                sb.append(postProcess(strings[i], style));
-            }
-        }
-        sb.append(match.group(count));
-        sb.append(value.substring(match.end()));
-        return sb.toString();
-    }
-
-    private String postProcess(String value, int style) {
-        if (style == STYLE_IDENTIFIER) {
-            value = value.replace('/', '.');
-        } else {
-            value = value.replace('.', '/');
-        }
-        return value;
-    }
-
-    private void compilePattern(String expr) {
-        if (expr.equals("**"))
-            throw new IllegalArgumentException("'**' is not a valid pattern");
-        if (!checkIdentifierChars(expr, true))
-            throw new IllegalArgumentException("Not a valid package pattern: " + expr);
-        if (expr.indexOf("***") >= 0)
-            throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
-
-        String p1 = expr;
-        p1 = dots.replaceAll(p1, "~");
-        p1 = dstar.replaceAll(p1, "(.+?)");
-        p1 = star.replaceAll(p1, "([^/]+?)");
-        if (p1.endsWith("+?)"))
-            p1 = p1.substring(0, p1.length() - 3) + "*)"; // allow trailing * or ** to match nothing
-
-        String p2 = p1;
-        p2 = tilde.replaceAll(p2, "\\.");
-        p1 = tilde.replaceAll(p1, "/");
-        p1 = "(\\[*L)" + p1 + "(;)";   // TODO: optional semicolon?
-
-        p1 = "\\A" + p1 + "\\Z";
-        p2 = "\\A()" + p2 + "()\\Z";
-        // p2 = "\\A()" + p2 + "()\\b\\Z";
-        // p2 = "\\b(L?)" + p2 + "()\\b";
-
-        descPattern = REGEX.compile(p1);
-        identifierPattern = REGEX.compile(p2);
-
-        count = descPattern.groupCount();
-    }
-
-    // TODO: performance
-    private static boolean checkIdentifierChars(String expr, boolean allowStars) {
+    private static boolean checkIdentifierChars(String expr, String extra) {
         for (int i = 0, len = expr.length(); i < len; i++) {
-            char ch = expr.charAt(i);
-            switch (ch) {
-            case '*':
-                if (!allowStars)
-                    return false;
-            case '.':
-                break;
-            default:
-                if (!Character.isJavaIdentifierPart(ch))
-                    return false;
-            }
+            char c = expr.charAt(i);
+            if (extra.indexOf(c) >= 0)
+                continue;
+            if (!Character.isJavaIdentifierPart(c))
+                return false;
         }
         return true;
     }
@@ -209,8 +174,8 @@ class Wildcard
     }
 
     public String toString() {
-        return "Wildcard{descPattern=" + descPattern +
-            ",identifierPattern=" + identifierPattern +
+        return "Wildcard{internal=" + internalPattern +
+            ",identifier=" + identifierPattern +
             ",parts=" + parts + "}";
     }
 }

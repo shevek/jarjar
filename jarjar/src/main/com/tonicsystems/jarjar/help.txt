@@ -1,5 +1,5 @@
 Jar Jar Links - A utility to repackage and embed Java libraries
-Copyright (C) 2004  Tonic Systems, Inc.
+Copyright (C) 2004-2007  Tonic Systems, Inc.
 
 Usage:
 
@@ -13,7 +13,7 @@ Usage:
     Any existing file named by <out-jar> will be deleted.
 
     The transformation is defined by a set of rules in the file specified
-    by the rules argument. See the manual for format of the rules file.
+    by the rules argument (see below)
 
   java -jar jarjar.jar --find [--level=value] <cp1> [<cp2>] 
 
@@ -41,3 +41,9 @@ Classpath format:
   Mustang-style wildcards are also supported:
   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6268383
 
+Rules file format:
+
+  The rules file is a text file, one rule per line. Leading and trailing
+  whitespace is ignored. TODO
+
+  

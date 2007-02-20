@@ -27,73 +27,57 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.*;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
-import org.objectweb.asm.signature.*;
+import org.objectweb.asm.commons.*;
 
-class DepFindVisitor extends DependencyVisitor
+class DepFindVisitor extends RemappingClassAdapter
 {
-    private Map classes;
-    private String source;
-    private DepHandler handler;
-    private PathClass curPathClass;
-
     public DepFindVisitor(Map classes, Object source, DepHandler handler) throws IOException {
-        super(new EmptyVisitor());
-        this.classes = classes;
-        this.source = getSourceName(source);
-        this.handler = handler;
+        super(new EmptyVisitor(), new DepFindRemapper(classes, source, handler));
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        curPathClass = new PathClass(source, name);
+        ((DepFindRemapper)remapper).setClassName(name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
-    protected String fixDesc(String desc) {
-        int index = desc.indexOf('L');
-        if (index >= 0)
-            fixName(desc.substring(index + 1, desc.length() - 1));
-        return desc;
-    }        
-    
-    protected String fixMethodDesc(String desc) {
-        fixDesc(Type.getReturnType(desc).getDescriptor());
-        Type[] args = Type.getArgumentTypes(desc);
-        for (int i = 0; i < args.length; i++)
-            fixDesc(args[i].getDescriptor());
-        return desc;
-    }
-    
-    protected String fixName(String name) {
-        try {
-            if (classes.containsKey(name)) {
-                String otherSource = getSourceName(classes.get(name));
-                if (!source.equals(otherSource)) {
-                    // TODO: some escape mechanism?
-                    handler.handle(curPathClass, new PathClass(otherSource, name));
+    private static class DepFindRemapper extends Remapper
+    {
+        private final Map classes;
+        private final String source;
+        private final DepHandler handler;
+        private PathClass curPathClass;
+
+        public DepFindRemapper(Map classes, Object source, DepHandler handler) throws IOException {
+            this.classes = classes;
+            this.source = getSourceName(source);
+            this.handler = handler;
+        }
+
+        public void setClassName(String name) {
+            curPathClass = new PathClass(source, name);
+        }
+
+        protected String map(String key) {
+            try {
+                if (classes.containsKey(key)) {
+                    String otherSource = getSourceName(classes.get(key));
+                    if (!source.equals(otherSource)) {
+                        // TODO: some escape mechanism?
+                        handler.handle(curPathClass, new PathClass(otherSource, key));
+                    }
                 }
+            } catch (IOException e) {
+                throw new RuntimeIOException(e);
             }
-            return name;
-        } catch (IOException e) {
-            throw new RuntimeIOException(e);
+            return null;
         }
     }
 
-    private String getSourceName(Object source) throws IOException {
+    private static String getSourceName(Object source) throws IOException {
         if (source instanceof ZipFile) {
             return ((ZipFile)source).getName();
         } else {
             return ((File)source).getCanonicalPath();
         }
-    }
-    
-    protected String fixString(String className, String value) {
-        // TODO?
-        return value;
-    }
-
-    protected Attribute fixAttribute(Attribute attrs) {
-        // TODO?
-        return attrs;
     }
 }

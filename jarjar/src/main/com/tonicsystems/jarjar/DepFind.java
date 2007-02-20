@@ -42,8 +42,12 @@ public class DepFind
             ClassPathIterator cp = new ClassPathIterator(curDir, to);
             while (cp.hasNext()) {
                 Object cls = cp.next();
-                header.read(cp.getInputStream(cls));
-                classes.put(header.getClassName(), cp.getSource(cls));
+                try {
+                    header.read(cp.getInputStream(cls));
+                    classes.put(header.getClassName(), cp.getSource(cls));
+                } catch (ClassFormatError e) {
+                    // TODO: log?
+                }
             }
             cp.close();
 
@@ -52,8 +56,12 @@ public class DepFind
             while (cp.hasNext()) {
                 Object cls = cp.next();
                 Object source = cp.getSource(cls);
-                new ClassReader(cp.getInputStream(cls)).accept(new DepFindVisitor(classes, source, handler),
-                                                               ClassReader.SKIP_DEBUG);
+                try {
+                IoUtils.readClass(cp.getInputStream(cls))
+                    .accept(new DepFindVisitor(classes, source, handler), ClassReader.SKIP_DEBUG);
+                } catch (ClassFormatError e) {
+                    // TODO: log?
+                }
             }
             cp.close();
             handler.handleEnd();

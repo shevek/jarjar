@@ -20,17 +20,18 @@
 
 package com.tonicsystems.jarjar.util;
 
-import java.io.IOException;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.commons.RemappingClassAdapter;
 
-public class RuntimeIOException extends RuntimeException
+public class RemappingClassTransformer extends RemappingClassAdapter implements ClassTransformer
 {
-    private final IOException e;
-
-    public RuntimeIOException(IOException e) {
-        this.e = e;
+    public RemappingClassTransformer(Remapper pr) {
+        super(null, pr);
     }
-
-    public Throwable getCause() {
-        return e;
+        
+    public void setTarget(ClassVisitor target) {
+        cv = target;
     }
 }
+

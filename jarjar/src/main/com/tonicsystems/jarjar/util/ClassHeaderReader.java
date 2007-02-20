@@ -62,10 +62,15 @@ public class ClassHeaderReader
             thisClass = superClass = null;
             interfaces = null;
 
-            buffer(10);
+            try {
+                buffer(4);
+            } catch (IOException e) {
+                // ignore
+            }
             if (b[0] != (byte)0xCA || b[1] != (byte)0xFE || b[2] != (byte)0xBA || b[3] != (byte)0xBE)
-                throw new IOException("Bad magic number");
+                throw new ClassFormatError("Bad magic number");
 
+            buffer(6);
             readUnsignedShort(4); // minorVersion
             readUnsignedShort(6); // majorVersion
             // TODO: check version

@@ -26,10 +26,10 @@ import org.objectweb.asm.ClassVisitor;
 
 public class JarTransformerChain extends JarTransformer
 {
-    private ClassTransformer[] chain;
+    private final ClassTransformer[] chain;
     
     public JarTransformerChain(ClassTransformer[] chain) {
-        this.chain = chain;
+        this.chain = (ClassTransformer[])chain.clone();
         for (int i = chain.length - 1; i > 0; i--) {
             chain[i - 1].setTarget(chain[i]);
         }

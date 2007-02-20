@@ -21,12 +21,23 @@
 package com.tonicsystems.jarjar;
 
 import java.io.*;
+import org.objectweb.asm.*;
 
 class IoUtils
 {
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     
     private IoUtils() {
+    }
+
+    public static ClassReader readClass(InputStream in) throws IOException {
+        try {
+            return new ClassReader(in);
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ClassFormatError(e.getMessage());
+        }
     }
 
     public static String readIntoString(InputStream in) throws IOException {

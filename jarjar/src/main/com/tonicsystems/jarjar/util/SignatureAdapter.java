@@ -25,10 +25,9 @@ import org.objectweb.asm.signature.*;
 abstract public class SignatureAdapter
 implements SignatureVisitor
 {
-    protected SignatureWriter sw;
+    protected final SignatureWriter sw;
     
-    protected SignatureAdapter(SignatureWriter sw)
-    {
+    protected SignatureAdapter(SignatureWriter sw) {
         this.sw = sw;
     }
     

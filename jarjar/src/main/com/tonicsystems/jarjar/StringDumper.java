@@ -30,11 +30,15 @@ class StringDumper
     }
 
     public void run(String classPath, PrintWriter pw) throws IOException {
+        StringReader stringReader = new StringReader(new DumpStringVisitor(pw));
+        ClassPathIterator cp = new ClassPathIterator(classPath);
         try {
-            StringReader stringReader = new StringReader(new DumpStringVisitor(pw));
-            ClassPathIterator cp = new ClassPathIterator(classPath);
             while (cp.hasNext()) {
-                new ClassReader(cp.getInputStream(cp.next())).accept(stringReader, ClassReader.SKIP_DEBUG);
+                try {
+                    IoUtils.readClass(cp.getInputStream(cp.next())).accept(stringReader, ClassReader.SKIP_DEBUG);
+                } catch (ClassFormatError e) {
+                    // TODO: log?
+                }
             }
         } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();

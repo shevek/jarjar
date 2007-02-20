@@ -31,8 +31,15 @@ abstract public class JarTransformer implements JarProcessor
     public boolean process(EntryStruct struct) throws IOException {
         if (struct.name.endsWith(".class")) {
             // System.err.println("processing " + struct.name);
-            ClassReader reader = new ClassReader(struct.in);
-            struct.in.close();
+            ClassReader reader;
+            try {
+                reader = new ClassReader(struct.in);
+            } catch (Exception e) {
+                // TODO?
+                return true;
+            } finally {
+                struct.in.close();
+            }
             GetNameClassWriter w = new GetNameClassWriter(ClassWriter.COMPUTE_MAXS);
             reader.accept(transform(w), 0);
             struct.in = new ByteArrayInputStream(w.toByteArray());

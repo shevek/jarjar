@@ -76,7 +76,11 @@
         <jarjar jarfile="${jarfile}">
             <fileset dir="build/main"/>
             <zipfileset src="lib/asm.jar"/>
-            <zipfileset src="lib/asm-commons.jar" includes="org/objectweb/asm/commons/EmptyVisitor.class"/>
+            <zipfileset src="lib/asm-commons.jar">
+                <include name="org/objectweb/asm/commons/EmptyVisitor.class"/>
+                <include name="org/objectweb/asm/commons/Remap*.class"/>
+                <include name="org/objectweb/asm/commons/LocalVariablesSorter.class"/>
+            </zipfileset>
             <zipfileset src="lib/gnu-regexp.jar"/>
             <rule pattern="com.tonicsystems.jarjar.util.**" result="com.tonicsystems.jarjar.ext_util.@1"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>

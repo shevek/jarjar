@@ -21,8 +21,8 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
-import java.util.*;
 import java.io.IOException;
+import java.util.*;
 
 class MainProcessor implements JarProcessor
 {
@@ -46,12 +46,12 @@ class MainProcessor implements JarProcessor
         }
         if (!killList.isEmpty())
             System.err.println("Kill rules are no longer supported and will be ignored");
-        PackageTransformer pt = new PackageTransformer(ruleList, verbose);
+        PackageRemapper pr = new PackageRemapper(ruleList, verbose);
         chain = new JarProcessorChain(new JarProcessor[]{
             ManifestProcessor.getInstance(),
             new ZapProcessor(zapList),
-            new JarTransformerChain(new ClassTransformer[]{ pt }),
-            new ResourceProcessor(pt),
+            new JarTransformerChain(new ClassTransformer[]{ new RemappingClassTransformer(pr) }),
+            new ResourceProcessor(pr),
         });
     }
 

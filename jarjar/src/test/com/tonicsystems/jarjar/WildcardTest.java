@@ -27,16 +27,19 @@ extends TestCase
 {
     public void testWildcards() {
         identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.Bar", "foo.Bar");
+        identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.Bar.Baz", "foo.Bar.Baz");
         identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.", "foo.");
         identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.!", null);
+        identifier("net.sf.cglib.*", "foo.@1", "net.sf.cglib.Bar", "foo.Bar");
+        identifier("net.sf.cglib.*.*", "foo.@2.@1", "net.sf.cglib.Bar.Baz", "foo.Baz.Bar");
     }
 
     private void identifier(String pattern, String result, String value, String expect) {
         helper(pattern, result, value, expect, Wildcard.STYLE_IDENTIFIER);
     }
 
-    private void descriptor(String pattern, String result, String value, String expect) {
-        helper(pattern, result, value, expect, Wildcard.STYLE_DESC);
+    private void internal(String pattern, String result, String value, String expect) {
+        helper(pattern, result, value, expect, Wildcard.STYLE_INTERNAL);
     }
 
     private void helper(String pattern, String result, String value, String expect, int style) {

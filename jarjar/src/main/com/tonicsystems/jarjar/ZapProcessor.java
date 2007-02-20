@@ -41,7 +41,7 @@ class ZapProcessor implements JarProcessor
     private boolean zap(String desc) {
         // TODO: optimize
         for (int i = 0; i < wildcards.length; i++) {
-            if (wildcards[i].matches(desc, Wildcard.STYLE_DESC))
+            if (wildcards[i].matches(desc, Wildcard.STYLE_INTERNAL))
                 return true;
         }
         return false;

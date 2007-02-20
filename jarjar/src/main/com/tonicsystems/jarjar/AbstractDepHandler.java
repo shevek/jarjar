@@ -26,8 +26,8 @@ import java.util.*;
 
 abstract public class AbstractDepHandler implements DepHandler
 {
-    protected int level;
-    private Set seenIt = new HashSet();
+    protected final int level;
+    private final Set seenIt = new HashSet();
     
     protected AbstractDepHandler(int level) {
         this.level = level;
