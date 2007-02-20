@@ -28,8 +28,6 @@ class Wildcard
 {
     private static RegexEngine REGEX = new GnuRegexEngine();
     
-    private static Pattern dots  = REGEX.compile("\\.");
-    private static Pattern tilde = REGEX.compile("~");
     private static Pattern dstar = REGEX.compile("\\*\\*");
     private static Pattern star  = REGEX.compile("\\*");
     private static Pattern estar = REGEX.compile("\\+\\??\\)\\Z");
@@ -44,17 +42,15 @@ class Wildcard
     public Wildcard(String pattern, String result) {
         if (pattern.equals("**"))
             throw new IllegalArgumentException("'**' is not a valid pattern");
-        if (!checkIdentifierChars(pattern, ".*"))
+        if (!checkIdentifierChars(pattern, "/*"))
             throw new IllegalArgumentException("Not a valid package pattern: " + pattern);
         if (pattern.indexOf("***") >= 0)
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
         
         String regex = pattern;
-        regex =  dots.replaceAll(regex, "~");
         regex = dstar.replaceAll(regex, "(.+?)");
         regex =  star.replaceAll(regex, "([^/]+)");
         regex = estar.replaceAll(regex, "*)");
-        regex = tilde.replaceAll(regex, "/");
         this.pattern = REGEX.compile("\\A" + regex + "\\Z");
         this.count = this.pattern.groupCount();
 

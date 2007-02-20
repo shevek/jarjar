@@ -26,24 +26,15 @@ public class WildcardTest
 extends TestCase
 {
     public void testWildcards() {
-        identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.Bar", "foo.Bar");
-        identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.Bar.Baz", "foo.Bar.Baz");
-        identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.", "foo.");
-        identifier("net.sf.cglib.**", "foo.@1", "net.sf.cglib.!", null);
-        identifier("net.sf.cglib.*", "foo.@1", "net.sf.cglib.Bar", "foo.Bar");
-        identifier("net.sf.cglib.*.*", "foo.@2.@1", "net.sf.cglib.Bar.Baz", "foo.Baz.Bar");
+        wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/Bar", "foo/Bar");
+        wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/Bar/Baz", "foo/Bar/Baz");
+        wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/", "foo/");
+        wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/!", null);
+        wildcard("net/sf/cglib/*", "foo/@1", "net/sf/cglib/Bar", "foo/Bar");
+        wildcard("net/sf/cglib/*/*", "foo/@2/@1", "net/sf/cglib/Bar/Baz", "foo/Baz/Bar");
     }
 
-    private void identifier(String pattern, String result, String value, String expect) {
-        Wildcard wc = new Wildcard(pattern, result);
-        // System.err.println(wc);
-        String after = wc.replace(value.replace('.', '/'));
-        if (after != null)
-            after = after.replace('/', '.');
-        assertEquals(expect, after);
-    }
-
-    private void internal(String pattern, String result, String value, String expect) {
+    private void wildcard(String pattern, String result, String value, String expect) {
         Wildcard wc = new Wildcard(pattern, result);
         // System.err.println(wc);
         assertEquals(expect, wc.replace(value));

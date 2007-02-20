@@ -40,7 +40,10 @@ abstract public class PatternElement
         for (Iterator it = patterns.iterator(); it.hasNext();) {
             PatternElement pattern = (PatternElement)it.next();
             String result = (pattern instanceof Rule) ? ((Rule)pattern).getResult() : "";
-            wildcards[i++] = new Wildcard(pattern.getPattern(), result);
+            String expr = pattern.getPattern();
+            if (expr.indexOf('/') >= 0)
+                throw new IllegalArgumentException("Patterns cannot contain slashes");
+            wildcards[i++] = new Wildcard(expr.replace('.', '/'), result);
         }
         return wildcards;
     }
