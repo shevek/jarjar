@@ -32,12 +32,11 @@ class Wildcard
     private static Pattern star  = REGEX.compile("\\*");
     private static Pattern estar = REGEX.compile("\\+\\??\\)\\Z");
 
-    private Pattern pattern;
-    private int count;
-
-    private ArrayList parts = new ArrayList(16); // kept for debugging
-    private String[] strings;
-    private int[] refs;
+    private final Pattern pattern;
+    private final int count;
+    private final ArrayList parts = new ArrayList(16); // kept for debugging
+    private final String[] strings;
+    private final int[] refs;
 
     public Wildcard(String pattern, String result) {
         if (pattern.equals("**"))
@@ -54,7 +53,48 @@ class Wildcard
         this.pattern = REGEX.compile("\\A" + regex + "\\Z");
         this.count = this.pattern.groupCount();
 
-        compileResult(result);
+        // TODO: check for illegal characters
+        char[] chars = result.toCharArray();
+        int max = 0;
+        for (int i = 0, mark = 0, state = 0, len = chars.length; i < len + 1; i++) {
+            char ch = (i == len) ? '@' : chars[i];
+            if (state == 0) {
+                if (ch == '@') {
+                    parts.add(new String(chars, mark, i - mark));
+                    mark = i + 1;
+                    state = 1;
+                }
+            } else {
+                switch (ch) {
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                    break;
+                default:
+                    if (i == mark)
+                        throw new IllegalArgumentException("Backslash not followed by a digit");
+                    int n = Integer.parseInt(new String(chars, mark, i - mark));
+                    if (n > max)
+                        max = n;
+                    parts.add(new Integer(n));
+                    mark = i--;
+                    state = 0;
+                }
+            }
+        }
+        int size = parts.size();
+        strings = new String[size];
+        refs = new int[size];
+        Arrays.fill(refs, -1);
+        for (int i = 0; i < size; i++) {
+            Object v = parts.get(i);
+            if (v instanceof String) {
+                strings[i] = ((String)v).replace('.', '/');
+            } else {
+                refs[i] = ((Integer)v).intValue();
+            }
+        }
+        if (count < max)
+            throw new IllegalArgumentException("Result includes impossible placeholder \"@" + max + "\": " + result);
         // System.err.println(this);
     }
 
@@ -89,59 +129,6 @@ class Wildcard
                 return false;
         }
         return true;
-    }
-
-    private void compileResult(String value) {
-        // TODO: check for illegal characters
-        char[] chars = value.toCharArray();
-        int max = 0;
-        for (int i = 0, mark = 0, state = 0, len = chars.length; i < len + 1; i++) {
-            char ch = (i == len) ? '@' : chars[i];
-            if (state == 0) {
-                if (ch == '@') {
-                    parts.add(new String(chars, mark, i - mark));
-                    mark = i + 1;
-                    state = 1;
-                }
-            } else {
-                switch (ch) {
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    break;
-                default:
-                    if (i == mark)
-                        throw new IllegalArgumentException("Backslash not followed by a digit");
-                    int n = Integer.parseInt(new String(chars, mark, i - mark));
-                    if (n > max)
-                        max = n;
-                    parts.add(new Integer(n));
-                    mark = i--;
-                    state = 0;
-                }
-            }
-        }
-        int size = parts.size();
-        strings = new String[size];
-        refs = new int[size];
-        Arrays.fill(refs, -1);
-        for (int i = 0; i < size; i++) {
-            Object v = parts.get(i);
-            if (v instanceof String) {
-                strings[i] = ((String)v).replace('.', '/');
-            } else {
-                refs[i] = ((Integer)v).intValue();
-            }
-        }
-        if (count < max)
-            throw new IllegalArgumentException("Result includes impossible placeholder \"@" + max + "\": " + value);
     }
 
     public String toString() {
