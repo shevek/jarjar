@@ -84,7 +84,7 @@
             <zipfileset src="lib/gnu-regexp.jar"/>
             <rule pattern="com.tonicsystems.jarjar.util.**" result="com.tonicsystems.jarjar.ext_util.@1"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
-            <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
+            <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@1"/>
             <manifest>
                 <attribute name="Main-Class" value="com.tonicsystems.jarjar.Main"/>
                 <attribute name="Implementation-Version" value="${version}"/>
