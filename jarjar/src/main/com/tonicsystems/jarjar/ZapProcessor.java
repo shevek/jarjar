@@ -33,15 +33,16 @@ class ZapProcessor implements JarProcessor
     }
 
     public boolean process(EntryStruct struct) throws IOException {
-        if (struct.name.endsWith(".class"))
-            return !zap("L" + struct.name.substring(0, struct.name.length() - 6) + ";");
+        String name = struct.name;
+        if (name.endsWith(".class"))
+            return !zap(name.substring(0, name.length() - 6));
         return true;
     }
     
     private boolean zap(String desc) {
         // TODO: optimize
         for (int i = 0; i < wildcards.length; i++) {
-            if (wildcards[i].matches(desc, Wildcard.STYLE_INTERNAL))
+            if (wildcards[i].matches(desc))
                 return true;
         }
         return false;

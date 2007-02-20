@@ -24,22 +24,17 @@ import com.tonicsystems.jarjar.regex.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-// TODO: eliminate STYLE_IDENTIFIER?
 class Wildcard
 {
     private static RegexEngine REGEX = new GnuRegexEngine();
     
-    public static final int STYLE_INTERNAL = 0;
-    public static final int STYLE_IDENTIFIER = 1;
-
     private static Pattern dots  = REGEX.compile("\\.");
     private static Pattern tilde = REGEX.compile("~");
     private static Pattern dstar = REGEX.compile("\\*\\*");
     private static Pattern star  = REGEX.compile("\\*");
     private static Pattern estar = REGEX.compile("\\+\\??\\)\\Z");
 
-    private Pattern internalPattern;
-    private Pattern identifierPattern;
+    private Pattern pattern;
     private int count;
 
     private ArrayList parts = new ArrayList(16); // kept for debugging
@@ -53,58 +48,38 @@ class Wildcard
             throw new IllegalArgumentException("Not a valid package pattern: " + pattern);
         if (pattern.indexOf("***") >= 0)
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
-        internalPattern = compileHelper(pattern, "/");
-        identifierPattern = compileHelper(pattern, "\\.");
-        count = internalPattern.groupCount();
+        
+        String regex = pattern;
+        regex =  dots.replaceAll(regex, "~");
+        regex = dstar.replaceAll(regex, "(.+?)");
+        regex =  star.replaceAll(regex, "([^/]+)");
+        regex = estar.replaceAll(regex, "*)");
+        regex = tilde.replaceAll(regex, "/");
+        this.pattern = REGEX.compile("\\A" + regex + "\\Z");
+        this.count = this.pattern.groupCount();
 
         compileResult(result);
         // System.err.println(this);
     }
 
-    private static Pattern compileHelper(String expr, String delim) {
-        String p1 = expr;
-        p1 =  dots.replaceAll(p1, "~");
-        p1 = dstar.replaceAll(p1, "(.+?)");
-        p1 =  star.replaceAll(p1, "([^" + delim + "]+)");
-        p1 = estar.replaceAll(p1, "*)");
-        p1 = tilde.replaceAll(p1, delim);
-        return REGEX.compile("\\A" + p1 + "\\Z");
+    public boolean matches(String value) {
+        return getMatcher(value) != null;
     }
 
-    public boolean matches(String value, int style) {
-        return getMatcher(value, style) != null;
-    }
-
-    public String replace(String value, int style) {
-        Matcher matcher = getMatcher(value, style);
+    public String replace(String value) {
+        Matcher matcher = getMatcher(value);
         if (matcher != null) {
             StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < strings.length; i++) {
-                if (refs[i] >= 0) {
-                    sb.append(matcher.group(refs[i]));
-                } else {
-                    String literal = strings[i];
-                    if (style == STYLE_INTERNAL)
-                        literal = literal.replace('.', '/');
-                    sb.append(literal);
-                }
-            }
+            for (int i = 0; i < strings.length; i++)
+                sb.append((refs[i] >= 0) ? matcher.group(refs[i]) : strings[i]);
             return sb.toString();
         }
         return null;
     }
 
-    private Matcher getMatcher(String value, int style) {
-        Pattern pattern;
-        if (style == STYLE_INTERNAL) {
-            pattern = internalPattern;
-        } else if (style == STYLE_IDENTIFIER) {
-            pattern = identifierPattern;
-        } else {
-            throw new IllegalArgumentException("Unknown style " + style);
-        }
+    private Matcher getMatcher(String value) {
         Matcher matcher = pattern.getMatcher(value);
-        if (matcher.matches() && checkIdentifierChars(value, (style == STYLE_INTERNAL) ? "/" : "."))
+        if (matcher.matches() && checkIdentifierChars(value, "/"))
             return matcher;
         return null;
     }
@@ -164,7 +139,7 @@ class Wildcard
         for (int i = 0; i < size; i++) {
             Object v = parts.get(i);
             if (v instanceof String) {
-                strings[i] = (String)v;
+                strings[i] = ((String)v).replace('.', '/');
             } else {
                 refs[i] = ((Integer)v).intValue();
             }
@@ -174,8 +149,6 @@ class Wildcard
     }
 
     public String toString() {
-        return "Wildcard{internal=" + internalPattern +
-            ",identifier=" + identifierPattern +
-            ",parts=" + parts + "}";
+        return "Wildcard{pattern=" + pattern + ",parts=" + parts + "}";
     }
 }

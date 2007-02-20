@@ -35,17 +35,18 @@ extends TestCase
     }
 
     private void identifier(String pattern, String result, String value, String expect) {
-        helper(pattern, result, value, expect, Wildcard.STYLE_IDENTIFIER);
+        Wildcard wc = new Wildcard(pattern, result);
+        // System.err.println(wc);
+        String after = wc.replace(value.replace('.', '/'));
+        if (after != null)
+            after = after.replace('/', '.');
+        assertEquals(expect, after);
     }
 
     private void internal(String pattern, String result, String value, String expect) {
-        helper(pattern, result, value, expect, Wildcard.STYLE_INTERNAL);
-    }
-
-    private void helper(String pattern, String result, String value, String expect, int style) {
         Wildcard wc = new Wildcard(pattern, result);
         // System.err.println(wc);
-        assertEquals(expect, wc.replace(value, style));
+        assertEquals(expect, wc.replace(value));
     }
     
     public WildcardTest(String name) {

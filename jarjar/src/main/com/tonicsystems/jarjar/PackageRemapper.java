@@ -47,7 +47,7 @@ class PackageRemapper extends Remapper
     protected String map(String key) {
         String s = (String)typeCache.get(key);
         if (s == null) {
-            s = replaceHelper(key, Wildcard.STYLE_INTERNAL);
+            s = replaceHelper(key);
             if (key.equals(s))
                 s = null;
             typeCache.put(key, s);
@@ -88,8 +88,17 @@ class PackageRemapper extends Remapper
                 s = fixClassForName((String)value);
                 if (s.equals(value))
                     s = mapPath(s);
-                if (s.equals(value))
-                    s = replaceHelper(s, Wildcard.STYLE_IDENTIFIER);
+                if (s.equals(value)) {
+                    boolean hasDot = s.indexOf('.') >= 0;
+                    boolean hasSlash = s.indexOf('/') >= 0;
+                    if (!(hasDot && hasSlash)) {
+                        if (hasDot) {
+                            s = replaceHelper(s.replace('.', '/')).replace('/', '.');
+                        } else {
+                            s = replaceHelper(s);
+                        }
+                    }
+                }
                 valueCache.put(value, s);
             }
             // TODO: add back class name to verbose message
@@ -119,9 +128,9 @@ class PackageRemapper extends Remapper
         return value;
     }
             
-    private String replaceHelper(String value, int style) {
+    private String replaceHelper(String value) {
         for (int i = 0; i < wildcards.length; i++) {
-            String test = wildcards[i].replace(value, style);
+            String test = wildcards[i].replace(value);
             if (test != null)
                 return test;
         }
