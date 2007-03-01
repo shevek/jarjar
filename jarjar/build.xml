@@ -127,7 +127,7 @@
         </jar>
     </target>
 
-    <target name="test" depends="junit,test-rejar" description="Run tests"/>
+    <target name="test" depends="junit,test-rejar,test-manifest" description="Run tests"/>
 
     <target name="junit" depends="compile-test">
         <junit>
@@ -152,7 +152,34 @@
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
         </jarjar2>
-        <delete file="${test.jar}"/>
+        <!-- <delete file="${test.jar}"/> -->
+    </target>
+
+    <target name="test-manifest" depends="jar">
+        <delete>
+            <fileset dir="build" includes="manifest*.jar"/>
+        </delete>
+        <jar jarfile="build/manifest1.jar">
+            <manifest>
+                <attribute name="Built-By" value="Chris"/>
+                <attribute name="Specification-Title" value="Example"/>
+            </manifest>
+        </jar>
+        <jar jarfile="build/manifest2.jar">
+            <manifest>
+                <attribute name="Built-By" value="CJN"/>
+                <attribute name="Implementation-Title" value="common"/>
+            </manifest>
+        </jar>
+        <jar jarfile="build/manifest3.jar" filesetmanifest="merge">
+            <zipfileset src="build/manifest1.jar"/>
+            <zipfileset src="build/manifest2.jar"/>
+        </jar>
+        <jarjar jarfile="build/manifest4.jar" filesetmanifest="merge">
+            <zipfileset src="build/manifest1.jar"/>
+            <zipfileset src="build/manifest2.jar"/>
+        </jarjar>
+        <!-- TODO: check manifest contents here -->
     </target>
 
     <!-- TODO: reference ant javadocs -->

@@ -180,7 +180,7 @@ public class Main
             throw new IllegalArgumentException("arguments cannot be null");
         if (patterns == null)
             throw new IllegalArgumentException("rules are required");
-        JarProcessor proc = new MainProcessor(patterns, verbose);
+        JarProcessor proc = new MainProcessor(patterns, verbose, true);
         StandaloneJarProcessor.run(new File(from), new File(to), proc);
     }
 }

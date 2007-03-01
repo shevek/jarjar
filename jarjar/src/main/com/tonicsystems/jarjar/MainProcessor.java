@@ -29,7 +29,7 @@ class MainProcessor implements JarProcessor
     private boolean verbose;
     private JarProcessor chain;
     
-    public MainProcessor(List patterns, boolean verbose) {
+    public MainProcessor(List patterns, boolean verbose, boolean skipManifest) {
         this.verbose = verbose;
         List zapList = new ArrayList();
         List killList = new ArrayList();
@@ -47,12 +47,14 @@ class MainProcessor implements JarProcessor
         if (!killList.isEmpty())
             System.err.println("Kill rules are no longer supported and will be ignored");
         PackageRemapper pr = new PackageRemapper(ruleList, verbose);
-        chain = new JarProcessorChain(new JarProcessor[]{
-            ManifestProcessor.getInstance(),
-            new ZapProcessor(zapList),
-            new JarTransformerChain(new ClassTransformer[]{ new RemappingClassTransformer(pr) }),
-            new ResourceProcessor(pr),
-        });
+
+        List processors = new ArrayList();
+        if (skipManifest)
+            processors.add(ManifestProcessor.getInstance());
+        processors.add(new ZapProcessor(zapList));
+        processors.add(new JarTransformerChain(new ClassTransformer[]{ new RemappingClassTransformer(pr) }));
+        processors.add(new ResourceProcessor(pr));
+        chain = new JarProcessorChain((JarProcessor[])processors.toArray(new JarProcessor[processors.size()]));
     }
 
     public boolean process(EntryStruct struct) throws IOException {

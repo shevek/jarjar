@@ -46,7 +46,7 @@ public class JarJarTask extends AntJarProcessor
     }
     
     protected JarProcessor getJarProcessor() {
-        return new MainProcessor(patterns, verbose);
+        return new MainProcessor(patterns, verbose, false);
     }
 
     protected void cleanHelper() {

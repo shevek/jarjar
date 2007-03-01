@@ -47,7 +47,7 @@ public class JarJarMojo extends AbstractMojo
                 patterns = RulesFileParser.parse(rulesFile);
             }
 
-            JarProcessor proc = new MainProcessor(patterns, verbose);
+            JarProcessor proc = new MainProcessor(patterns, verbose, true);
             StandaloneJarProcessor.run(fromJar, toJar, proc);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
