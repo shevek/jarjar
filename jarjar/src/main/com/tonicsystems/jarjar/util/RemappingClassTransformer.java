@@ -24,6 +24,10 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.RemappingMethodAdapter;
+
 public class RemappingClassTransformer extends RemappingClassAdapter implements ClassTransformer
 {
     public RemappingClassTransformer(Remapper pr) {
@@ -32,6 +36,21 @@ public class RemappingClassTransformer extends RemappingClassAdapter implements 
         
     public void setTarget(ClassVisitor target) {
         cv = target;
+    }
+
+    // workaround for ASM bug
+    protected RemappingMethodAdapter createRemappingMethodAdapter(int access, String newDesc, MethodVisitor mv) {
+        return new RemappingMethodAdapter(access, newDesc, mv, remapper) {
+            public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+                String newOwner = owner.startsWith("[") ?
+                    remapper.mapValue(Type.getType(owner)).toString() :
+                    remapper.mapType(owner);
+                mv.visitMethodInsn(opcode,
+                                   newOwner,
+                                   remapper.mapMethodName(owner, name, desc),
+                                   remapper.mapMethodDesc(desc));
+            }
+        };
     }
 }
 

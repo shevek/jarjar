@@ -58,6 +58,7 @@
 
     <target name="compile" depends="init" description="Compile">
         <compile module="main" refid="path.build" bootclasspath="${compile.bootclasspath}"/>
+        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
     </target>
 
     <target name="compile-test" depends="compile" description="Compile tests">
@@ -72,7 +73,6 @@
 
     <target name="jar" depends="compile" description="Create Jar">
         <mkdir dir="dist"/>
-        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="path.run"/>
         <jarjar jarfile="${jarfile}">
             <fileset dir="build/main"/>
             <zipfileset src="lib/asm.jar"/>
@@ -127,7 +127,7 @@
         </jar>
     </target>
 
-    <target name="test" depends="junit,test-rejar,test-manifest" description="Run tests"/>
+    <target name="test" depends="junit,test-rejar,test-manifest,test-enum" description="Run tests"/>
 
     <target name="junit" depends="compile-test">
         <junit>
@@ -144,6 +144,7 @@
 
     <target name="test-rejar" depends="jar">
         <taskdef name="jarjar2" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${jarfile}"/>
+        <delete file="${test.jar}"/>
         <jarjar2 jarfile="${test.jar}">
             <fileset dir="build/main"/>
             <zipfileset src="lib/asm.jar"/>
@@ -152,10 +153,21 @@
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@0"/>
         </jarjar2>
-        <!-- <delete file="${test.jar}"/> -->
+        <delete file="${test.jar}"/>
     </target>
 
-    <target name="test-manifest" depends="jar">
+    <target name="test-enum" depends="compile">
+        <delete file="build/enumtest.jar"/>
+        <jarjar jarfile="build/enumtest.jar" verbose="true">
+            <zipfileset src="src/test/enumtest.jar"/>
+            <rule pattern="foo.**" result="bar.@1"/>
+        </jarjar>
+        <java classpath="build/enumtest.jar" classname="bar.EnumTest"/>
+        <!-- TODO: check output -->
+        <!-- <delete file="build/enumtest.jar"/> -->
+    </target>
+
+    <target name="test-manifest" depends="compile">
         <delete>
             <fileset dir="build" includes="manifest*.jar"/>
         </delete>
