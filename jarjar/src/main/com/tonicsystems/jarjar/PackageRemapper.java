@@ -44,23 +44,6 @@ class PackageRemapper extends Remapper
         wildcards = PatternElement.createWildcards(ruleList);
     }
 
-
-//     // workaround for ASM bug
-//     protected RemappingMethodAdapter createRemappingMethodAdapter(int access, String newDesc, MethodVisitor mv) {
-//         return new RemappingMethodAdapter(access, newDesc, mv, remapper) {
-//             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-//                 String newOwner = owner.startsWith("[") ?
-//                     remapper.mapValue(Type.getType(owner)).toString() :
-//                     remapper.mapType(owner);
-//                 mv.visitMethodInsn(opcode,
-//                                    newOwner,
-//                                    remapper.mapMethodName(owner, name, desc),
-//                                    remapper.mapMethodDesc(desc));
-//             }
-//         };
-//     }
-    
-
     protected String map(String key) {
         // workaround for ASM bug
         if (key.startsWith("["))
