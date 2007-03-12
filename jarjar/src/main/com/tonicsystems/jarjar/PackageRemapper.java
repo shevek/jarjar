@@ -45,10 +45,6 @@ class PackageRemapper extends Remapper
     }
 
     protected String map(String key) {
-        // workaround for ASM bug
-        if (key.startsWith("["))
-            return mapValue(Type.getType(key)).toString();
-
         String s = (String)typeCache.get(key);
         if (s == null) {
             s = replaceHelper(key);
