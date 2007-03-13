@@ -13,7 +13,7 @@ Usage:
     Any existing file named by <out-jar> will be deleted.
 
     The transformation is defined by a set of rules in the file specified
-    by the rules argument (see below)
+    by the rules argument (see below).
 
   java -jar jarjar.jar --find [--level=value] <cp1> [<cp2>] 
 
@@ -33,7 +33,7 @@ Usage:
 
 Classpath format:
 
-  The classpath argument is a colon or semi-color delimited set
+  The classpath argument is a colon or semi-colon delimited set
   (depending on platform) of directories, jar files, or zip files. See
   the following page for more details:
   http://java.sun.com/j2se/1.5.0/docs/tooldocs/solaris/classpath.html
@@ -44,6 +44,25 @@ Classpath format:
 Rules file format:
 
   The rules file is a text file, one rule per line. Leading and trailing
-  whitespace is ignored. TODO
+  whitespace is ignored. There are two types of rules:
 
-  
+    rule <from-pattern> <to-pattern>
+    zap <from-pattern>
+
+  The standard rule ("rule") is used to rename classes. All references
+  to the renamed classes will also be updated. If a class name is
+  matched by more than one rule, only the first one will apply.
+
+  The "zap" rule causes any matched class to be removed from the resulting
+  jar file. All zap rules are processed before renaming rules.
+
+  <from-pattern> is a class name with optional wildcards. "**" will
+  match against any valid class name substring. To match a single
+  package component (by excluding "." from the match), a single "*" may
+  be used instead.
+
+  <to-pattern> is a class name which can optionally reference the
+  substrings matched by the wildcards. A numbered reference is available
+  for every "*" or "**" in the <from-pattern>, starting from left to
+  right: "@1", "@2", etc. A special "@0" reference contains the entire
+  matched class name.
