@@ -50,7 +50,7 @@ public class ClassPathIterator implements Iterator
     }
     
     public ClassPathIterator(File parent, String classPath) throws IOException {
-        StringTokenizer st = new StringTokenizer(classPath, System.getProperty("path.separator"));
+        StringTokenizer st = new StringTokenizer(classPath, ":;");
         List fileList = new ArrayList();
         while (st.hasMoreTokens()) {
             String part = (String)st.nextElement();
