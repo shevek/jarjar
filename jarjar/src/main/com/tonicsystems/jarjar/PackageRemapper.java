@@ -30,7 +30,7 @@ import java.util.*;
 class PackageRemapper extends Remapper
 {
     private static final String RESOURCE_SUFFIX = "RESOURCE";
-    private static final Pattern IS_DESC = new GnuRegexEngine().compile("\\[*([VZCBSIFJD]|L[\\w\\.]+;)");
+    private static final Pattern IS_DESC = new GnuRegexEngine().compile("\\[*([VZCBSIFJD]|L[\\w/]+;)");
     
     private final Wildcard[] wildcards;
     private final HashMap typeCache = new HashMap();
