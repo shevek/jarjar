@@ -30,7 +30,6 @@ import java.util.*;
 class PackageRemapper extends Remapper
 {
     private static final String RESOURCE_SUFFIX = "RESOURCE";
-    private static final Pattern IS_DESC = new GnuRegexEngine().compile("\\[*([VZCBSIFJD]|L[\\w/]+;)");
     
     private final Wildcard[] wildcards;
     private final HashMap typeCache = new HashMap();
@@ -42,6 +41,19 @@ class PackageRemapper extends Remapper
     public PackageRemapper(List ruleList, boolean verbose) {
         this.verbose = verbose;
         wildcards = PatternElement.createWildcards(ruleList);
+    }
+
+    // also used by KeepProcessor
+    static boolean isArrayForName(String value) {
+        if (value.startsWith("[") && value.endsWith(";")) {
+            try {
+                Type.getType(value.replace('.', '/'));
+                return true;
+            } catch (Exception e) {
+                System.err.println("not array for name: " + value);
+            }
+        }
+        return false;
     }
 
     protected String map(String key) {
@@ -85,7 +97,13 @@ class PackageRemapper extends Remapper
         if (value instanceof String) {
             String s = (String)valueCache.get(value);
             if (s == null) {
-                s = fixClassForName((String)value);
+                s = (String)value;
+                if (isArrayForName(s)) {
+                    String desc1 = s.replace('.', '/');
+                    String desc2 = mapDesc(desc1);
+                    if (!desc2.equals(desc1))
+                        return desc2.replace('/', '.');
+                }
                 if (s.equals(value))
                     s = mapPath(s);
                 if (s.equals(value)) {
@@ -110,24 +128,6 @@ class PackageRemapper extends Remapper
         }
     }
 
-    private String fixClassForName(String value)
-    {
-        if (value.indexOf('.') >= 0) {
-            String desc1 = value.replace('.', '/');
-            if (IS_DESC.matches(desc1)) {
-                try {
-                    String desc2 = mapDesc(desc1);
-                    if (!desc2.equals(desc1))
-                        return desc2.replace('/', '.');
-                } catch (Exception e) {
-                    // TODO
-                    e.printStackTrace(System.err);
-                }
-            }
-        }
-        return value;
-    }
-            
     private String replaceHelper(String value) {
         for (int i = 0; i < wildcards.length; i++) {
             String test = wildcards[i].replace(value);

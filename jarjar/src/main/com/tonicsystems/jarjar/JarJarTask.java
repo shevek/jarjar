@@ -21,11 +21,15 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import org.apache.tools.ant.BuildException;
 
 public class JarJarTask extends AntJarProcessor
 {
     private List patterns = new ArrayList();
+    private List keeplist = new ArrayList();
 
     public void addConfiguredRule(Rule rule) {
         if (rule.getPattern() == null || rule.getResult() == null)
@@ -39,14 +43,26 @@ public class JarJarTask extends AntJarProcessor
         patterns.add(zap);
     }
 
+    public void addConfiguredKeep(Keep keep) {
+        if (keep.getPattern() == null)
+            throw new IllegalArgumentException("The <keep> element requires a \"pattern\" attribute.");
+        patterns.add(keep);
+    }
+    
     public void addConfiguredKill(Kill kill) {
         if (kill.getPattern() == null)
             throw new IllegalArgumentException("The <kill> element requires a \"pattern\" attribute.");
         patterns.add(kill);
     }
-    
-    protected JarProcessor getJarProcessor() {
-        return new MainProcessor(patterns, verbose, false);
+
+    public void execute() throws BuildException {
+        MainProcessor proc = new MainProcessor(patterns, verbose, false);
+        execute(proc);
+        try {
+            proc.strip(getDestFile());
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
     }
 
     protected void cleanHelper() {

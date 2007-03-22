@@ -21,35 +21,24 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 
-public class JarJarMojo extends AbstractMojo
+class ExcludeProcessor implements JarProcessor
 {
-    private File fromJar;
-    private File toJar;
-    private File rulesFile;
-    private String rules;
-    private boolean verbose;
-    
-    public void execute() throws MojoExecutionException {
-        if (!((rulesFile == null || !rulesFile.exists()) ^ (rules == null)))
-            throw new MojoExecutionException("Exactly one of rules or rulesFile is required");
+    private final Set excludes;
+    private final boolean verbose;
 
-        try {
-            Main main = new Main();
-            if (rules != null) {
-                main.setRules(rules);
-            } else {
-                main.setRules(rulesFile);
-            }
-            main.setVerbose(verbose);
-            main.run(fromJar, toJar);
-        } catch (IOException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
+    public ExcludeProcessor(Set excludes, boolean verbose) {
+        this.excludes = excludes;
+        this.verbose = verbose;
+    }
+
+    public boolean process(EntryStruct struct) throws IOException {
+        boolean result = !excludes.contains(struct.name);
+        if (verbose && !result)
+            System.err.println("Excluding " + struct.name);
+        return result;
     }
 }
+    

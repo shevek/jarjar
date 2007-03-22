@@ -21,24 +21,19 @@
 package com.tonicsystems.jarjar.util;
 
 import java.io.*;
-import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
 
 abstract public class JarTransformer implements JarProcessor
 {
     public boolean process(EntryStruct struct) throws IOException {
         if (struct.name.endsWith(".class")) {
-            // System.err.println("processing " + struct.name);
             ClassReader reader;
             try {
                 reader = new ClassReader(struct.in);
             } catch (Exception e) {
-                // TODO?
-                return true;
-            } finally {
-                struct.in.close();
+                return true; // TODO?
             }
             GetNameClassWriter w = new GetNameClassWriter(ClassWriter.COMPUTE_MAXS);
             reader.accept(transform(w), 0);

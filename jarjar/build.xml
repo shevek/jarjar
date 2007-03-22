@@ -14,7 +14,7 @@
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
 
-    <property name="version" value="1.0rc2"/>
+    <property name="version" value="1.0rc3"/>
     <property name="jarfile" value="dist/jarjar-${version}.jar"/>
     <property name="jarfile.util" value="dist/jarjar-util-${version}.jar"/>
     <property name="jarfile.mojo" value="dist/jarjar-plugin-${version}.jar"/>
@@ -30,7 +30,6 @@
         <path id="path.run">
             <path refid="path.build"/>
             <pathelement path="build/main"/>
-            <pathelement path="build/dev"/>
         </path>
         <path id="path.test">
             <path refid="path.run"/>
@@ -82,6 +81,8 @@
                 <include name="org/objectweb/asm/commons/LocalVariablesSorter.class"/>
             </zipfileset>
             <zipfileset src="lib/gnu-regexp.jar"/>
+            <keep pattern="com.tonicsystems.jarjar.Main"/>
+            <keep pattern="com.tonicsystems.jarjar.JarJarTask"/>
             <rule pattern="com.tonicsystems.jarjar.util.**" result="com.tonicsystems.jarjar.ext_util.@1"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
             <rule pattern="gnu.**" result="com.tonicsystems.jarjar.@1"/>

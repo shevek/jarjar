@@ -34,22 +34,22 @@ abstract public class AntJarProcessor extends Jar
     private JarProcessor proc;
     protected boolean verbose;
 
-    abstract protected JarProcessor getJarProcessor();
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void execute() throws BuildException {
+    abstract public void execute() throws BuildException;
+
+    public void execute(JarProcessor proc) throws BuildException {
         setFilesonly(true);
-        proc = getJarProcessor();
+        this.proc = proc;
         super.execute();
     }
 
     protected void zipDir(File dir, ZipOutputStream zOut, String vPath, int mode) throws IOException {
         // ignore
     }
-    
+
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath,
                            long lastModified, File fromArchive, int mode) throws IOException {
         struct.in = is;

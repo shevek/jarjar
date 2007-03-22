@@ -111,7 +111,7 @@ public class Main
                 if (find) {
                     main.find(args[index], args[index + 1]);
                 } else {
-                    main.run(args[index], args[index + 1]);
+                    main.run(new File(args[index]), new File(args[index + 1]));
                 }
             } else if (find) {
                 main.find(args[index]);
@@ -139,11 +139,13 @@ public class Main
     }
 
     public void setRules(File file) throws IOException {
-        if (file == null)
-            throw new IllegalArgumentException("rules cannot be null");
         patterns = RulesFileParser.parse(file);
     }
 
+    public void setRules(String rules) throws IOException {
+        patterns = RulesFileParser.parse(rules);
+    }
+    
     public void setRules(List rules) {
         patterns = new ArrayList(rules);
     }
@@ -175,12 +177,13 @@ public class Main
         new StringDumper().run(arg, new PrintWriter(System.out));
     }
 
-    public void run(String from, String to) throws IOException {
+    public void run(File from, File to) throws IOException {
         if (from == null || to == null)
             throw new IllegalArgumentException("arguments cannot be null");
         if (patterns == null)
             throw new IllegalArgumentException("rules are required");
-        JarProcessor proc = new MainProcessor(patterns, verbose, true);
-        StandaloneJarProcessor.run(new File(from), new File(to), proc);
+        MainProcessor proc = new MainProcessor(patterns, verbose, true);
+        StandaloneJarProcessor.run(from, to, proc);
+        proc.strip(to);
     }
 }

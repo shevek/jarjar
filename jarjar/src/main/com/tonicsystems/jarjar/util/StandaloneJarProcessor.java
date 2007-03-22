@@ -29,29 +29,76 @@ import java.io.*;
 
 public class StandaloneJarProcessor
 {
-    public static void run(File from, File to, JarProcessor proc) throws IOException {
+    /*
+    public static void run(File from, JarProcessor proc) throws IOException {
         JarFile in = new JarFile(from);
-        JarOutputStream out = new JarOutputStream(new FileOutputStream(to));
-        byte[] buf = new byte[0x2000];
         EntryStruct struct = new EntryStruct();
         Enumeration e = in.entries();
         while (e.hasMoreElements()) {
             JarEntry entry = (JarEntry)e.nextElement();
             struct.in = in.getInputStream(entry);
-            struct.name = entry.getName();
-            struct.time = entry.getTime();
-            struct.file = from;
-            if (proc.process(struct)) {
-                entry = new JarEntry(struct.name);
-                entry.setTime(struct.time);
-                entry.setCompressedSize(-1);
-                out.putNextEntry(entry);
-                pipe(struct.in, out, buf);
+            try {
+                struct.name = entry.getName();
+                struct.time = entry.getTime();
+                struct.file = from;
+                proc.process(struct);
+            } finally {
                 struct.in.close();
             }
         }
-        out.close();
-        out = null;
+    }
+    */
+    
+    public static void run(File from, File to, JarProcessor proc) throws IOException {
+        byte[] buf = new byte[0x2000];
+        File tmp = null;
+        if (from.equals(to)) {
+            tmp = File.createTempFile("jarjar", null);
+            copy(from, tmp, buf);
+            from = tmp;
+        }
+        JarFile in = new JarFile(from);
+        JarOutputStream out = new JarOutputStream(new FileOutputStream(to));
+        try {
+            EntryStruct struct = new EntryStruct();
+            Enumeration e = in.entries();
+            while (e.hasMoreElements()) {
+                JarEntry entry = (JarEntry)e.nextElement();
+                struct.name = entry.getName();
+                struct.time = entry.getTime();
+                struct.file = from;
+                struct.in = in.getInputStream(entry);
+                try {
+                    if (proc.process(struct)) {
+                        entry = new JarEntry(struct.name);
+                        entry.setTime(struct.time);
+                        entry.setCompressedSize(-1);
+                        out.putNextEntry(entry);
+                        pipe(struct.in, out, buf);
+                    }
+                } finally {
+                    struct.in.close();
+                }
+            }
+        } finally {
+            out.close();
+            if (tmp != null)
+                tmp.delete();
+        }
+    }
+
+    private static void copy(File from, File to, byte[] buf) throws IOException {
+        InputStream in = new FileInputStream(from);
+        try {
+            OutputStream out = new FileOutputStream(to);
+            try {
+                pipe(in, out, buf);
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
     }
 
     private static void pipe(InputStream is, OutputStream out, byte[] buf) throws IOException {
