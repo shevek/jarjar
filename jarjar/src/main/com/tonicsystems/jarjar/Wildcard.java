@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 class Wildcard
 {
-    private static RegexEngine REGEX = new GnuRegexEngine();
+    private static RegexEngine REGEX = new JdkRegexEngine();
     
     private static Pattern dstar = REGEX.compile("\\*\\*");
     private static Pattern star  = REGEX.compile("\\*");
