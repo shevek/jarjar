@@ -36,14 +36,16 @@ public class JarJarMojo extends AbstractMojo
             throw new MojoExecutionException("Exactly one of rules or rulesFile is required");
 
         try {
-            Main main = new Main();
+            List patterns;
             if (rules != null) {
-                main.setRules(rules);
+                patterns = RulesFileParser.parse(rules);
             } else {
-                main.setRules(rulesFile);
+                patterns = RulesFileParser.parse(rulesFile);
             }
-            main.setVerbose(verbose);
-            main.run(fromJar, toJar);
+            // TODO: refactor with Main.java
+            MainProcessor proc = new MainProcessor(patterns, verbose, true);
+            StandaloneJarProcessor.run(fromJar, toJar, proc);
+            proc.strip(toJar);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
