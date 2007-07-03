@@ -44,12 +44,6 @@ public class JarJarTask extends AntJarProcessor
             throw new IllegalArgumentException("The <keep> element requires a \"pattern\" attribute.");
         patterns.add(keep);
     }
-    
-    public void addConfiguredKill(Kill kill) {
-        if (kill.getPattern() == null)
-            throw new IllegalArgumentException("The <kill> element requires a \"pattern\" attribute.");
-        patterns.add(kill);
-    }
 
     public void execute() throws BuildException {
         MainProcessor proc = new MainProcessor(patterns, verbose, false);

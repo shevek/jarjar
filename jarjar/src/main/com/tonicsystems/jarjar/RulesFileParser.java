@@ -52,8 +52,6 @@ class RulesFileParser
                 element = new Zap();
             } else if (type.equals("keep")) {
                 element = new Keep();
-            } else if (type.equals("kill") || type.equals("depkill")) {
-                element = new Kill();
             } else {
                 error(c, parts);
             }

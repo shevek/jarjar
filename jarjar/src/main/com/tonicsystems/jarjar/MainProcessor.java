@@ -31,7 +31,6 @@ class MainProcessor implements JarProcessor
     public MainProcessor(List patterns, boolean verbose, boolean skipManifest) {
         this.verbose = verbose;
         List zapList = new ArrayList();
-        List killList = new ArrayList();
         List ruleList = new ArrayList();
         List keepList = new ArrayList();
         for (Iterator it = patterns.iterator(); it.hasNext();) {
@@ -40,14 +39,10 @@ class MainProcessor implements JarProcessor
                 zapList.add(pattern);
             } else if (pattern instanceof Rule) {
                 ruleList.add(pattern);
-            } else if (pattern instanceof Kill) {
-                killList.add(pattern);
             } else if (pattern instanceof Keep) {
                 keepList.add(pattern);
             }
         }
-        if (!killList.isEmpty())
-            System.err.println("Kill rules are no longer supported and will be ignored");
 
         PackageRemapper pr = new PackageRemapper(ruleList, verbose);
         kp = keepList.isEmpty() ? null : new KeepProcessor(keepList);
