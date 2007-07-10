@@ -20,13 +20,7 @@ import java.io.IOException;
 
 public class RuntimeIOException extends RuntimeException
 {
-    private final IOException e;
-
     public RuntimeIOException(IOException e) {
-        this.e = e;
-    }
-
-    public Throwable getCause() {
-        return e;
+        super(e);
     }
 }
