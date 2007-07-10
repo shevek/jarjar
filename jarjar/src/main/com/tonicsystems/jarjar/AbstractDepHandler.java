@@ -30,15 +30,15 @@ abstract public class AbstractDepHandler implements DepHandler
     }
     
     public void handle(PathClass from, PathClass to) throws IOException {
-        Pair pair;
+        List pair;
         if (level == LEVEL_JAR) {
-            pair = new Pair(from.getClassPath(), to.getClassPath());
+            pair = createPair(from.getClassPath(), to.getClassPath());
         } else {
-            pair = new Pair(from.getClassName(), to.getClassName());
+            pair = createPair(from.getClassName(), to.getClassName());
         }
         if (!seenIt.contains(pair)) {
             seenIt.add(pair);
-            handle((String)pair.getObject1(), (String)pair.getObject2());
+            handle(pair.get(0).toString(), pair.get(1).toString());
         }
     }
 
@@ -46,4 +46,11 @@ abstract public class AbstractDepHandler implements DepHandler
 
     public void handleStart() throws IOException { }
     public void handleEnd() throws IOException { }
+
+    private static List createPair(Object o1, Object o2) {
+        List list = new ArrayList(2);
+        list.add(o1);
+        list.add(o2);
+        return list;
+    }
 }
