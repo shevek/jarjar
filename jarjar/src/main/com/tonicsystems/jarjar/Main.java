@@ -24,7 +24,6 @@ import java.lang.reflect.Method;
 
 public class Main {
 
-  public static final int STYLE_SIMPLE = 0;
   private static final String HELP;
 
   static {
@@ -38,7 +37,6 @@ public class Main {
   private boolean verbose;
     private List patterns;
     private int level = DepHandler.LEVEL_CLASS;
-    private int style = STYLE_SIMPLE;
 
     public static void main(String[] args) throws Exception {
       Main main = new Main();

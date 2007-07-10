@@ -52,7 +52,6 @@ class MainProcessor implements JarProcessor
             processors.add(ManifestProcessor.getInstance());
         if (kp != null)
             processors.add(kp);
-        // processors.add(new JarClassVisitor(new RemappingClassAdapter(new EmptyVisitor(), kr)));
         processors.add(new ZapProcessor(zapList));
         processors.add(new JarTransformerChain(new ClassTransformer[]{ new RemappingClassTransformer(pr) }));
         processors.add(new ResourceProcessor(pr));
