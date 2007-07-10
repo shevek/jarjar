@@ -16,17 +16,16 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 class Wildcard
 {
-    private static RegexEngine REGEX = new JdkRegexEngine();
-    
-    private static Pattern dstar = REGEX.compile("\\*\\*");
-    private static Pattern star  = REGEX.compile("\\*");
-    private static Pattern estar = REGEX.compile("\\+\\??\\)\\Z");
+    private static Pattern dstar = Pattern.compile("\\*\\*");
+    private static Pattern star  = Pattern.compile("\\*");
+    private static Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
     private final Pattern pattern;
     private final int count;
@@ -43,11 +42,11 @@ class Wildcard
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
         
         String regex = pattern;
-        regex = dstar.replaceAll(regex, "(.+?)");
-        regex =  star.replaceAll(regex, "([^/]+)");
-        regex = estar.replaceAll(regex, "*)");
-        this.pattern = REGEX.compile("\\A" + regex + "\\Z");
-        this.count = this.pattern.groupCount();
+        regex = replaceAllLiteral(dstar, regex, "(.+?)");
+        regex = replaceAllLiteral(star, regex, "([^/]+)");
+        regex = replaceAllLiteral(estar, regex, "*)");
+        this.pattern = Pattern.compile("\\A" + regex + "\\Z");
+        this.count = this.pattern.matcher("foo").groupCount();
 
         // TODO: check for illegal characters
         char[] chars = result.toCharArray();
@@ -110,7 +109,7 @@ class Wildcard
     }
 
     private Matcher getMatcher(String value) {
-        Matcher matcher = pattern.getMatcher(value);
+        Matcher matcher = pattern.matcher(value);
         if (matcher.matches() && checkIdentifierChars(value, "/"))
             return matcher;
         return null;
@@ -125,6 +124,11 @@ class Wildcard
                 return false;
         }
         return true;
+    }
+
+    private static String replaceAllLiteral(Pattern pattern, String value, String replace) {
+        replace = replace.replaceAll("([$\\\\])", "\\\\$0");
+        return pattern.matcher(value).replaceAll(replace);
     }
 
     public String toString() {

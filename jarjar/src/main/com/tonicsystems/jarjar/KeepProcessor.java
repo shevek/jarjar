@@ -47,8 +47,7 @@ class KeepProcessor extends Remapper implements JarProcessor
         return removable;
     }
 
-    private void closureHelper(Set closure, Collection process)
-    {
+    private void closureHelper(Set closure, Collection process) {
         if (process == null)
             return;
         for (Iterator it = process.iterator(); it.hasNext();) {
