@@ -20,18 +20,16 @@ import com.tonicsystems.jarjar.util.*;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.EmptyVisitor;
 
-class StringReader extends EmptyVisitor
+abstract class StringReader extends EmptyVisitor
 {
-    private StringVisitor sv;
     private int line = -1;
+    private String className;
 
-    public StringReader(StringVisitor sv) {
-        this.sv = sv;
-    }
+    abstract public void visitString(String className, String value, int line);
 
     private void handleObject(Object value) {
         if (value instanceof String)
-            sv.visitString((String)value, line);
+            visitString(className, (String)value, line);
     }
 
     public void visit(String name, Object value) {
@@ -43,12 +41,8 @@ class StringReader extends EmptyVisitor
     }
     
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        className = name;
         line = -1;
-        sv.visitStart(name);
-    }
-
-    public void visitEnd() {
-        sv.visitEnd();
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
@@ -61,6 +55,6 @@ class StringReader extends EmptyVisitor
     }
     
     public void visitLineNumber(int line, Label start) {
-        StringReader.this.line = line;
+        this.line = line;
     }
 }

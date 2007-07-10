@@ -26,42 +26,36 @@ class StringDumper
     }
 
     public void run(String classPath, PrintWriter pw) throws IOException {
-        StringReader stringReader = new StringReader(new DumpStringVisitor(pw));
+        StringReader stringReader = new DumpStringReader(pw);
         ClassPathIterator cp = new ClassPathIterator(classPath);
         try {
             while (cp.hasNext()) {
                 try {
-                    IoUtils.readClass(cp.getInputStream(cp.next())).accept(stringReader, ClassReader.SKIP_DEBUG);
+                    IoUtils.readClass(cp.getInputStream(cp.next())).accept(stringReader, 0);
                 } catch (ClassFormatError e) {
                     // TODO: log?
                 }
+                pw.flush();
             }
         } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();
         }
     }
 
-    private static class DumpStringVisitor
-    implements StringVisitor
+    private static class DumpStringReader extends StringReader
     {
         private final PrintWriter pw;
         private String className;
-        private boolean needName;
 
-        public DumpStringVisitor(PrintWriter pw) {
+        public DumpStringReader(PrintWriter pw) {
             this.pw = pw;
         }
 
-        public void visitStart(String className) {
-            this.className = className;
-            needName = true;
-        }
-
-        public void visitString(String value, int line) {
+        public void visitString(String className, String value, int line) {
             if (value.length() > 0) {
-                if (needName) {
+                if (!className.equals(this.className)) {
+                    this.className = className;
                     pw.println(className.replace('/', '.'));
-                    needName = false;
                 }
                 pw.print("\t");
                 if (line >= 0)
@@ -69,10 +63,6 @@ class StringDumper
                 pw.print(IoUtils.escapeStringLiteral(value));
                 pw.println();
             }
-        }
-
-        public void visitEnd() {
-            pw.flush();
         }
     };
 }
