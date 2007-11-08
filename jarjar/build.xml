@@ -129,7 +129,7 @@
     <target name="test" depends="junit,test-rejar,test-manifest,test-enum" description="Run tests"/>
 
     <target name="junit" depends="compile-test">
-        <junit>
+        <junit haltonfailure="on">
             <!-- <jvmarg value="-Xint"/> -->
             <!-- <jvmarg value="-Xprof"/> -->
             <!-- <jvmarg value="-server"/> -->
