@@ -22,6 +22,8 @@ public class WildcardTest
 extends TestCase
 {
     public void testWildcards() {
+        wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/proxy/Mixin$Generator",
+            "foo/proxy/Mixin$Generator");
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/Bar", "foo/Bar");
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/Bar/Baz", "foo/Bar/Baz");
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/", "foo/");

@@ -53,7 +53,7 @@ class DepFindVisitor extends RemappingClassAdapter
             curPathClass = new PathClass(source, name);
         }
 
-        protected String map(String key) {
+        public String map(String key) {
             try {
                 if (classes.containsKey(key)) {
                     String otherSource = getSourceName(classes.get(key));

@@ -78,7 +78,7 @@ class KeepProcessor extends Remapper implements JarProcessor
         return true;
     }
 
-    protected String map(String key) {
+    public String map(String key) {
         if (key.startsWith("java/") || key.startsWith("javax/"))
             return null;
         curSet.add(key);

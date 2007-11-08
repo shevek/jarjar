@@ -21,11 +21,15 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.signature.*;
 import org.objectweb.asm.commons.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 class PackageRemapper extends Remapper
 {
     private static final String RESOURCE_SUFFIX = "RESOURCE";
     
+    private static final Pattern ARRAY_FOR_NAME_PATTERN
+        = Pattern.compile("\\[L[\\p{javaJavaIdentifierPart}\\.]+?;");
+
     private final Wildcard[] wildcards;
     private final HashMap typeCache = new HashMap();
     private final HashMap pathCache = new HashMap();
@@ -40,18 +44,10 @@ class PackageRemapper extends Remapper
 
     // also used by KeepProcessor
     static boolean isArrayForName(String value) {
-        if (value.startsWith("[") && value.endsWith(";")) {
-            try {
-                Type.getType(value.replace('.', '/'));
-                return true;
-            } catch (Exception e) {
-                System.err.println("not array for name: " + value);
-            }
-        }
-        return false;
+      return ARRAY_FOR_NAME_PATTERN.matcher(value).matches();
     }
 
-    protected String map(String key) {
+    public String map(String key) {
         String s = (String)typeCache.get(key);
         if (s == null) {
             s = replaceHelper(key);
@@ -78,8 +74,11 @@ class PackageRemapper extends Remapper
             boolean absolute = s.startsWith("/");
             if (absolute)
                 s = s.substring(1);
-            String after = mapType(s);
-            s = after;
+            try {
+              s = mapType(s);
+            } catch (Exception e) {
+              // s was not a valid type
+            }
             if (absolute)
                 s = "/" + s;
             s = s.substring(0, s.length() - RESOURCE_SUFFIX.length()) + end;
@@ -98,17 +97,17 @@ class PackageRemapper extends Remapper
                     String desc2 = mapDesc(desc1);
                     if (!desc2.equals(desc1))
                         return desc2.replace('/', '.');
-                }
-                if (s.equals(value))
+                } else {
                     s = mapPath(s);
-                if (s.equals(value)) {
-                    boolean hasDot = s.indexOf('.') >= 0;
-                    boolean hasSlash = s.indexOf('/') >= 0;
-                    if (!(hasDot && hasSlash)) {
-                        if (hasDot) {
-                            s = replaceHelper(s.replace('.', '/')).replace('/', '.');
-                        } else {
-                            s = replaceHelper(s);
+                    if (s.equals(value)) {
+                        boolean hasDot = s.indexOf('.') >= 0;
+                        boolean hasSlash = s.indexOf('/') >= 0;
+                        if (!(hasDot && hasSlash)) {
+                            if (hasDot) {
+                                s = replaceHelper(s.replace('.', '/')).replace('/', '.');
+                            } else {
+                                s = replaceHelper(s);
+                            }
                         }
                     }
                 }
