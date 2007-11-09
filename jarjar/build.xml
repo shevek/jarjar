@@ -5,8 +5,8 @@
 
     <property name="javadoc.access" value="public"/>
 
-    <property name="compile.source" value="1.5"/>
-    <property name="compile.target" value="1.5"/>
+    <property name="compile.source" value="1.4"/>
+    <property name="compile.target" value="1.4"/>
     <property name="compile.bootclasspath" value=""/>
     <property name="compile.extdirs" value=""/>
 
@@ -14,7 +14,7 @@
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
 
-    <property name="version" value="1.0rc4"/>
+    <property name="version" value="1.0rc6"/>
     <property name="jarfile" value="dist/jarjar-${version}.jar"/>
     <property name="jarfile.util" value="dist/jarjar-util-${version}.jar"/>
     <property name="jarfile.mojo" value="dist/jarjar-plugin-${version}.jar"/>
