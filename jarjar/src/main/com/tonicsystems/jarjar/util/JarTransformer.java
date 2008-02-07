@@ -32,7 +32,7 @@ abstract public class JarTransformer implements JarProcessor
                 return true; // TODO?
             }
             GetNameClassWriter w = new GetNameClassWriter(ClassWriter.COMPUTE_MAXS);
-            reader.accept(transform(w), 0);
+            reader.accept(transform(w), ClassReader.EXPAND_FRAMES);
             struct.in = new ByteArrayInputStream(w.toByteArray());
             struct.name = pathFromName(w.getClassName());
         }
