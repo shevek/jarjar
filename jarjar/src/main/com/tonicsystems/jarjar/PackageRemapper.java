@@ -81,6 +81,8 @@ class PackageRemapper extends Remapper
             }
             if (absolute)
                 s = "/" + s;
+            if (s.indexOf(RESOURCE_SUFFIX) < 0)
+              return path;
             s = s.substring(0, s.length() - RESOURCE_SUFFIX.length()) + end;
             pathCache.put(path, s);
         }

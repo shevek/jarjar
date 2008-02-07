@@ -33,6 +33,7 @@ extends TestCase
     }
 
     public void testMapValue() {
+      assertUnchangedValue("[^\\s;/@&=,.?:+$]");
       assertUnchangedValue("[Ljava/lang/Object;");
       assertUnchangedValue("[Lorg/example/Object;");
       assertUnchangedValue("[Ljava.lang.Object;");
