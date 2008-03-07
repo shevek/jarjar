@@ -42,11 +42,14 @@ public class ClassPathIterator implements Iterator
     private Object next;
 
     public ClassPathIterator(String classPath) throws IOException {
-        this(new File(System.getProperty("user.dir")), classPath);
+        this(new File(System.getProperty("user.dir")), classPath, null);
     }
     
-    public ClassPathIterator(File parent, String classPath) throws IOException {
-        StringTokenizer st = new StringTokenizer(classPath, ":;");
+    public ClassPathIterator(File parent, String classPath, String delim) throws IOException {
+        if (delim == null) {
+            delim = System.getProperty("path.separator");
+        }
+        StringTokenizer st = new StringTokenizer(classPath, delim);
         List fileList = new ArrayList();
         while (st.hasMoreTokens()) {
             String part = (String)st.nextElement();

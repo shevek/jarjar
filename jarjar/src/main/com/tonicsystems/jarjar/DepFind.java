@@ -35,7 +35,7 @@ public class DepFind
         try {
             ClassHeaderReader header = new ClassHeaderReader();
             Map classes = new HashMap();
-            ClassPathIterator cp = new ClassPathIterator(curDir, to);
+            ClassPathIterator cp = new ClassPathIterator(curDir, to, null);
             while (cp.hasNext()) {
                 Object cls = cp.next();
                 try {
@@ -48,7 +48,7 @@ public class DepFind
             cp.close();
 
             handler.handleStart();
-            cp = new ClassPathIterator(curDir, from);
+            cp = new ClassPathIterator(curDir, from, null);
             while (cp.hasNext()) {
                 Object cls = cp.next();
                 Object source = cp.getSource(cls);
