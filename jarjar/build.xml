@@ -14,7 +14,7 @@
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
 
-    <property name="version" value="1.0rc7"/>
+    <property name="version" value="snapshot"/>
     <property name="jarfile" value="dist/jarjar-${version}.jar"/>
     <property name="jarfile.util" value="dist/jarjar-util-${version}.jar"/>
     <property name="jarfile.mojo" value="dist/jarjar-plugin-${version}.jar"/>

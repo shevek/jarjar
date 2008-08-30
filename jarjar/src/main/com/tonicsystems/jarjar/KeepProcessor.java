@@ -68,11 +68,8 @@ class KeepProcessor extends Remapper implements JarProcessor
                     if (wildcards[i].matches(name))
                         roots.add(name);
                 depend.put(name, curSet = new HashSet());
-                NoCopyByteArrayOutputStream out = new NoCopyByteArrayOutputStream();
-                IoUtils.pipe(struct.in, out, buf);
-                new ClassReader(out.getInputStream()).accept(cv, 0);
+                new ClassReader(new ByteArrayInputStream(struct.data)).accept(cv, 0);
                 curSet.remove(name);
-                struct.in = out.getInputStream();
             }
         } catch (Exception ignore) { }
         return true;
@@ -109,12 +106,5 @@ class KeepProcessor extends Remapper implements JarProcessor
                 return false;
         }
         return true;
-    }
-    
-    private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream
-    {
-        public InputStream getInputStream() {
-            return new ByteArrayInputStream(buf, 0, count);
-        }
     }
 }

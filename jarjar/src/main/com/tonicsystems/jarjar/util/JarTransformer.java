@@ -27,13 +27,13 @@ abstract public class JarTransformer implements JarProcessor
         if (struct.name.endsWith(".class")) {
             ClassReader reader;
             try {
-                reader = new ClassReader(struct.in);
+                reader = new ClassReader(struct.data);
             } catch (Exception e) {
                 return true; // TODO?
             }
             GetNameClassWriter w = new GetNameClassWriter(ClassWriter.COMPUTE_MAXS);
             reader.accept(transform(w), ClassReader.EXPAND_FRAMES);
-            struct.in = new ByteArrayInputStream(w.toByteArray());
+            struct.data = w.toByteArray();
             struct.name = pathFromName(w.getClassName());
         }
         return true;

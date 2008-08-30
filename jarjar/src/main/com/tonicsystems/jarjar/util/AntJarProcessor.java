@@ -16,9 +16,7 @@
 
 package com.tonicsystems.jarjar.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -28,6 +26,8 @@ abstract public class AntJarProcessor extends Jar
 {
     private EntryStruct struct = new EntryStruct();
     private JarProcessor proc;
+    private byte[] buf = new byte[0x2000];
+
     protected boolean verbose;
 
     public void setVerbose(boolean verbose) {
@@ -47,15 +47,18 @@ abstract public class AntJarProcessor extends Jar
     }
 
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath,
-                           long lastModified, File fromArchive, int mode) throws IOException {
-        struct.in = is;
+                          long lastModified, File fromArchive, int mode) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        IoUtil.pipe(is, baos, buf);
+        struct.data = baos.toByteArray();
         struct.name = vPath;
         struct.time = lastModified;
         struct.file = fromArchive;
         if (proc.process(struct)) {
             if (mode == 0)
                 mode = ZipFileSet.DEFAULT_FILE_MODE;
-            super.zipFile(struct.in, zOut, struct.name, struct.time, struct.file, mode);
+            super.zipFile(new ByteArrayInputStream(struct.data),
+                          zOut, struct.name, struct.time, struct.file, mode);
         }
     }
 

@@ -21,7 +21,7 @@ import java.io.File;
 
 public class EntryStruct
 {
-    public InputStream in;
+    public byte[] data;
     public String name;
     public long time;
     public File file;
