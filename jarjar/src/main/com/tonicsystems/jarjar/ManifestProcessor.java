@@ -29,13 +29,10 @@ class ManifestProcessor implements JarProcessor
         return INSTANCE;
     }
     
-    private ManifestProcessor() {
-    }
+    private ManifestProcessor() {}
 
     public boolean process(EntryStruct struct) throws IOException {
-        if (struct.file != null && struct.name.equalsIgnoreCase(MANIFEST_PATH))
-            return false;
-        return true;
+        return !struct.name.equalsIgnoreCase(MANIFEST_PATH);
     }
 }
     

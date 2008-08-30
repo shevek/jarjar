@@ -24,5 +24,4 @@ public class EntryStruct
     public byte[] data;
     public String name;
     public long time;
-    public File file;
 }

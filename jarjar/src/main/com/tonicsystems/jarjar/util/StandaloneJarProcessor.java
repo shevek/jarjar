@@ -44,7 +44,6 @@ public class StandaloneJarProcessor
                 JarEntry entry = (JarEntry)e.nextElement();
                 struct.name = entry.getName();
                 struct.time = entry.getTime();
-                struct.file = from;
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 IoUtil.pipe(in.getInputStream(entry), baos, buf);
                 struct.data = baos.toByteArray();
