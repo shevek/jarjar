@@ -24,30 +24,32 @@ class RulesFileParser
     private RulesFileParser() {
     }
 
-    public static List parse(File file) throws IOException {
+    public static List<PatternElement> parse(File file) throws IOException {
         return parse(new FileReader(file));
     }
 
-    public static List parse(String value) throws IOException {
+    public static List<PatternElement> parse(String value) throws IOException {
         return parse(new java.io.StringReader(value));
     }
 
-    private static List parse(Reader r) throws IOException {
-        List patterns = new ArrayList();
+    private static List<PatternElement> parse(Reader r) throws IOException {
+      try {
+        List<PatternElement> patterns = new ArrayList<PatternElement>();
         BufferedReader br = new BufferedReader(r);
         int c = 1;
         String line;
         while ((line = br.readLine()) != null) {
-            List parts = splitOnWhitespace(line);
-            if (parts.size() < 2)
+            String[] parts = line.split("\\s+");
+            if (parts.length < 2)
                 error(c, parts);
-            String type = (String)parts.get(0);
+            String type = parts[0];
             PatternElement element = null;
             if (type.equals("rule")) {
-                if (parts.size() < 3)
+                if (parts.length < 3)
                     error(c, parts);
-                element = new Rule();
-                ((Rule)element).setResult((String)parts.get(2));
+                Rule rule = new Rule();
+                rule.setResult(parts[2]);
+                element = rule;
             } else if (type.equals("zap")) {
                 element = new Zap();
             } else if (type.equals("keep")) {
@@ -55,23 +57,17 @@ class RulesFileParser
             } else {
                 error(c, parts);
             }
-            element.setPattern((String)parts.get(1));
+            element.setPattern(parts[1]);
             patterns.add(element);
             c++;
         }
-        r.close();
         return patterns;
+      } finally {
+        r.close();
+      }
     }
 
-    private static void error(int line, List parts) {
-        throw new IllegalArgumentException("Error on line " + line + ": " + parts);
-    }
-
-    private static List splitOnWhitespace(String line) {
-        List list = new ArrayList();
-        Enumeration e = new StringTokenizer(line);
-        while (e.hasMoreElements())
-            list.add(e.nextElement());
-        return list;
+    private static void error(int line, String[] parts) {
+      throw new IllegalArgumentException("Error on line " + line + ": " + Arrays.asList(parts));
     }
 }

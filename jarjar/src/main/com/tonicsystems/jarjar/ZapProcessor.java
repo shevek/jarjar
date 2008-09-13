@@ -22,9 +22,9 @@ import java.util.*;
 
 class ZapProcessor implements JarProcessor
 {
-    private Wildcard[] wildcards;
+    private List<Wildcard> wildcards;
 
-    public ZapProcessor(List zapList) {
+    public ZapProcessor(List<Zap> zapList) {
         wildcards = PatternElement.createWildcards(zapList);
     }
 
@@ -37,8 +37,8 @@ class ZapProcessor implements JarProcessor
     
     private boolean zap(String desc) {
         // TODO: optimize
-        for (int i = 0; i < wildcards.length; i++) {
-            if (wildcards[i].matches(desc))
+        for (Wildcard wildcard : wildcards) {
+            if (wildcard.matches(desc))
                 return true;
         }
         return false;

@@ -5,8 +5,8 @@
 
     <property name="javadoc.access" value="public"/>
 
-    <property name="compile.source" value="1.4"/>
-    <property name="compile.target" value="1.4"/>
+    <property name="compile.source" value="1.5"/>
+    <property name="compile.target" value="1.5"/>
     <property name="compile.bootclasspath" value=""/>
     <property name="compile.extdirs" value=""/>
 
@@ -51,6 +51,7 @@
               target="${compile.target}" bootclasspath="@{bootclasspath}" extdirs="${compile.extdirs}"
               debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
                  <classpath refid="@{refid}"/>
+                 <compilerarg value="-Xlint"/>
             </javac>
         </sequential>
     </macrodef>

@@ -22,10 +22,10 @@ import java.util.*;
 
 class ExcludeProcessor implements JarProcessor
 {
-    private final Set excludes;
+    private final Set<String> excludes;
     private final boolean verbose;
 
-    public ExcludeProcessor(Set excludes, boolean verbose) {
+    public ExcludeProcessor(Set<String> excludes, boolean verbose) {
         this.excludes = excludes;
         this.verbose = verbose;
     }

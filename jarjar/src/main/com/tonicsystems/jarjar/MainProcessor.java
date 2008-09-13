@@ -26,28 +26,27 @@ class MainProcessor implements JarProcessor
     private final boolean verbose;
     private final JarProcessor chain;
     private final KeepProcessor kp;
-    private final Map renames = new HashMap();
+    private final Map<String, String> renames = new HashMap<String, String>();
     
-    public MainProcessor(List patterns, boolean verbose, boolean skipManifest) {
+    public MainProcessor(List<PatternElement> patterns, boolean verbose, boolean skipManifest) {
         this.verbose = verbose;
-        List zapList = new ArrayList();
-        List ruleList = new ArrayList();
-        List keepList = new ArrayList();
-        for (Iterator it = patterns.iterator(); it.hasNext();) {
-            PatternElement pattern = (PatternElement)it.next();
+        List<Zap> zapList = new ArrayList<Zap>();
+        List<Rule> ruleList = new ArrayList<Rule>();
+        List<Keep> keepList = new ArrayList<Keep>();
+        for (PatternElement pattern : patterns) {
             if (pattern instanceof Zap) {
-                zapList.add(pattern);
+                zapList.add((Zap) pattern);
             } else if (pattern instanceof Rule) {
-                ruleList.add(pattern);
+                ruleList.add((Rule) pattern);
             } else if (pattern instanceof Keep) {
-                keepList.add(pattern);
+                keepList.add((Keep) pattern);
             }
         }
 
         PackageRemapper pr = new PackageRemapper(ruleList, verbose);
         kp = keepList.isEmpty() ? null : new KeepProcessor(keepList);
 
-        List processors = new ArrayList();
+        List<JarProcessor> processors = new ArrayList<JarProcessor>();
         if (skipManifest)
             processors.add(ManifestProcessor.getInstance());
         if (kp != null)
@@ -61,17 +60,16 @@ class MainProcessor implements JarProcessor
     public void strip(File file) throws IOException {
         if (kp == null)
             return;
-        Set excludes = getExcludes();
+        Set<String> excludes = getExcludes();
         if (!excludes.isEmpty())
             StandaloneJarProcessor.run(file, file, new ExcludeProcessor(excludes, verbose));
     }
     
-    private Set getExcludes() {
-        Set excludes = kp.getExcludes();
-        Set result = new HashSet();
-        for (Iterator it = excludes.iterator(); it.hasNext();) {
-            String name = it.next() + ".class";
-            String renamed = (String)renames.get(name);
+    private Set<String> getExcludes() {
+        Set<String> result = new HashSet<String>();
+        for (String exclude : kp.getExcludes()) {
+            String name = exclude + ".class";
+            String renamed = renames.get(name);
             result.add((renamed != null) ? renamed : name);
         }
         return result;

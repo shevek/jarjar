@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 
 package com.tonicsystems.jarjar.util;
 
+import java.io.InputStream;
 import java.io.IOException;
 
-public class RuntimeIOException extends RuntimeException
-{
-    private static final long serialVersionUID = 0L;
-
-    public RuntimeIOException(IOException e) {
-        super(e);
-    }
+public interface ClassPathEntry {
+  String getSource() throws IOException;
+  String getName();
+  InputStream openStream() throws IOException;
 }

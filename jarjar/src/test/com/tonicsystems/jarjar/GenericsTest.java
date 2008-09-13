@@ -29,7 +29,7 @@ extends TestCase
          Rule rule = new Rule();
          rule.setPattern("java.lang.String");
          rule.setResult("com.tonicsystems.String");
-         ClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(new Object[]{ rule }), false));
+         ClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(rule), false));
          t.setTarget(new EmptyVisitor());
          ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
          reader.accept(t, 0);

@@ -31,7 +31,7 @@ abstract public class AntJarProcessor extends Jar
     private JarProcessor proc;
     private byte[] buf = new byte[0x2000];
 
-    private Set dirs = new HashSet();
+    private Set<String> dirs = new HashSet<String>();
     private boolean filesOnly;
 
     protected boolean verbose;

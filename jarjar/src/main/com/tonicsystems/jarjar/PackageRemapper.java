@@ -30,14 +30,13 @@ class PackageRemapper extends Remapper
     private static final Pattern ARRAY_FOR_NAME_PATTERN
         = Pattern.compile("\\[L[\\p{javaJavaIdentifierPart}\\.]+?;");
 
-    private final Wildcard[] wildcards;
-    private final HashMap typeCache = new HashMap();
-    private final HashMap pathCache = new HashMap();
-    private final HashMap valueCache = new HashMap();
-    private final HashMap cache = new HashMap();
+    private final List<Wildcard> wildcards;
+    private final Map<String, String> typeCache = new HashMap<String, String>();
+    private final Map<String, String> pathCache = new HashMap<String, String>();
+    private final Map<Object, String> valueCache = new HashMap<Object, String>();
     private final boolean verbose;
 
-    public PackageRemapper(List ruleList, boolean verbose) {
+    public PackageRemapper(List<Rule> ruleList, boolean verbose) {
         this.verbose = verbose;
         wildcards = PatternElement.createWildcards(ruleList);
     }
@@ -48,7 +47,7 @@ class PackageRemapper extends Remapper
     }
 
     public String map(String key) {
-        String s = (String)typeCache.get(key);
+        String s = typeCache.get(key);
         if (s == null) {
             s = replaceHelper(key);
             if (key.equals(s))
@@ -59,7 +58,7 @@ class PackageRemapper extends Remapper
     }
 
     public String mapPath(String path) {
-        String s = (String)pathCache.get(path);
+        String s = pathCache.get(path);
         if (s == null) {
             s = path;
             int slash = s.lastIndexOf('/');
@@ -91,7 +90,7 @@ class PackageRemapper extends Remapper
 
     public Object mapValue(Object value) {
         if (value instanceof String) {
-            String s = (String)valueCache.get(value);
+            String s = valueCache.get(value);
             if (s == null) {
                 s = (String)value;
                 if (isArrayForName(s)) {
@@ -125,8 +124,8 @@ class PackageRemapper extends Remapper
     }
 
     private String replaceHelper(String value) {
-        for (int i = 0; i < wildcards.length; i++) {
-            String test = wildcards[i].replace(value);
+        for (Wildcard wildcard : wildcards) {
+            String test = wildcard.replace(value);
             if (test != null)
                 return test;
         }

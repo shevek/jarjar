@@ -22,14 +22,24 @@ import java.util.*;
 
 public class Main {
 
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private static final String HELP;
 
   static {
     try {
-      HELP = IoUtils.readIntoString(Main.class.getResourceAsStream("help.txt"));
+      HELP = readIntoString(Main.class.getResourceAsStream("help.txt"));
     } catch (IOException e) {
       throw new RuntimeIOException(e);
     }
+  }
+
+  private static String readIntoString(InputStream in) throws IOException {
+      StringBuilder sb = new StringBuilder();
+      BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+      String line = null;
+      while ((line = r.readLine()) != null)
+          sb.append(line).append(LINE_SEPARATOR);
+      return sb.toString();
   }
 
   private boolean verbose;
@@ -37,7 +47,7 @@ public class Main {
   private int level = DepHandler.LEVEL_CLASS;
 
   public static void main(String[] args) throws Exception {
-    IoUtils.runMain(new Main(), args, "help");
+    MainUtil.runMain(new Main(), args, "help");
   }
 
   public void help() {
@@ -78,7 +88,7 @@ public class Main {
       throw new IllegalArgumentException("rulesFile, inJar, and outJar are required");
     }
     boolean verbose = false; // TODO
-    List rules = RulesFileParser.parse(rulesFile);
+    List<PatternElement> rules = RulesFileParser.parse(rulesFile);
     MainProcessor proc = new MainProcessor(rules, verbose, true);
     StandaloneJarProcessor.run(inJar, outJar, proc);
     proc.strip(outJar);

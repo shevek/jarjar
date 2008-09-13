@@ -34,32 +34,44 @@ public class DepFind
     public void run(String from, String to, DepHandler handler) throws IOException {
         try {
             ClassHeaderReader header = new ClassHeaderReader();
-            Map classes = new HashMap();
+            Map<String, String> classes = new HashMap<String, String>();
             ClassPathIterator cp = new ClassPathIterator(curDir, to, null);
-            while (cp.hasNext()) {
-                Object cls = cp.next();
+            try {
+              while (cp.hasNext()) {
+                ClassPathEntry entry = cp.next();
+                InputStream in = entry.openStream();
                 try {
-                    header.read(cp.getInputStream(cls));
-                    classes.put(header.getClassName(), cp.getSource(cls));
-                } catch (ClassFormatError e) {
-                    // TODO: log?
+                  header.read(in);
+                  classes.put(header.getClassName(), entry.getSource());
+                } catch (Exception e) {
+                  System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                } finally {
+                  in.close();
                 }
+              }
+            } finally {
+              cp.close();
             }
-            cp.close();
 
             handler.handleStart();
             cp = new ClassPathIterator(curDir, from, null);
-            while (cp.hasNext()) {
-                Object cls = cp.next();
-                Object source = cp.getSource(cls);
+            try {
+              while (cp.hasNext()) {
+                ClassPathEntry entry = cp.next();
+                InputStream in = entry.openStream();
                 try {
-                IoUtils.readClass(cp.getInputStream(cls))
-                    .accept(new DepFindVisitor(classes, source, handler), ClassReader.SKIP_DEBUG);
-                } catch (ClassFormatError e) {
-                    // TODO: log?
+                  new ClassReader(in).accept(
+                      new DepFindVisitor(classes, entry.getSource(), handler),
+                      ClassReader.SKIP_DEBUG);
+                } catch (Exception e) {
+                  System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                } finally {
+                  in.close();
                 }
+              }
+            } finally {
+              cp.close();
             }
-            cp.close();
             handler.handleEnd();
         } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();

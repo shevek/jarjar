@@ -29,7 +29,7 @@ class Wildcard
 
     private final Pattern pattern;
     private final int count;
-    private final ArrayList parts = new ArrayList(16); // kept for debugging
+    private final ArrayList<Object> parts = new ArrayList<Object>(16); // kept for debugging
     private final String[] strings;
     private final int[] refs;
 
@@ -100,7 +100,7 @@ class Wildcard
     public String replace(String value) {
         Matcher matcher = getMatcher(value);
         if (matcher != null) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < strings.length; i++)
                 sb.append((refs[i] >= 0) ? matcher.group(refs[i]) : strings[i]);
             return sb.toString();

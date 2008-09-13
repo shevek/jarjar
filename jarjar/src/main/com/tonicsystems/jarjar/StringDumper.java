@@ -30,15 +30,21 @@ class StringDumper
         ClassPathIterator cp = new ClassPathIterator(classPath);
         try {
             while (cp.hasNext()) {
+                ClassPathEntry entry = cp.next();
+                InputStream in = entry.openStream();
                 try {
-                    IoUtils.readClass(cp.getInputStream(cp.next())).accept(stringReader, 0);
-                } catch (ClassFormatError e) {
-                    // TODO: log?
+                    new ClassReader(in).accept(stringReader, 0);
+                } catch (Exception e) {
+                    System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                } finally {
+                    in.close();
                 }
                 pw.flush();
             }
         } catch (RuntimeIOException e) {
             throw (IOException)e.getCause();
+        } finally {
+          cp.close();
         }
     }
 
@@ -60,9 +66,31 @@ class StringDumper
                 pw.print("\t");
                 if (line >= 0)
                     pw.print(line + ": ");
-                pw.print(IoUtils.escapeStringLiteral(value));
+                pw.print(escapeStringLiteral(value));
                 pw.println();
             }
         }
     };
+
+    private static String escapeStringLiteral(String value) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\"");
+        char[] chars = value.toCharArray();
+        for (int i = 0, size = chars.length; i < size; i++) {
+            char ch = chars[i];
+            switch (ch) {
+            case '\n': sb.append("\\n"); break;
+            case '\r': sb.append("\\r"); break;
+            case '\b': sb.append("\\b"); break;
+            case '\f': sb.append("\\f"); break;
+            case '\t': sb.append("\\t"); break;
+            case '\"': sb.append("\\\""); break;
+            case '\\': sb.append("\\\\"); break;
+            default:
+                sb.append(ch);
+            }
+        }
+        sb.append("\"");
+        return sb.toString();
+    }
 }

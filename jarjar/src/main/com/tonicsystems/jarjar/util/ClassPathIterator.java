@@ -21,25 +21,24 @@ import java.util.zip.*;
 import java.io.*;
 import java.util.jar.*;
 
-public class ClassPathIterator implements Iterator
+public class ClassPathIterator implements Iterator<ClassPathEntry>
 {
     private static final FileFilter CLASS_FILTER = new FileFilter() {
         public boolean accept(File file) {
-            return file.isDirectory() || isClass(file);
+            return file.isDirectory() || isClass(file.getName());
         }
     };
 
     private static final FileFilter JAR_FILTER = new FileFilter() {
         public boolean accept(File file) {
-            return hasExtension(getName(file), ".jar");
+            return hasExtension(file.getName(), ".jar");
         }
     };
     
-    private final Iterator files;
-    private Enumeration entries;
-    private Map sources = new HashMap();
-    private ZipFile zip;
-    private Object next;
+    private final Iterator<File> files;
+    private Iterator<ClassPathEntry> entries = Collections.<ClassPathEntry>emptyList().iterator();
+    private ClassPathEntry next;
+    private List<ZipFile> zips = new ArrayList<ZipFile>();
 
     public ClassPathIterator(String classPath) throws IOException {
         this(new File(System.getProperty("user.dir")), classPath, null);
@@ -50,10 +49,9 @@ public class ClassPathIterator implements Iterator
             delim = System.getProperty("path.separator");
         }
         StringTokenizer st = new StringTokenizer(classPath, delim);
-        List fileList = new ArrayList();
+        List<File> fileList = new ArrayList<File>();
         while (st.hasMoreTokens()) {
             String part = (String)st.nextElement();
-
             boolean wildcard = false;
             if (part.endsWith("/*")) {
                 part = part.substring(0, part.length() - 1);
@@ -73,7 +71,7 @@ public class ClassPathIterator implements Iterator
             if (wildcard) {
                 if (!file.isDirectory())
                     throw new IllegalArgumentException("File " + file + " + is not a directory");
-                fileList.addAll(findFiles(file, JAR_FILTER, false, new ArrayList()));
+                fileList.addAll(findFiles(file, JAR_FILTER, false, new ArrayList<File>()));
             } else {
                 fileList.add(file);
             }
@@ -86,39 +84,22 @@ public class ClassPathIterator implements Iterator
         return next != null;
     }
 
+    /** Closes all zip files opened by this iterator. */
     public void close() throws IOException {
-        if (sources != null) {
-            for (Iterator it = sources.values().iterator(); it.hasNext();) {
-                Object obj = it.next();
-                if (obj instanceof ZipFile)
-                    ((ZipFile)obj).close();
-            }
-        }
-    }
-    
-    public InputStream getInputStream(Object obj) throws IOException {
-        if (obj instanceof ZipEntry) {
-            return ((ZipFile)sources.get(obj)).getInputStream((ZipEntry)obj);
-        } else {
-            return new BufferedInputStream(new FileInputStream((File)obj));
-        }
-    }
-
-    public Object getSource(Object obj) {
-        return sources.get(obj);
+      next = null;
+      for (ZipFile zip : zips) {
+        zip.close();
+      }
     }
 
     public void remove() {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws RuntimeIOException
-     */
-    public Object next() {
+    public ClassPathEntry next() {
         if (!hasNext())
             throw new NoSuchElementException();
-        Object result = next;
+        ClassPathEntry result = next;
         try {
             advance();
         } catch (IOException e) {
@@ -128,67 +109,122 @@ public class ClassPathIterator implements Iterator
     }
 
     private void advance() throws IOException {
-        if (entries == null) {
+        if (!entries.hasNext()) {
             if (!files.hasNext()) {
                 next = null;
                 return;
             }
-            zip = null;
-            File file = (File)files.next();
-            if (hasExtension(getName(file), ".jar")) {
-                zip = new JarFile(file);
-                entries = zip.entries();
-            } else if (hasExtension(getName(file), ".zip")) {
-                zip = new ZipFile(file);
-                entries = zip.entries();
+            File file = files.next();
+            if (hasExtension(file.getName(), ".jar")) {
+                ZipFile zip = new JarFile(file);
+                zips.add(zip);
+                entries = new ZipIterator(zip);
+            } else if (hasExtension(file.getName(), ".zip")) {
+                ZipFile zip = new ZipFile(file);
+                zips.add(zip);
+                entries = new ZipIterator(zip);
             } else if (file.isDirectory()) {
-                // TODO: could lazily recurse for performance
-                List classes = findFiles(file, CLASS_FILTER, true, new ArrayList());
-                for (Iterator it = classes.iterator(); it.hasNext();) {
-                    sources.put(it.next(), file);
-                }
-                entries = Collections.enumeration(classes);
+                entries = new FileIterator(file);
             } else {
                 throw new IllegalArgumentException("Do not know how to handle " + file);
             }
         }
 
         boolean foundClass = false;
-        while (entries.hasMoreElements()) {
-            next = entries.nextElement();
-            if (foundClass = isClass(next)) {
-                if (zip != null)
-                    sources.put(next, zip);
-                break;
-            }
+        while (!foundClass && entries.hasNext()) {
+          next = entries.next();
+          foundClass = isClass(next.getName());
         }
         if (!foundClass) {
-            entries = null;
-            advance();
+          advance();
         }
     }
 
-    private static List findFiles(File dir, FileFilter filter, boolean recurse, List collect) {
-        File[] files = dir.listFiles(filter);
-        for (int i = 0; i < files.length; i++) {
-            if (recurse && files[i].isDirectory()) {
-                findFiles(files[i], filter, recurse, collect);
+    private static class ZipIterator implements Iterator<ClassPathEntry> {
+      private final ZipFile zip;
+      private final Enumeration<? extends ZipEntry> entries;
+
+      ZipIterator(ZipFile zip) {
+        this.zip = zip;
+        this.entries = zip.entries();
+      }
+
+      public boolean hasNext() {
+        return entries.hasMoreElements();
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+
+      public ClassPathEntry next() {
+        final ZipEntry entry = entries.nextElement();
+        return new ClassPathEntry() {
+          public String getSource() {
+            return zip.getName();
+          }
+
+          public String getName() {
+            return entry.getName();
+          }
+
+          public InputStream openStream() throws IOException {
+            return zip.getInputStream(entry);
+          }
+        };
+      }
+    }
+
+    private static class FileIterator implements Iterator<ClassPathEntry> {
+      private final File dir;
+      private final Iterator<File> entries;
+
+      FileIterator(File dir) {
+        this.dir = dir;
+        this.entries = findFiles(dir, CLASS_FILTER, true, new ArrayList<File>()).iterator();
+      }
+
+      public boolean hasNext() {
+        return entries.hasNext();
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+      
+      public ClassPathEntry next() {
+        final File file = entries.next();
+        return new ClassPathEntry() {
+          public String getSource() throws IOException {
+            return dir.getCanonicalPath();
+          }
+
+          public String getName() {
+            return file.getName();
+          }
+
+          public InputStream openStream() throws IOException {
+            return new BufferedInputStream(new FileInputStream(file));
+          }
+        };
+      }
+    }
+
+    private static List<File> findFiles(File dir, FileFilter filter, boolean recurse, List<File> collect) {
+        for (File file : dir.listFiles(filter)) {
+            if (recurse && file.isDirectory()) {
+                findFiles(file, filter, recurse, collect);
             } else {
-                collect.add(files[i]);
+                collect.add(file);
             }
         }
         return collect;
     }
 
-    private static boolean isClass(Object obj) {
-        // TODO: check magic number?
-        return hasExtension(getName(obj), ".class");
+    private static boolean isClass(String name) {
+        return hasExtension(name, ".class");
     }
 
-    private static String getName(Object obj) {
-        return (obj instanceof ZipEntry) ? ((ZipEntry)obj).getName() : ((File)obj).getName();
-    }
-    
     private static boolean hasExtension(String name, String ext) {
         if (name.length() <  ext.length())
             return false;

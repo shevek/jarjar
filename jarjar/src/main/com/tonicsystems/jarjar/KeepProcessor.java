@@ -27,47 +27,46 @@ import org.objectweb.asm.commons.*;
 class KeepProcessor extends Remapper implements JarProcessor
 {
     private final ClassVisitor cv = new RemappingClassAdapter(new EmptyVisitor(), this);
-    private final Wildcard[] wildcards;
-    private final List roots = new ArrayList();
-    private final Map depend = new HashMap();
+    private final List<Wildcard> wildcards;
+    private final List<String> roots = new ArrayList<String>();
+    private final Map<String, Set<String>> depend = new HashMap<String, Set<String>>();
     
-    public KeepProcessor(List patterns) {
+    public KeepProcessor(List<Keep> patterns) {
         wildcards = PatternElement.createWildcards(patterns);
     }
 
     public boolean isEnabled() {
-        return wildcards.length > 0;
+        return !wildcards.isEmpty();
     }
 
-    public Set getExcludes() {
-        Set closure = new HashSet();
+    public Set<String> getExcludes() {
+        Set<String> closure = new HashSet<String>();
         closureHelper(closure, roots);
-        Set removable = new HashSet(depend.keySet());
+        Set<String> removable = new HashSet<String>(depend.keySet());
         removable.removeAll(closure);
         return removable;
     }
 
-    private void closureHelper(Set closure, Collection process) {
+    private void closureHelper(Set<String> closure, Collection<String> process) {
         if (process == null)
             return;
-        for (Iterator it = process.iterator(); it.hasNext();) {
-            String name = (String)it.next();
+        for (String name : process) {
             if (closure.add(name))
-                closureHelper(closure, (Collection)depend.get(name));
+                closureHelper(closure, depend.get(name));
         }
     }
 
-    private Set curSet;
+    private Set<String> curSet;
     private byte[] buf = new byte[0x2000];
 
     public boolean process(EntryStruct struct) throws IOException {
         try {
             if (struct.name.endsWith(".class")) {
                 String name = struct.name.substring(0, struct.name.length() - 6);
-                for (int i = 0; i < wildcards.length; i++)
-                    if (wildcards[i].matches(name))
+                for (Wildcard wildcard : wildcards)
+                    if (wildcard.matches(name))
                         roots.add(name);
-                depend.put(name, curSet = new HashSet());
+                depend.put(name, curSet = new HashSet<String>());
                 new ClassReader(new ByteArrayInputStream(struct.data)).accept(cv, 0);
                 curSet.remove(name);
             }

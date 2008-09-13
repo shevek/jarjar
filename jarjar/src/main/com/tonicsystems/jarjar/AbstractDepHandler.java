@@ -23,14 +23,14 @@ import java.util.*;
 abstract public class AbstractDepHandler implements DepHandler
 {
     protected final int level;
-    private final Set seenIt = new HashSet();
+    private final Set<List<Object>> seenIt = new HashSet<List<Object>>();
     
     protected AbstractDepHandler(int level) {
         this.level = level;
     }
     
     public void handle(PathClass from, PathClass to) throws IOException {
-        List pair;
+        List<Object> pair;
         if (level == LEVEL_JAR) {
             pair = createPair(from.getClassPath(), to.getClassPath());
         } else {
@@ -47,8 +47,8 @@ abstract public class AbstractDepHandler implements DepHandler
     public void handleStart() throws IOException { }
     public void handleEnd() throws IOException { }
 
-    private static List createPair(Object o1, Object o2) {
-        List list = new ArrayList(2);
+    private static List<Object> createPair(Object o1, Object o2) {
+        List<Object> list = new ArrayList<Object>(2);
         list.add(o1);
         list.add(o2);
         return list;

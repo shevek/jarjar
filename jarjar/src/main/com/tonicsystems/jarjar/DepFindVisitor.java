@@ -27,7 +27,7 @@ import org.objectweb.asm.commons.*;
 
 class DepFindVisitor extends RemappingClassAdapter
 {
-    public DepFindVisitor(Map classes, Object source, DepHandler handler) throws IOException {
+    public DepFindVisitor(Map<String, String> classes, String source, DepHandler handler) throws IOException {
         super(new EmptyVisitor(), new DepFindRemapper(classes, source, handler));
     }
 
@@ -38,14 +38,14 @@ class DepFindVisitor extends RemappingClassAdapter
 
     private static class DepFindRemapper extends Remapper
     {
-        private final Map classes;
+        private final Map<String, String> classes;
         private final String source;
         private final DepHandler handler;
         private PathClass curPathClass;
 
-        public DepFindRemapper(Map classes, Object source, DepHandler handler) throws IOException {
+        public DepFindRemapper(Map<String, String> classes, String source, DepHandler handler) throws IOException {
             this.classes = classes;
-            this.source = getSourceName(source);
+            this.source = source;
             this.handler = handler;
         }
 
@@ -56,7 +56,7 @@ class DepFindVisitor extends RemappingClassAdapter
         public String map(String key) {
             try {
                 if (classes.containsKey(key)) {
-                    String otherSource = getSourceName(classes.get(key));
+                    String otherSource = classes.get(key);
                     if (!source.equals(otherSource)) {
                         // TODO: some escape mechanism?
                         handler.handle(curPathClass, new PathClass(otherSource, key));
@@ -66,14 +66,6 @@ class DepFindVisitor extends RemappingClassAdapter
                 throw new RuntimeIOException(e);
             }
             return null;
-        }
-    }
-
-    private static String getSourceName(Object source) throws IOException {
-        if (source instanceof ZipFile) {
-            return ((ZipFile)source).getName();
-        } else {
-            return ((File)source).getCanonicalPath();
         }
     }
 }

@@ -16,75 +16,14 @@
 
 package com.tonicsystems.jarjar;
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import org.objectweb.asm.*;
+import java.util.ArrayList;
+import java.util.List;
 
-class IoUtils
+class MainUtil
 {
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    
-    private IoUtils() {
-    }
-
-    public static ClassReader readClass(InputStream in) throws IOException {
-        try {
-            return new ClassReader(in);
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ClassFormatError(e.getMessage());
-        }
-    }
-
-    public static String readIntoString(InputStream in) throws IOException {
-        StringBuffer sb = new StringBuffer();
-        BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-        String line = null;
-        while ((line = r.readLine()) != null)
-            sb.append(line).append(LINE_SEPARATOR);
-        return sb.toString();
-    }
-
-    public static String escapeStringLiteral(String value) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("\"");
-        char[] chars = value.toCharArray();
-        for (int i = 0, size = chars.length; i < size; i++) {
-            char ch = chars[i];
-            switch (ch) {
-            case '\n': sb.append("\\n"); break;
-            case '\r': sb.append("\\r"); break;
-            case '\b': sb.append("\\b"); break;
-            case '\f': sb.append("\\f"); break;
-            case '\t': sb.append("\\t"); break;
-            case '\"': sb.append("\\\""); break;
-            case '\\': sb.append("\\\\"); break;
-            default:
-                sb.append(ch);
-            }
-        }
-        sb.append("\"");
-        return sb.toString();
-    }
-
-    public static byte[] toByteArray(InputStream is, byte[] buf) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        pipe(is, baos, buf);
-        return baos.toByteArray();
-    }
-
-    public static void pipe(InputStream is, OutputStream out, byte[] buf) throws IOException {
-        for (;;) {
-            int amt = is.read(buf);
-            if (amt < 0)
-                break;
-            out.write(buf, 0, amt);
-        }
-    }
-
     public static void runMain(Object main, String[] args, String defCommand) throws Exception {
         if (args.length > 0) {
             String command = args[0];
@@ -95,7 +34,7 @@ class IoUtils
                     String[] remaining = new String[args.length - 1];
                     System.arraycopy(args, 1, remaining, 0, remaining.length);
                     try {
-                        method.invoke(main, (Object[])bindParameters(method, remaining));
+                        method.invoke(main, bindParameters(method, remaining));
                     } catch (InvocationTargetException e) {
                         Throwable cause = e.getCause();
                         if (cause instanceof IllegalArgumentException) {
@@ -115,7 +54,7 @@ class IoUtils
     }
 
     private static Object[] bindParameters(Method method, String[] args) {
-        List parameters = new ArrayList();
+        List<Object> parameters = new ArrayList<Object>();
         Class[] parameterTypes = method.getParameterTypes();
         for (int i = 0, len = parameterTypes.length; i < len; i++) {
             Class type = parameterTypes[i];

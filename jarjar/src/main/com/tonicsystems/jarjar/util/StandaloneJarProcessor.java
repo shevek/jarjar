@@ -36,12 +36,12 @@ public class StandaloneJarProcessor
         }
         JarFile in = new JarFile(from);
         JarOutputStream out = new JarOutputStream(new FileOutputStream(to));
-        Set entries = new HashSet();
+        Set<String> entries = new HashSet<String>();
         try {
             EntryStruct struct = new EntryStruct();
-            Enumeration e = in.entries();
+            Enumeration<JarEntry> e = in.entries();
             while (e.hasMoreElements()) {
-                JarEntry entry = (JarEntry)e.nextElement();
+                JarEntry entry = e.nextElement();
                 struct.name = entry.getName();
                 struct.time = entry.getTime();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -30,16 +30,14 @@ abstract public class PatternElement
         return pattern;
     }
 
-    static Wildcard[] createWildcards(List patterns) {
-        Wildcard[] wildcards = new Wildcard[patterns.size()];
-        int i = 0;
-        for (Iterator it = patterns.iterator(); it.hasNext();) {
-            PatternElement pattern = (PatternElement)it.next();
+    static List<Wildcard> createWildcards(List<? extends PatternElement> patterns) {
+        List<Wildcard> wildcards = new ArrayList<Wildcard>();
+        for (PatternElement pattern : patterns) {
             String result = (pattern instanceof Rule) ? ((Rule)pattern).getResult() : "";
             String expr = pattern.getPattern();
             if (expr.indexOf('/') >= 0)
                 throw new IllegalArgumentException("Patterns cannot contain slashes");
-            wildcards[i++] = new Wildcard(expr.replace('.', '/'), result);
+            wildcards.add(new Wildcard(expr.replace('.', '/'), result));
         }
         return wildcards;
     }

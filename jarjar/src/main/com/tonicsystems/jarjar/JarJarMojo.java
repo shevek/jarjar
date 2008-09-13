@@ -36,7 +36,7 @@ public class JarJarMojo extends AbstractMojo
             throw new MojoExecutionException("Exactly one of rules or rulesFile is required");
 
         try {
-            List patterns;
+            List<PatternElement> patterns;
             if (rules != null) {
                 patterns = RulesFileParser.parse(rules);
             } else {

@@ -24,8 +24,7 @@ import org.apache.tools.ant.BuildException;
 
 public class JarJarTask extends AntJarProcessor
 {
-    private List patterns = new ArrayList();
-    private List keeplist = new ArrayList();
+    private List<PatternElement> patterns = new ArrayList<PatternElement>();
 
     public void addConfiguredRule(Rule rule) {
         if (rule.getPattern() == null || rule.getResult() == null)
