@@ -101,7 +101,7 @@
 
     <target name="dist-src" depends="compile" description="Create source distribution">
         <mkdir dir="dist"/>
-        <zip destfile="dist/jarjar-src-${version}.zip" filesonly="true">
+        <zip destfile="dist/jarjar-src-${version}.zip">
             <zipfileset dir="src" excludes="**/*.save" prefix="jarjar-${version}/src"/>
             <zipfileset dir="lib" prefix="jarjar-${version}/lib"/>
             <zipfileset dir="maven" prefix="jarjar-${version}/maven"/>

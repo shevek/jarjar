@@ -87,9 +87,10 @@ public class Main {
     if (rulesFile == null || inJar == null || outJar == null) {
       throw new IllegalArgumentException("rulesFile, inJar, and outJar are required");
     }
-    boolean verbose = false; // TODO
     List<PatternElement> rules = RulesFileParser.parse(rulesFile);
-    MainProcessor proc = new MainProcessor(rules, verbose, true);
+    boolean verbose = Boolean.getBoolean("verbose");
+    boolean skipManifest = Boolean.getBoolean("skipManifest");
+    MainProcessor proc = new MainProcessor(rules, verbose, skipManifest);
     StandaloneJarProcessor.run(inJar, outJar, proc);
     proc.strip(outJar);
   }

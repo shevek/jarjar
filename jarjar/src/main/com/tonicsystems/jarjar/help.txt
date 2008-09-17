@@ -44,7 +44,7 @@ Classpath format:
 Rules file format:
 
   The rules file is a text file, one rule per line. Leading and trailing
-  whitespace is ignored. There are two types of rules:
+  whitespace is ignored. There are three types of rules:
 
     rule <pattern> <result>
     zap <pattern>
