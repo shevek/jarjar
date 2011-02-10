@@ -75,8 +75,8 @@
         <mkdir dir="dist"/>
         <jarjar jarfile="${jarfile}">
             <fileset dir="build/main"/>
-            <zipfileset src="lib/asm-3.1.jar"/>
-            <zipfileset src="lib/asm-commons-3.1.jar">
+            <zipfileset src="lib/asm-3.3.1.jar"/>
+            <zipfileset src="lib/asm-commons-3.3.1.jar">
                 <include name="org/objectweb/asm/commons/EmptyVisitor.class"/>
                 <include name="org/objectweb/asm/commons/Remap*.class"/>
                 <include name="org/objectweb/asm/commons/LocalVariablesSorter.class"/>
@@ -147,8 +147,8 @@
         <delete file="${test.jar}"/>
         <jarjar2 jarfile="${test.jar}">
             <fileset dir="build/main"/>
-            <zipfileset src="lib/asm-3.1.jar"/>
-            <zipfileset src="lib/asm-commons-3.1.jar"/>
+            <zipfileset src="lib/asm-3.3.1.jar"/>
+            <zipfileset src="lib/asm-commons-3.3.1.jar"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
         </jarjar2>
         <delete file="${test.jar}"/>
