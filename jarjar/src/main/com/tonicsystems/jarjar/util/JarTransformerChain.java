@@ -16,8 +16,6 @@
 
 package com.tonicsystems.jarjar.util;
 
-import java.util.*;
-import java.io.IOException;
 import org.objectweb.asm.ClassVisitor;
 
 public class JarTransformerChain extends JarTransformer
@@ -25,7 +23,7 @@ public class JarTransformerChain extends JarTransformer
     private final ClassTransformer[] chain;
     
     public JarTransformerChain(ClassTransformer[] chain) {
-        this.chain = (ClassTransformer[])chain.clone();
+        this.chain = chain.clone();
         for (int i = chain.length - 1; i > 0; i--) {
             chain[i - 1].setTarget(chain[i]);
         }

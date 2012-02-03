@@ -116,14 +116,20 @@ class Wildcard
     }
 
     private static boolean checkIdentifierChars(String expr, String extra) {
-        for (int i = 0, len = expr.length(); i < len; i++) {
-            char c = expr.charAt(i);
-            if (extra.indexOf(c) >= 0)
-                continue;
-            if (!Character.isJavaIdentifierPart(c))
-                return false;
-        }
-        return true;
+      // package-info violates the spec for Java Identifiers.
+      // Nevertheless, expressions that end with this string are still legal.
+      // See 7.4.1.1 of the Java language spec for discussion.
+      if (expr.endsWith("package-info")) {
+          expr = expr.substring(0, expr.length() - "package-info".length());
+      }
+      for (int i = 0, len = expr.length(); i < len; i++) {
+          char c = expr.charAt(i);
+          if (extra.indexOf(c) >= 0)
+              continue;
+          if (!Character.isJavaIdentifierPart(c))
+              return false;
+      }
+      return true;
     }
 
     private static String replaceAllLiteral(Pattern pattern, String value, String replace) {

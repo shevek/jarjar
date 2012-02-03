@@ -84,7 +84,7 @@ abstract public class AntJarProcessor extends Jar
         String dir = file.substring(0, slash);
         if (dirs.add(dir)) {
           addParentDirs(dir, zOut);
-          super.zipDir(null, zOut, dir + "/", ZipFileSet.DEFAULT_DIR_MODE, JAR_MARKER);
+          super.zipDir((File) null, zOut, dir + "/", ZipFileSet.DEFAULT_DIR_MODE, JAR_MARKER);
         }
       }
     }

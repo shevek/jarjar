@@ -23,14 +23,15 @@ public class JarProcessorChain implements JarProcessor
     private final JarProcessor[] chain;
     
     public JarProcessorChain(JarProcessor[] chain) {
-        this.chain = (JarProcessor[])chain.clone();
+        this.chain = chain.clone();
     }
 
     public boolean process(EntryStruct struct) throws IOException {
-        for (int i = 0; i < chain.length; i++) {
-            if (!chain[i].process(struct))
-                return false;
+      for (JarProcessor aChain : chain) {
+        if (!aChain.process(struct)) {
+          return false;
         }
+      }
         return true;
     }
 }

@@ -47,6 +47,10 @@ extends TestCase
       assertEquals("foo.example.Object", remapper.mapValue("org.example.Object"));
       assertEquals("foo/example/Object", remapper.mapValue("org/example/Object"));
       assertEquals("foo/example.Object", remapper.mapValue("org/example.Object")); // path match
+
+      assertEquals("foo.example.package-info", remapper.mapValue("org.example.package-info"));
+      assertEquals("foo/example/package-info", remapper.mapValue("org/example/package-info"));
+      assertEquals("foo/example.package-info", remapper.mapValue("org/example.package-info"));
     }
 
     private void assertUnchangedValue(String value) {

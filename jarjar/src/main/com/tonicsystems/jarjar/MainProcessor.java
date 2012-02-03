@@ -54,7 +54,7 @@ class MainProcessor implements JarProcessor
         processors.add(new ZapProcessor(zapList));
         processors.add(new JarTransformerChain(new ClassTransformer[]{ new RemappingClassTransformer(pr) }));
         processors.add(new ResourceProcessor(pr));
-        chain = new JarProcessorChain((JarProcessor[])processors.toArray(new JarProcessor[processors.size()]));
+        chain = new JarProcessorChain(processors.toArray(new JarProcessor[processors.size()]));
     }
 
     public void strip(File file) throws IOException {
