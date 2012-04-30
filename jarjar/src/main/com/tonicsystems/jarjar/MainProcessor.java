@@ -24,7 +24,7 @@ import java.util.*;
 class MainProcessor implements JarProcessor
 {
     private final boolean verbose;
-    private final JarProcessor chain;
+    private final JarProcessorChain chain;
     private final KeepProcessor kp;
     private final Map<String, String> renames = new HashMap<String, String>();
     
@@ -64,7 +64,13 @@ class MainProcessor implements JarProcessor
         if (!excludes.isEmpty())
             StandaloneJarProcessor.run(file, file, new ExcludeProcessor(excludes, verbose));
     }
-    
+
+    /**
+     * Returns the <code>.class</code> files to delete. As well the root-parameter as the rename ones
+     * are taken in consideration, so that the concerned files are not listed in the result.
+     *
+     * @return the paths of the files in the jar-archive, including the <code>.class</code> suffix
+     */
     private Set<String> getExcludes() {
         Set<String> result = new HashSet<String>();
         for (String exclude : kp.getExcludes()) {
@@ -75,10 +81,16 @@ class MainProcessor implements JarProcessor
         return result;
     }
 
+    /**
+     *
+     * @param struct
+     * @return <code>true</code> if the entry is to include in the output jar
+     * @throws IOException
+     */
     public boolean process(EntryStruct struct) throws IOException {
         String name = struct.name;
-        boolean result = chain.process(struct);
-        if (result) {
+        boolean keepIt = chain.process(struct);
+        if (keepIt) {
             if (!name.equals(struct.name)) {
                 if (kp != null)
                     renames.put(name, struct.name);
@@ -89,6 +101,6 @@ class MainProcessor implements JarProcessor
             if (verbose)
                 System.err.println("Removed " + name);
         }
-        return result;
+        return keepIt;
     }
 }

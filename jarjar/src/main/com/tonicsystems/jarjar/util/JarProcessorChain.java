@@ -21,17 +21,27 @@ import java.io.IOException;
 public class JarProcessorChain implements JarProcessor
 {
     private final JarProcessor[] chain;
-    
-    public JarProcessorChain(JarProcessor[] chain) {
+
+    public JarProcessorChain(JarProcessor[] chain)
+    {
         this.chain = chain.clone();
     }
 
-    public boolean process(EntryStruct struct) throws IOException {
-      for (JarProcessor aChain : chain) {
-        if (!aChain.process(struct)) {
-          return false;
+    /**
+     * @param struct
+     * @return <code>true</code> if the entry has run the complete chain
+     * @throws IOException
+     */
+    public boolean process(EntryStruct struct) throws IOException
+    {
+
+        for (JarProcessor aChain : chain)
+        {
+            if (!aChain.process(struct))
+            {
+                return false;
+            }
         }
-      }
         return true;
     }
 }

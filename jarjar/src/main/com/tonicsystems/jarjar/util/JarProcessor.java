@@ -20,5 +20,16 @@ import java.io.IOException;
 
 public interface JarProcessor
 {
+    /**
+     * Process the entry (p.ex. rename the file)
+     * <p>
+     * Returns <code>true</code> if the processor has has changed the entry. In this case, the entry can be removed
+     * from the jar file in a future time. Return <code>false</code> for the entries which do not have been changed and
+     * there fore are not to be deleted
+     *
+     * @param struct
+     * @return <code>true</code> if he process chain can continue after this process
+     * @throws IOException
+     */
     boolean process(EntryStruct struct) throws IOException;
 }

@@ -31,10 +31,10 @@ class ExcludeProcessor implements JarProcessor
     }
 
     public boolean process(EntryStruct struct) throws IOException {
-        boolean result = !excludes.contains(struct.name);
-        if (verbose && !result)
+        boolean toKeep = !excludes.contains(struct.name);
+        if (verbose && !toKeep)
             System.err.println("Excluding " + struct.name);
-        return result;
+        return toKeep;
     }
 }
     
