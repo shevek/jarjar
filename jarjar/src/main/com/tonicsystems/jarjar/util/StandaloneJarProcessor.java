@@ -20,7 +20,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.Enumeration;
-import java.util.zip.ZipOutputStream;
 import java.io.*;
 import java.util.*;
 
@@ -28,14 +27,10 @@ public class StandaloneJarProcessor
 {
     public static void run(File from, File to, JarProcessor proc) throws IOException {
         byte[] buf = new byte[0x2000];
-        File tmp = null;
-        if (from.equals(to)) {
-            tmp = File.createTempFile("jarjar", null);
-            IoUtil.copy(from, tmp, buf);
-            from = tmp;
-        }
+
         JarFile in = new JarFile(from);
-        JarOutputStream out = new JarOutputStream(new FileOutputStream(to));
+        final File tmpTo = File.createTempFile("jarjar", ".jar");
+        JarOutputStream out = new JarOutputStream(new FileOutputStream(tmpTo));
         Set<String> entries = new HashSet<String>();
         try {
             EntryStruct struct = new EntryStruct();
@@ -61,10 +56,16 @@ public class StandaloneJarProcessor
                     }
                 }
             }
-        } finally {
-            out.close();
-            if (tmp != null)
-                tmp.delete();
+
         }
+        finally {
+            in.close();
+            out.close();
+        }
+
+         // delete the empty directories
+        IoUtil.copyZipWithoutEmptyDirectories(tmpTo, to);
+        tmpTo.delete();
+
     }
 }
