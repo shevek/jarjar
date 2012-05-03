@@ -28,7 +28,7 @@ import org.objectweb.asm.commons.*;
 class DepFindVisitor extends RemappingClassAdapter
 {
     public DepFindVisitor(Map<String, String> classes, String source, DepHandler handler) throws IOException {
-        super(new EmptyVisitor(), new DepFindRemapper(classes, source, handler));
+        super(null, new DepFindRemapper(classes, source, handler));
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {

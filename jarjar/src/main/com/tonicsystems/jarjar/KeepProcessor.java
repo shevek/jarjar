@@ -26,7 +26,7 @@ import org.objectweb.asm.commons.*;
 // TODO: this can probably be refactored into JarClassVisitor, etc.
 class KeepProcessor extends Remapper implements JarProcessor
 {
-    private final ClassVisitor cv = new RemappingClassAdapter(new EmptyVisitor(), this);
+    private final ClassVisitor cv = new RemappingClassAdapter(new EmptyClassVisitor(), this);
     private final List<Wildcard> wildcards;
     private final List<String> roots = new ArrayList<String>();
     private final Map<String, Set<String>> depend = new HashMap<String, Set<String>>();

@@ -20,7 +20,6 @@ import com.tonicsystems.jarjar.util.*;
 import junit.framework.*;
 import java.util.*;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.commons.EmptyVisitor;
 
 public class GenericsTest
 extends TestCase
@@ -29,8 +28,8 @@ extends TestCase
          Rule rule = new Rule();
          rule.setPattern("java.lang.String");
          rule.setResult("com.tonicsystems.String");
-         ClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(rule), false));
-         t.setTarget(new EmptyVisitor());
+         RemappingClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(rule), false));
+         t.setTarget(new EmptyClassVisitor());
          ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
          reader.accept(t, 0);
     }

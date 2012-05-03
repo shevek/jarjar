@@ -46,7 +46,7 @@
             <copy todir="build/@{module}">
                 <fileset dir="src/@{module}" excludes="**/*.java"/>
             </copy>
-            <javac includeantruntime="false" srcdir="src/@{module}" destdir="build/@{module}"
+            <javac includeantruntime="true" srcdir="src/@{module}" destdir="build/@{module}"
               source="${compile.source}"
               target="${compile.target}" bootclasspath="@{bootclasspath}" extdirs="${compile.extdirs}"
               debug="${compile.debug}" optimize="${compile.optimize}" deprecation="${compile.deprecation}">
@@ -75,13 +75,12 @@
         <mkdir dir="dist"/>
         <jarjar jarfile="${jarfile}">
             <fileset dir="build/main"/>
-            <zipfileset src="lib/asm-3.3.1.jar"/>
-            <zipfileset src="lib/asm-commons-3.3.1.jar">
-                <include name="org/objectweb/asm/commons/EmptyVisitor.class"/>
+            <zipfileset src="lib/asm-4.0.jar"/>
+            <zipfileset src="lib/asm-commons-4.0.jar">
                 <include name="org/objectweb/asm/commons/Remap*.class"/>
                 <include name="org/objectweb/asm/commons/LocalVariablesSorter.class"/>
             </zipfileset>
-            <keep pattern="com.tonicsystems.jarjar.Main"/>
+        	<keep pattern="com.tonicsystems.jarjar.Main"/>
             <keep pattern="com.tonicsystems.jarjar.JarJarTask"/>
             <rule pattern="com.tonicsystems.jarjar.util.**" result="com.tonicsystems.jarjar.ext_util.@1"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
@@ -147,8 +146,8 @@
         <delete file="${test.jar}"/>
         <jarjar2 jarfile="${test.jar}">
             <fileset dir="build/main"/>
-            <zipfileset src="lib/asm-3.3.1.jar"/>
-            <zipfileset src="lib/asm-commons-3.3.1.jar"/>
+            <zipfileset src="lib/asm-4.0.jar"/>
+            <zipfileset src="lib/asm-commons-4.0.jar"/>
             <rule pattern="org.objectweb.asm.**" result="com.tonicsystems.jarjar.asm.@1"/>
         </jarjar2>
         <delete file="${test.jar}"/>

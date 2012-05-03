@@ -16,9 +16,7 @@
 
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.util.*;
 import org.objectweb.asm.*;
-import org.objectweb.asm.signature.*;
 import org.objectweb.asm.commons.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -71,15 +69,11 @@ class PackageRemapper extends Remapper
                 s = s.substring(0, slash + 1) + RESOURCE_SUFFIX;
             }
             boolean absolute = s.startsWith("/");
-            if (absolute)
-                s = s.substring(1);
-            try {
-              s = mapType(s);
-            } catch (Exception e) {
-              // s was not a valid type
-            }
-            if (absolute)
-                s = "/" + s;
+            if (absolute) s = s.substring(1);
+            
+            s = replaceHelper(s);
+            
+            if (absolute) s = "/" + s;
             if (s.indexOf(RESOURCE_SUFFIX) < 0)
               return path;
             s = s.substring(0, s.length() - RESOURCE_SUFFIX.length()) + end;

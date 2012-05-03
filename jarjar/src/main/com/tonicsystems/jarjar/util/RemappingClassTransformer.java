@@ -20,14 +20,12 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.RemappingMethodAdapter;
+import com.tonicsystems.jarjar.EmptyClassVisitor;
 
-public class RemappingClassTransformer extends RemappingClassAdapter implements ClassTransformer
+public class RemappingClassTransformer extends RemappingClassAdapter
 {
     public RemappingClassTransformer(Remapper pr) {
-        super(null, pr);
+        super(new EmptyClassVisitor(), pr);
     }
         
     public void setTarget(ClassVisitor target) {

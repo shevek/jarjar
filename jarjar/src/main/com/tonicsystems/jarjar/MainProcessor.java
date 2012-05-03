@@ -52,7 +52,7 @@ class MainProcessor implements JarProcessor
         if (kp != null)
             processors.add(kp);
         processors.add(new ZapProcessor(zapList));
-        processors.add(new JarTransformerChain(new ClassTransformer[]{ new RemappingClassTransformer(pr) }));
+        processors.add(new JarTransformerChain(new RemappingClassTransformer[]{ new RemappingClassTransformer(pr) }));
         processors.add(new ResourceProcessor(pr));
         chain = new JarProcessorChain(processors.toArray(new JarProcessor[processors.size()]));
     }

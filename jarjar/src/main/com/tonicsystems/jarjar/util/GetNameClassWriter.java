@@ -16,16 +16,16 @@
 
 package com.tonicsystems.jarjar.util;
 
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ClassReader;
-import java.io.*;
+import org.objectweb.asm.Opcodes;
 
-public class GetNameClassWriter extends ClassWriter
+public class GetNameClassWriter extends ClassVisitor
 {
     private String className;
     
     public GetNameClassWriter(int flags) {
-        super(flags);
+        super(Opcodes.ASM4,new ClassWriter(flags));
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -35,5 +35,9 @@ public class GetNameClassWriter extends ClassWriter
     
     public String getClassName() {
         return className;
+    }
+    
+    public byte[] toByteArray() {
+        return ((ClassWriter) cv).toByteArray();
     }
 }
