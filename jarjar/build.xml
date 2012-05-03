@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<project name="Jar Jar Links" default="jar">
+<project name="Jar Jar Links" default="jar" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
     <property file="${user.home}/build.properties" />
     <property file="build.properties" />
 
@@ -14,7 +14,27 @@
     <property name="compile.deprecation" value="false"/>
     <property name="compile.optimize" value="false"/>
 
+    <property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+
+    <!-- define Maven coordinates -->
+	<property name="groupId" value="com.googlecode.jarjar" />
+	<property name="artifactId" value="jarjar" />
     <property name="version" value="1.3"/>
+
+    <!-- define artifacts' name, which follows the convention of Maven -->
+	<property name="maven-jar" value="${dist}/${artifactId}-${version}.jar" />
+	<property name="maven-javadoc-jar" value="${dist}/${artifactId}-${version}-javadoc.jar" />
+	<property name="maven-sources-jar" value="${dist}/${artifactId}-${version}-sources.jar" />
+
+    <!-- defined maven snapshots and staging repository id and url -->
+	<property name="maven-snapshots-repository-id" value="sonatype-nexus-snapshots" />
+	<property name="maven-snapshots-repository-url" value="https://oss.sonatype.org/content/repositories/snapshots/" />
+	<property name="maven-staging-repository-id" value="sonatype-nexus-staging" />
+	<property name="maven-staging-repository-url" value="https://oss.sonatype.org/service/local/staging/deploy/maven2/" />
+
+
     <property name="jarfile" value="dist/jarjar-${version}.jar"/>
     <property name="jarfile.util" value="dist/jarjar-util-${version}.jar"/>
     <property name="jarfile.mojo" value="dist/jarjar-plugin-${version}.jar"/>
@@ -98,9 +118,51 @@
         </jar>
     </target>
 
+	<target name="dist" depends="jar,dist-src,javadoc" description="generate the distribution">
+        <copy file="${dist}/jarjar-src-${version}.zip" tofile="${maven-sources-jar}" />
+        <jar jarfile="${maven-javadoc-jar}">
+			<fileset dir="${dist}/javadoc" />
+		</jar>
+	</target>
+
+    <!-- before this, update project version (both build.xml and pom.xml) from SNAPSHOT to RELEASE -->
+	<target name="stage" depends="dist" description="deploy release version to Maven staging repository">
+		<!-- sign and deploy the main artifact -->
+		<artifact:mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+			<arg value="-Durl=${maven-staging-repository-url}" />
+			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+			<arg value="-DpomFile=pom.xml" />
+			<arg value="-Dfile=${maven-jar}" />
+            <arg value="-Pgpg" />
+		</artifact:mvn>
+
+		<!-- sign and deploy the sources artifact -->
+		<artifact:mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+			<arg value="-Durl=${maven-staging-repository-url}" />
+			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+			<arg value="-DpomFile=pom.xml" />
+			<arg value="-Dfile=${maven-sources-jar}" />
+			<arg value="-Dclassifier=sources" />
+            <arg value="-Pgpg" />
+		</artifact:mvn>
+
+		<!-- sign and deploy the javadoc artifact -->
+		<artifact:mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+			<arg value="-Durl=${maven-staging-repository-url}" />
+			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+			<arg value="-DpomFile=pom.xml" />
+			<arg value="-Dfile=${maven-javadoc-jar}" />
+			<arg value="-Dclassifier=javadoc" />
+            <arg value="-Pgpg" />
+		</artifact:mvn>
+	</target>
+
     <target name="dist-src" depends="compile" description="Create source distribution">
-        <mkdir dir="dist"/>
-        <zip destfile="dist/jarjar-src-${version}.zip">
+        <mkdir dir="${dist}"/>
+        <zip destfile="${dist}/jarjar-src-${version}.zip">
             <zipfileset dir="src" excludes="**/*.save" prefix="jarjar-${version}/src"/>
             <zipfileset dir="lib" prefix="jarjar-${version}/lib"/>
             <zipfileset dir="maven" prefix="jarjar-${version}/maven"/>
@@ -195,8 +257,8 @@
     <target name="javadoc" depends="compile" description="Generate the javadoc">
         <mkdir dir="dist/javadoc"/>
         <javadoc 
-          sourcepath="src/main"
-          destdir="dist/javadoc"
+          sourcepath="${src}/main"
+          destdir="${dist}/javadoc"
           access="${javadoc.access}"
           failonerror="true"
           packagenames="com.tonicsystems.jarjar.*"
