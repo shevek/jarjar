@@ -67,10 +67,13 @@ class KeepProcessor extends Remapper implements JarProcessor
                     if (wildcard.matches(name))
                         roots.add(name);
                 depend.put(name, curSet = new HashSet<String>());
-                new ClassReader(new ByteArrayInputStream(struct.data)).accept(cv, 0);
+                new ClassReader(new ByteArrayInputStream(struct.data)).accept(cv,
+                    ClassReader.EXPAND_FRAMES);
                 curSet.remove(name);
             }
-        } catch (Exception ignore) { }
+        } catch (Exception e) {
+          System.err.println("Error reading " + struct.name + ": " + e.getMessage());
+        }
         return true;
     }
 
