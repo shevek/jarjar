@@ -32,6 +32,11 @@ class RulesFileParser
         return parse(new java.io.StringReader(value));
     }
 
+    private static String stripComment(String in) {
+      int p = in.indexOf("#");
+      return p < 0 ? in : in.substring(0, p);
+    }
+
     private static List<PatternElement> parse(Reader r) throws IOException {
       try {
         List<PatternElement> patterns = new ArrayList<PatternElement>();
@@ -39,6 +44,9 @@ class RulesFileParser
         int c = 1;
         String line;
         while ((line = br.readLine()) != null) {
+            line = stripComment(line);
+            if (line.isEmpty())
+                continue;
             String[] parts = line.split("\\s+");
             if (parts.length < 2)
                 error(c, parts);
