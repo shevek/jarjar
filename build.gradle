@@ -1,0 +1,51 @@
+ext.githubProjectName = rootProject.name
+
+buildscript {
+	apply from: file('gradle/buildscript.gradle'), to: buildscript
+}
+
+apply from: file('gradle/convention.gradle')
+apply from: file('gradle/github.gradle')
+apply from: file('gradle/nexus.gradle')
+apply from: file('gradle/check.gradle')
+apply from: file('gradle/license.gradle')
+
+subprojects {
+	group = "org.anarres.jarjar"
+}
+
+project(':jarjar-core') {
+	dependencies {
+		// compile 'org.ow2.asm:asm:5.0.3'
+		compile 'org.ow2.asm:asm:4.0'
+		compile 'org.ow2.asm:asm-commons:4.0'
+		compile 'org.apache.ant:ant:1.7.0'
+	}
+}
+
+project(':jarjar-ant') {
+	dependencies {
+		compile project(':jarjar-core')
+		compile 'org.apache.ant:ant:1.7.0'
+
+		testCompile project(':jarjar-core').sourceSets.test.output
+	}
+}
+
+project(':jarjar-maven') {
+	dependencies {
+		compile project(':jarjar-core')
+		compile 'org.apache.maven:maven-plugin-api:2.0'
+
+		testCompile project(':jarjar-core').sourceSets.test.output
+	}
+}
+
+project(':jarjar-gradle') {
+	dependencies {
+		compile project(':jarjar-core')
+		compile gradleApi()
+
+		testCompile project(':jarjar-core').sourceSets.test.output
+	}
+}

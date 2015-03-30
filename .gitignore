@@ -1,0 +1,4 @@
+build
+.*.swp
+.gradle
+.nb-gradle

@@ -1,0 +1,38 @@
+subprojects {
+	// Checkstyle
+	// apply plugin: 'checkstyle'
+	// checkstyle {
+	//     ignoreFailures = true 
+	//     configFile = rootProject.file('codequality/checkstyle.xml')
+	// }
+
+	// FindBugs
+	apply plugin: 'findbugs'
+	findbugs {
+		ignoreFailures = true
+	}
+	findbugsTest.enabled = false
+
+	// PMD
+	// apply plugin: 'pmd'
+	// tasks.withType(Pmd) { reports.html.enabled true }
+
+	apply plugin: 'cobertura'
+	cobertura {
+		coverageFormats = [ 'html', 'xml' ]
+	}
+	githubPages {
+		pages {
+			from(cobertura.coverageReportDir) {
+				into "docs/cobertura"
+			}
+		}
+	}
+
+	apply plugin: "be.insaneprogramming.gradle.animalsniffer"
+	animalsniffer {
+		signature = "org.codehaus.mojo.signature:java15:+@signature"
+		// ignores = ["my.package.name"]
+		// annotations = [] // supported annotations to signal Animal Sniffer to ignore annotated elements
+	}
+}
