@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.io.IOException;
+import javax.annotation.Nonnull;
 
-public class RuntimeIOException extends RuntimeException
-{
+public class RuntimeIOException extends RuntimeException {
+
     private static final long serialVersionUID = 0L;
 
-    public RuntimeIOException(IOException e) {
+    public RuntimeIOException(@Nonnull IOException e) {
         super(e);
     }
 }

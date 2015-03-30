@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
-public class PathClass
-{
+public class PathClass {
+
     private String classPath;
     private String className;
-    
+
     public PathClass(String classPath, String className) {
         this.classPath = classPath;
         this.className = className;
@@ -34,6 +33,7 @@ public class PathClass
         return className;
     }
 
+    @Override
     public String toString() {
         return classPath + "!" + className;
     }

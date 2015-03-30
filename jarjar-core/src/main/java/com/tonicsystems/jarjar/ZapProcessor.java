@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.config.Zap;
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
 import java.util.*;
 
-class ZapProcessor implements JarProcessor
-{
+class ZapProcessor implements JarProcessor {
+
     private List<Wildcard> wildcards;
 
     public ZapProcessor(List<Zap> zapList) {
-        wildcards = PatternElement.createWildcards(zapList);
+        wildcards = Wildcard.createWildcards(zapList);
     }
 
     public boolean process(EntryStruct struct) throws IOException {
@@ -34,7 +34,7 @@ class ZapProcessor implements JarProcessor
             return !zap(name.substring(0, name.length() - 6));
         return true;
     }
-    
+
     private boolean zap(String desc) {
         // TODO: optimize
         for (Wildcard wildcard : wildcards) {
@@ -44,4 +44,3 @@ class ZapProcessor implements JarProcessor
         return false;
     }
 }
-    

@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.tonicsystems.jarjar.config;
 
-package com.tonicsystems.jarjar;
+import java.util.*;
 
-public class Keep extends PatternElement
-{
+public abstract class PatternElement {
+
+    private String pattern;
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
 }

@@ -13,32 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.util.*;
-import junit.framework.*;
-import java.util.*;
+import com.tonicsystems.jarjar.config.Rule;
+import com.tonicsystems.jarjar.util.RemappingClassTransformer;
+import java.util.Arrays;
+import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 
-public class GenericsTest
-extends TestCase
-{
+public class GenericsTest {
+
+    @Test
     public void testTransform() throws Exception {
-         Rule rule = new Rule();
-         rule.setPattern("java.lang.String");
-         rule.setResult("com.tonicsystems.String");
-         RemappingClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(rule), false));
-         t.setTarget(new EmptyClassVisitor());
-         ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
-         reader.accept(t, 0);
-    }
-
-    public GenericsTest(String name) {
-        super(name);
-    }
-
-    public static Test suite() {
-        return new TestSuite(GenericsTest.class);
+        Rule rule = new Rule();
+        rule.setPattern("java.lang.String");
+        rule.setResult("com.tonicsystems.String");
+        RemappingClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(rule), false));
+        t.setTarget(new EmptyClassVisitor());
+        ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
+        reader.accept(t, 0);
     }
 }

@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.io.InputStream;
 import java.io.IOException;
 
 public interface ClassPathEntry {
-  String getSource() throws IOException;
-  String getName();
-  InputStream openStream() throws IOException;
+
+    String getSource() throws IOException;
+
+    String getName();
+
+    InputStream openStream() throws IOException;
 }

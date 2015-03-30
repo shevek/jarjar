@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.ClassVisitor;
@@ -22,12 +21,12 @@ import org.objectweb.asm.commons.RemappingClassAdapter;
 
 import com.tonicsystems.jarjar.EmptyClassVisitor;
 
-public class RemappingClassTransformer extends RemappingClassAdapter
-{
+public class RemappingClassTransformer extends RemappingClassAdapter {
+
     public RemappingClassTransformer(Remapper pr) {
         super(new EmptyClassVisitor(), pr);
     }
-        
+
     public void setTarget(ClassVisitor target) {
         cv = target;
     }

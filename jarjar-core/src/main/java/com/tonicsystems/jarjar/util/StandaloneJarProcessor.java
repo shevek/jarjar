@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.util.jar.JarEntry;
@@ -23,8 +22,8 @@ import java.util.Enumeration;
 import java.io.*;
 import java.util.*;
 
-public class StandaloneJarProcessor
-{
+public class StandaloneJarProcessor {
+
     public static void run(File from, File to, JarProcessor proc) throws IOException {
         byte[] buf = new byte[0x2000];
 
@@ -57,13 +56,12 @@ public class StandaloneJarProcessor
                 }
             }
 
-        }
-        finally {
+        } finally {
             in.close();
             out.close();
         }
 
-         // delete the empty directories
+        // delete the empty directories
         IoUtil.copyZipWithoutEmptyDirectories(tmpTo, to);
         tmpTo.delete();
 

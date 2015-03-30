@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
-import java.util.*;
 
-class ManifestProcessor implements JarProcessor
-{
+class ManifestProcessor implements JarProcessor {
+
     private static final String MANIFEST_PATH = "META-INF/MANIFEST.MF";
     private static final ManifestProcessor INSTANCE = new ManifestProcessor();
 
     public static ManifestProcessor getInstance() {
         return INSTANCE;
     }
-    
-    private ManifestProcessor() {}
+
+    private ManifestProcessor() {
+    }
 
     public boolean process(EntryStruct struct) throws IOException {
         return !struct.name.equalsIgnoreCase(MANIFEST_PATH);
     }
 }
-    

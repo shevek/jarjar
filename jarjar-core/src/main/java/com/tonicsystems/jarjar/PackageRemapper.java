@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
-import org.objectweb.asm.*;
+import com.tonicsystems.jarjar.config.Rule;
 import org.objectweb.asm.commons.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
-class PackageRemapper extends Remapper
-{
+class PackageRemapper extends Remapper {
+
     private static final String RESOURCE_SUFFIX = "RESOURCE";
-    
+
     private static final Pattern ARRAY_FOR_NAME_PATTERN
-        = Pattern.compile("\\[L[\\p{javaJavaIdentifierPart}\\.]+?;");
+            = Pattern.compile("\\[L[\\p{javaJavaIdentifierPart}\\.]+?;");
 
     private final List<Wildcard> wildcards;
     private final Map<String, String> typeCache = new HashMap<String, String>();
@@ -36,14 +35,15 @@ class PackageRemapper extends Remapper
 
     public PackageRemapper(List<Rule> ruleList, boolean verbose) {
         this.verbose = verbose;
-        wildcards = PatternElement.createWildcards(ruleList);
+        wildcards = Wildcard.createWildcards(ruleList);
     }
 
     // also used by KeepProcessor
     static boolean isArrayForName(String value) {
-      return ARRAY_FOR_NAME_PATTERN.matcher(value).matches();
+        return ARRAY_FOR_NAME_PATTERN.matcher(value).matches();
     }
 
+    @Override
     public String map(String key) {
         String s = typeCache.get(key);
         if (s == null) {
@@ -69,24 +69,27 @@ class PackageRemapper extends Remapper
                 s = s.substring(0, slash + 1) + RESOURCE_SUFFIX;
             }
             boolean absolute = s.startsWith("/");
-            if (absolute) s = s.substring(1);
-            
+            if (absolute)
+                s = s.substring(1);
+
             s = replaceHelper(s);
-            
-            if (absolute) s = "/" + s;
+
+            if (absolute)
+                s = "/" + s;
             if (s.indexOf(RESOURCE_SUFFIX) < 0)
-              return path;
+                return path;
             s = s.substring(0, s.length() - RESOURCE_SUFFIX.length()) + end;
             pathCache.put(path, s);
         }
         return s;
     }
 
+    @Override
     public Object mapValue(Object value) {
         if (value instanceof String) {
             String s = valueCache.get(value);
             if (s == null) {
-                s = (String)value;
+                s = (String) value;
                 if (isArrayForName(s)) {
                     String desc1 = s.replace('.', '/');
                     String desc2 = mapDesc(desc1);

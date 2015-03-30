@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import java.util.*;
 
-abstract public class AbstractDepHandler implements DepHandler
-{
+abstract public class AbstractDepHandler implements DepHandler {
+
     protected final int level;
     private final Set<List<Object>> seenIt = new HashSet<List<Object>>();
-    
+
     protected AbstractDepHandler(int level) {
         this.level = level;
     }
-    
+
+    @Override
     public void handle(PathClass from, PathClass to) throws IOException {
         List<Object> pair;
         if (level == LEVEL_JAR) {
@@ -44,8 +43,13 @@ abstract public class AbstractDepHandler implements DepHandler
 
     abstract protected void handle(String from, String to) throws IOException;
 
-    public void handleStart() throws IOException { }
-    public void handleEnd() throws IOException { }
+    @Override
+    public void handleStart() throws IOException {
+    }
+
+    @Override
+    public void handleEnd() throws IOException {
+    }
 
     private static List<Object> createPair(Object o1, Object o2) {
         List<Object> list = new ArrayList<Object>(2);

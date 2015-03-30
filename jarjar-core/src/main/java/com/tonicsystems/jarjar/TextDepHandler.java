@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import java.io.*;
-import java.util.*;
 
-public class TextDepHandler extends AbstractDepHandler
-{
-    private PrintWriter w;
-    
+public class TextDepHandler extends AbstractDepHandler {
+
+    private final PrintWriter w;
+
     public TextDepHandler(PrintWriter w, int level) {
         super(level);
         this.w = w;
     }
-    
+
+    @Override
     protected void handle(String from, String to) throws IOException {
         w.println(from + " -> " + to);
     }

@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.config;
 
-import org.junit.Test;
+public class Rule extends PatternElement {
 
-public class RulesFileParserTest {
+    private String result;
 
-    @Test
-    public void testSimple() throws Exception {
-        // TODO
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public String getResult() {
+        return result;
     }
 }

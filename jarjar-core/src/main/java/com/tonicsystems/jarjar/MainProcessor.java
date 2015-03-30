@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.config.PatternElement;
+import com.tonicsystems.jarjar.config.Zap;
+import com.tonicsystems.jarjar.config.Keep;
+import com.tonicsystems.jarjar.config.Rule;
 import com.tonicsystems.jarjar.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-class MainProcessor implements JarProcessor
-{
+class MainProcessor implements JarProcessor {
+
     private final boolean verbose;
     private final JarProcessorChain chain;
     private final KeepProcessor kp;
     private final Map<String, String> renames = new HashMap<String, String>();
-    
+
     public MainProcessor(List<PatternElement> patterns, boolean verbose, boolean skipManifest) {
         this.verbose = verbose;
         List<Zap> zapList = new ArrayList<Zap>();
@@ -52,7 +55,7 @@ class MainProcessor implements JarProcessor
         if (kp != null)
             processors.add(kp);
         processors.add(new ZapProcessor(zapList));
-        processors.add(new JarTransformerChain(new RemappingClassTransformer[]{ new RemappingClassTransformer(pr) }));
+        processors.add(new JarTransformerChain(new RemappingClassTransformer[]{new RemappingClassTransformer(pr)}));
         processors.add(new ResourceProcessor(pr));
         chain = new JarProcessorChain(processors.toArray(new JarProcessor[processors.size()]));
     }

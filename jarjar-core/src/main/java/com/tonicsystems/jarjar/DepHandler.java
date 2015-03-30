@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import java.io.IOException;
 
-public interface DepHandler
-{
+public interface DepHandler {
+
     public static final int LEVEL_CLASS = 0;
     public static final int LEVEL_JAR = 1;
 
     void handleStart() throws IOException;
+
     void handle(PathClass from, PathClass to) throws IOException;
+
     void handleEnd() throws IOException;
 }

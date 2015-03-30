@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import org.objectweb.asm.*;
 
-class StringDumper
-{
+class StringDumper {
+
     public StringDumper() {
     }
 
@@ -42,14 +41,14 @@ class StringDumper
                 pw.flush();
             }
         } catch (RuntimeIOException e) {
-            throw (IOException)e.getCause();
+            throw (IOException) e.getCause();
         } finally {
-          cp.close();
+            cp.close();
         }
     }
 
-    private static class DumpStringReader extends StringReader
-    {
+    private static class DumpStringReader extends StringReader {
+
         private final PrintWriter pw;
         private String className;
 
@@ -57,6 +56,7 @@ class StringDumper
             this.pw = pw;
         }
 
+        @Override
         public void visitString(String className, String value, int line) {
             if (value.length() > 0) {
                 if (!className.equals(this.className)) {
@@ -79,15 +79,29 @@ class StringDumper
         for (int i = 0, size = chars.length; i < size; i++) {
             char ch = chars[i];
             switch (ch) {
-            case '\n': sb.append("\\n"); break;
-            case '\r': sb.append("\\r"); break;
-            case '\b': sb.append("\\b"); break;
-            case '\f': sb.append("\\f"); break;
-            case '\t': sb.append("\\t"); break;
-            case '\"': sb.append("\\\""); break;
-            case '\\': sb.append("\\\\"); break;
-            default:
-                sb.append(ch);
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                case '\"':
+                    sb.append("\\\"");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                default:
+                    sb.append(ch);
             }
         }
         sb.append("\"");

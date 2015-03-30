@@ -16,6 +16,10 @@
 
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.config.Rule;
+import com.tonicsystems.jarjar.config.Zap;
+import com.tonicsystems.jarjar.config.Keep;
+import com.tonicsystems.jarjar.config.PatternElement;
 import com.tonicsystems.jarjar.util.*;
 import java.io.File;
 import java.io.IOException;

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.io.*;
@@ -21,8 +20,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-abstract public class JarTransformer implements JarProcessor
-{
+abstract public class JarTransformer implements JarProcessor {
+
     public boolean process(EntryStruct struct) throws IOException {
         if (struct.name.endsWith(".class")) {
             ClassReader reader;

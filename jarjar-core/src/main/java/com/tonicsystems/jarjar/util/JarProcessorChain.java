@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.io.IOException;
 
-public class JarProcessorChain implements JarProcessor
-{
+public class JarProcessorChain implements JarProcessor {
+
     private final JarProcessor[] chain;
 
-    public JarProcessorChain(JarProcessor[] chain)
-    {
+    public JarProcessorChain(JarProcessor[] chain) {
         this.chain = chain.clone();
     }
 
@@ -32,17 +30,13 @@ public class JarProcessorChain implements JarProcessor
      * @return <code>true</code> if the entry has run the complete chain
      * @throws IOException
      */
-    public boolean process(EntryStruct struct) throws IOException
-    {
+    public boolean process(EntryStruct struct) throws IOException {
 
-        for (JarProcessor aChain : chain)
-        {
-            if (!aChain.process(struct))
-            {
+        for (JarProcessor aChain : chain) {
+            if (!aChain.process(struct)) {
                 return false;
             }
         }
         return true;
     }
 }
-  

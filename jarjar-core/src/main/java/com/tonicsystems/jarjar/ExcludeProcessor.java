@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
 import java.util.*;
 
-class ExcludeProcessor implements JarProcessor
-{
+class ExcludeProcessor implements JarProcessor {
+
     private final Set<String> excludes;
     private final boolean verbose;
 
@@ -37,4 +36,3 @@ class ExcludeProcessor implements JarProcessor
         return toKeep;
     }
 }
-    

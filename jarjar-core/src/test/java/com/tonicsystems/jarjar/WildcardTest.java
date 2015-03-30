@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
-import junit.framework.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class WildcardTest
-extends TestCase
-{
+public class WildcardTest {
+
+    @Test
     public void testWildcards() {
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/proxy/Mixin$Generator",
-            "foo/proxy/Mixin$Generator");
+                "foo/proxy/Mixin$Generator");
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/Bar", "foo/Bar");
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/Bar/Baz", "foo/Bar/Baz");
         wildcard("net/sf/cglib/**", "foo/@1", "net/sf/cglib/", "foo/");
@@ -36,13 +36,5 @@ extends TestCase
         Wildcard wc = new Wildcard(pattern, result);
         // System.err.println(wc);
         assertEquals(expect, wc.replace(value));
-    }
-    
-    public WildcardTest(String name) {
-        super(name);
-    }
-
-    public static Test suite() {
-        return new TestSuite(WildcardTest.class);
     }
 }

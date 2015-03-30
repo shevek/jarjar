@@ -13,18 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.tonicsystems.jarjar.config;
 
-package com.tonicsystems.jarjar;
-
-public class Rule extends PatternElement
-{
-    private String result;
-
-    public void setResult(String result) {
-        this.result = result;
-    }
-
-    public String getResult() {
-        return result;
-    }
+public class Keep extends PatternElement {
 }

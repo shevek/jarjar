@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.io.IOException;
 
-public interface JarProcessor
-{
+public interface JarProcessor {
+
     /**
      * Process the entry (p.ex. rename the file)
      * <p>

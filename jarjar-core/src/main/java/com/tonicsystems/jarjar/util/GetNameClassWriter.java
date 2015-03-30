@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
-public class GetNameClassWriter extends ClassVisitor
-{
+public class GetNameClassWriter extends ClassVisitor {
+
     private String className;
-    
+
     public GetNameClassWriter(int flags) {
-        super(Opcodes.ASM4,new ClassWriter(flags));
+        super(Opcodes.ASM5, new ClassWriter(flags));
     }
 
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         className = name;
         super.visit(version, access, name, signature, superName, interfaces);
     }
-    
+
     public String getClassName() {
         return className;
     }
-    
+
     public byte[] toByteArray() {
         return ((ClassWriter) cv).toByteArray();
     }

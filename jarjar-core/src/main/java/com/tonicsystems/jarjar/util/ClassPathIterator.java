@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.util.*;
@@ -21,8 +20,8 @@ import java.util.zip.*;
 import java.io.*;
 import java.util.jar.*;
 
-public class ClassPathIterator implements Iterator<ClassPathEntry>
-{
+public class ClassPathIterator implements Iterator<ClassPathEntry> {
+
     private static final FileFilter CLASS_FILTER = new FileFilter() {
         public boolean accept(File file) {
             return file.isDirectory() || isClass(file.getName());
@@ -34,7 +33,7 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
             return hasExtension(file.getName(), ".jar");
         }
     };
-    
+
     private final Iterator<File> files;
     private Iterator<ClassPathEntry> entries = Collections.<ClassPathEntry>emptyList().iterator();
     private ClassPathEntry next;
@@ -43,7 +42,7 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
     public ClassPathIterator(String classPath) throws IOException {
         this(new File(System.getProperty("user.dir")), classPath, null);
     }
-    
+
     public ClassPathIterator(File parent, String classPath, String delim) throws IOException {
         if (delim == null) {
             delim = System.getProperty("path.separator");
@@ -51,7 +50,7 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
         StringTokenizer st = new StringTokenizer(classPath, delim);
         List<File> fileList = new ArrayList<File>();
         while (st.hasMoreTokens()) {
-            String part = (String)st.nextElement();
+            String part = (String) st.nextElement();
             boolean wildcard = false;
             if (part.endsWith("/*")) {
                 part = part.substring(0, part.length() - 1);
@@ -61,7 +60,7 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
             } else if (part.indexOf('*') >= 0) {
                 throw new IllegalArgumentException("Incorrect wildcard usage: " + part);
             }
-                
+
             File file = new File(part);
             if (!file.isAbsolute())
                 file = new File(parent, part);
@@ -86,10 +85,10 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
 
     /** Closes all zip files opened by this iterator. */
     public void close() throws IOException {
-      next = null;
-      for (ZipFile zip : zips) {
-        zip.close();
-      }
+        next = null;
+        for (ZipFile zip : zips) {
+            zip.close();
+        }
     }
 
     public void remove() {
@@ -132,82 +131,84 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
 
         boolean foundClass = false;
         while (!foundClass && entries.hasNext()) {
-          next = entries.next();
-          foundClass = isClass(next.getName());
+            next = entries.next();
+            foundClass = isClass(next.getName());
         }
         if (!foundClass) {
-          advance();
+            advance();
         }
     }
 
     private static class ZipIterator implements Iterator<ClassPathEntry> {
-      private final ZipFile zip;
-      private final Enumeration<? extends ZipEntry> entries;
 
-      ZipIterator(ZipFile zip) {
-        this.zip = zip;
-        this.entries = zip.entries();
-      }
+        private final ZipFile zip;
+        private final Enumeration<? extends ZipEntry> entries;
 
-      public boolean hasNext() {
-        return entries.hasMoreElements();
-      }
+        ZipIterator(ZipFile zip) {
+            this.zip = zip;
+            this.entries = zip.entries();
+        }
 
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
+        public boolean hasNext() {
+            return entries.hasMoreElements();
+        }
 
-      public ClassPathEntry next() {
-        final ZipEntry entry = entries.nextElement();
-        return new ClassPathEntry() {
-          public String getSource() {
-            return zip.getName();
-          }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
 
-          public String getName() {
-            return entry.getName();
-          }
+        public ClassPathEntry next() {
+            final ZipEntry entry = entries.nextElement();
+            return new ClassPathEntry() {
+                public String getSource() {
+                    return zip.getName();
+                }
 
-          public InputStream openStream() throws IOException {
-            return zip.getInputStream(entry);
-          }
-        };
-      }
+                public String getName() {
+                    return entry.getName();
+                }
+
+                public InputStream openStream() throws IOException {
+                    return zip.getInputStream(entry);
+                }
+            };
+        }
     }
 
     private static class FileIterator implements Iterator<ClassPathEntry> {
-      private final File dir;
-      private final Iterator<File> entries;
 
-      FileIterator(File dir) {
-        this.dir = dir;
-        this.entries = findFiles(dir, CLASS_FILTER, true, new ArrayList<File>()).iterator();
-      }
+        private final File dir;
+        private final Iterator<File> entries;
 
-      public boolean hasNext() {
-        return entries.hasNext();
-      }
+        FileIterator(File dir) {
+            this.dir = dir;
+            this.entries = findFiles(dir, CLASS_FILTER, true, new ArrayList<File>()).iterator();
+        }
 
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-      
-      public ClassPathEntry next() {
-        final File file = entries.next();
-        return new ClassPathEntry() {
-          public String getSource() throws IOException {
-            return dir.getCanonicalPath();
-          }
+        public boolean hasNext() {
+            return entries.hasNext();
+        }
 
-          public String getName() {
-            return file.getName();
-          }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
 
-          public InputStream openStream() throws IOException {
-            return new BufferedInputStream(new FileInputStream(file));
-          }
-        };
-      }
+        public ClassPathEntry next() {
+            final File file = entries.next();
+            return new ClassPathEntry() {
+                public String getSource() throws IOException {
+                    return dir.getCanonicalPath();
+                }
+
+                public String getName() {
+                    return file.getName();
+                }
+
+                public InputStream openStream() throws IOException {
+                    return new BufferedInputStream(new FileInputStream(file));
+                }
+            };
+        }
     }
 
     private static List<File> findFiles(File dir, FileFilter filter, boolean recurse, List<File> collect) {
@@ -226,7 +227,7 @@ public class ClassPathIterator implements Iterator<ClassPathEntry>
     }
 
     private static boolean hasExtension(String name, String ext) {
-        if (name.length() <  ext.length())
+        if (name.length() < ext.length())
             return false;
         String actual = name.substring(name.length() - ext.length());
         return actual.equals(ext) || actual.equals(ext.toUpperCase());

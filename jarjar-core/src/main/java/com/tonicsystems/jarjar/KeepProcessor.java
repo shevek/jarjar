@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.config.Keep;
 import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import java.util.*;
 import org.objectweb.asm.*;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.*;
 
 // TODO: this can probably be refactored into JarClassVisitor, etc.
-class KeepProcessor extends Remapper implements JarProcessor
-{
+class KeepProcessor extends Remapper implements JarProcessor {
+
     private final ClassVisitor cv = new RemappingClassAdapter(new EmptyClassVisitor(), this);
     private final List<Wildcard> wildcards;
     private final List<String> roots = new ArrayList<String>();
     private final Map<String, Set<String>> depend = new HashMap<String, Set<String>>();
-    
+
     public KeepProcessor(List<Keep> patterns) {
-        wildcards = PatternElement.createWildcards(patterns);
+        wildcards = Wildcard.createWildcards(patterns);
     }
 
     public boolean isEnabled() {
@@ -68,15 +67,16 @@ class KeepProcessor extends Remapper implements JarProcessor
                         roots.add(name);
                 depend.put(name, curSet = new HashSet<String>());
                 new ClassReader(new ByteArrayInputStream(struct.data)).accept(cv,
-                    ClassReader.EXPAND_FRAMES);
+                        ClassReader.EXPAND_FRAMES);
                 curSet.remove(name);
             }
         } catch (Exception e) {
-          System.err.println("Error reading " + struct.name + ": " + e.getMessage());
+            System.err.println("Error reading " + struct.name + ": " + e.getMessage());
         }
         return true;
     }
 
+    @Override
     public String map(String key) {
         if (key.startsWith("java/") || key.startsWith("javax/"))
             return null;
@@ -84,9 +84,10 @@ class KeepProcessor extends Remapper implements JarProcessor
         return null;
     }
 
+    @Override
     public Object mapValue(Object value) {
         if (value instanceof String) {
-            String s = (String)value;
+            String s = (String) value;
             if (PackageRemapper.isArrayForName(s)) {
                 mapDesc(s.replace('.', '/'));
             } else if (isForName(s)) {

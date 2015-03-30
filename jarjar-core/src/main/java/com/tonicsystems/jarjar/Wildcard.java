@@ -13,18 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.config.PatternElement;
+import com.tonicsystems.jarjar.config.Rule;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-class Wildcard
-{
+class Wildcard {
+
+    static List<Wildcard> createWildcards(List<? extends PatternElement> patterns) {
+        List<Wildcard> wildcards = new ArrayList<Wildcard>();
+        for (PatternElement pattern : patterns) {
+            String result = (pattern instanceof Rule) ? ((Rule) pattern).getResult() : "";
+            String expr = pattern.getPattern();
+            if (expr.indexOf('/') >= 0)
+                throw new IllegalArgumentException("Patterns cannot contain slashes");
+            wildcards.add(new Wildcard(expr.replace('.', '/'), result));
+        }
+        return wildcards;
+    }
+
     private static Pattern dstar = Pattern.compile("\\*\\*");
-    private static Pattern star  = Pattern.compile("\\*");
+    private static Pattern star = Pattern.compile("\\*");
     private static Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
     private final Pattern pattern;
@@ -40,7 +54,7 @@ class Wildcard
             throw new IllegalArgumentException("Not a valid package pattern: " + pattern);
         if (pattern.indexOf("***") >= 0)
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
-        
+
         String regex = pattern;
         regex = replaceAllLiteral(dstar, regex, "(.+?)");
         regex = replaceAllLiteral(star, regex, "([^/]+)");
@@ -61,18 +75,26 @@ class Wildcard
                 }
             } else {
                 switch (ch) {
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
-                    break;
-                default:
-                    if (i == mark)
-                        throw new IllegalArgumentException("Backslash not followed by a digit");
-                    int n = Integer.parseInt(new String(chars, mark, i - mark));
-                    if (n > max)
-                        max = n;
-                    parts.add(new Integer(n));
-                    mark = i--;
-                    state = 0;
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        break;
+                    default:
+                        if (i == mark)
+                            throw new IllegalArgumentException("Backslash not followed by a digit");
+                        int n = Integer.parseInt(new String(chars, mark, i - mark));
+                        if (n > max)
+                            max = n;
+                        parts.add(new Integer(n));
+                        mark = i--;
+                        state = 0;
                 }
             }
         }
@@ -83,9 +105,9 @@ class Wildcard
         for (int i = 0; i < size; i++) {
             Object v = parts.get(i);
             if (v instanceof String) {
-                strings[i] = ((String)v).replace('.', '/');
+                strings[i] = ((String) v).replace('.', '/');
             } else {
-                refs[i] = ((Integer)v).intValue();
+                refs[i] = ((Integer) v).intValue();
             }
         }
         if (count < max)
@@ -116,20 +138,20 @@ class Wildcard
     }
 
     private static boolean checkIdentifierChars(String expr, String extra) {
-      // package-info violates the spec for Java Identifiers.
-      // Nevertheless, expressions that end with this string are still legal.
-      // See 7.4.1.1 of the Java language spec for discussion.
-      if (expr.endsWith("package-info")) {
-          expr = expr.substring(0, expr.length() - "package-info".length());
-      }
-      for (int i = 0, len = expr.length(); i < len; i++) {
-          char c = expr.charAt(i);
-          if (extra.indexOf(c) >= 0)
-              continue;
-          if (!Character.isJavaIdentifierPart(c))
-              return false;
-      }
-      return true;
+        // package-info violates the spec for Java Identifiers.
+        // Nevertheless, expressions that end with this string are still legal.
+        // See 7.4.1.1 of the Java language spec for discussion.
+        if (expr.endsWith("package-info")) {
+            expr = expr.substring(0, expr.length() - "package-info".length());
+        }
+        for (int i = 0, len = expr.length(); i < len; i++) {
+            char c = expr.charAt(i);
+            if (extra.indexOf(c) >= 0)
+                continue;
+            if (!Character.isJavaIdentifierPart(c))
+                return false;
+        }
+        return true;
     }
 
     private static String replaceAllLiteral(Pattern pattern, String value, String replace) {
@@ -137,6 +159,7 @@ class Wildcard
         return pattern.matcher(value).replaceAll(replace);
     }
 
+    @Override
     public String toString() {
         return "Wildcard{pattern=" + pattern + ",parts=" + parts + "}";
     }

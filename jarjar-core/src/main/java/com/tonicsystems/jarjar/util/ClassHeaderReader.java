@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
 import java.io.*;
 import java.lang.reflect.Array;
-import java.util.*;
 
-public class ClassHeaderReader
-{
+public class ClassHeaderReader {
+
     private int access;
     private String thisClass;
     private String superClass;
@@ -37,7 +35,7 @@ public class ClassHeaderReader
     public int getAccess() {
         return access;
     }
-    
+
     public String getClassName() {
         return thisClass;
     }
@@ -63,7 +61,7 @@ public class ClassHeaderReader
             } catch (IOException e) {
                 // ignore
             }
-            if (b[0] != (byte)0xCA || b[1] != (byte)0xFE || b[2] != (byte)0xBA || b[3] != (byte)0xBE)
+            if (b[0] != (byte) 0xCA || b[1] != (byte) 0xFE || b[2] != (byte) 0xBA || b[3] != (byte) 0xBE)
                 throw new ClassFormatError("Bad magic number");
 
             buffer(6);
@@ -71,7 +69,7 @@ public class ClassHeaderReader
             readUnsignedShort(6); // majorVersion
             // TODO: check version
             int constant_pool_count = readUnsignedShort(8);
-            items = (int[])resizeArray(items, constant_pool_count);
+            items = (int[]) resizeArray(items, constant_pool_count);
 
             int index = 10;
             for (int i = 1; i < constant_pool_count; i++) {
@@ -80,28 +78,28 @@ public class ClassHeaderReader
                 int tag = b[index];
                 items[i] = index + 1;
                 switch (tag) {
-                case 9:  // Fieldref
-                case 10: // Methodref
-                case 11: // InterfaceMethodref
-                case 3:  // Integer
-                case 4:  // Float
-                case 12: // NameAndType
-                    size = 4;
-                    break;
-                case 5:  // Long
-                case 6:  // Double
-                    size = 8;
-                    i++;
-                    break;
-                case 1:  // Utf8
-                    size = 2 + readUnsignedShort(index + 1);
-                    break;
-                case 7:  // Class
-                case 8:  // String
-                    size = 2;
-                    break;
-                default:
-                    throw new IllegalStateException("Unknown constant pool tag " + tag);
+                    case 9:  // Fieldref
+                    case 10: // Methodref
+                    case 11: // InterfaceMethodref
+                    case 3:  // Integer
+                    case 4:  // Float
+                    case 12: // NameAndType
+                        size = 4;
+                        break;
+                    case 5:  // Long
+                    case 6:  // Double
+                        size = 8;
+                        i++;
+                        break;
+                    case 1:  // Utf8
+                        size = 2 + readUnsignedShort(index + 1);
+                        break;
+                    case 7:  // Class
+                    case 8:  // String
+                        size = 2;
+                        break;
+                    default:
+                        throw new IllegalStateException("Unknown constant pool tag " + tag);
                 }
                 index += size + 1;
             }
@@ -110,7 +108,7 @@ public class ClassHeaderReader
             thisClass = readClass(index + 2);
             superClass = readClass(index + 4);
             int interfaces_count = readUnsignedShort(index + 6);
-        
+
             index += 8;
             buffer(index + interfaces_count * 2);
             interfaces = new String[interfaces_count];
@@ -138,11 +136,12 @@ public class ClassHeaderReader
     }
 
     private static final int CHUNK = 2048;
+
     private void buffer(int amount) throws IOException {
         if (amount > b.length)
-            b = (byte[])resizeArray(b, b.length * 2);
+            b = (byte[]) resizeArray(b, b.length * 2);
         if (amount > bsize) {
-            int rounded = (int)(CHUNK * Math.ceil((float)amount / CHUNK));
+            int rounded = (int) (CHUNK * Math.ceil((float) amount / CHUNK));
             bsize += read(in, b, bsize, rounded - bsize);
             if (amount > bsize)
                 throw new EOFException();
@@ -160,8 +159,7 @@ public class ClassHeaderReader
         return total;
     }
 
-    private static Object resizeArray(Object array, int length)
-    {
+    private static Object resizeArray(Object array, int length) {
         if (Array.getLength(array) < length) {
             Object newArray = Array.newInstance(array.getClass().getComponentType(), length);
             System.arraycopy(array, 0, newArray, 0, Array.getLength(array));
@@ -171,8 +169,8 @@ public class ClassHeaderReader
         }
     }
 
-    private static class MyByteArrayInputStream extends ByteArrayInputStream
-    {
+    private static class MyByteArrayInputStream extends ByteArrayInputStream {
+
         public MyByteArrayInputStream() {
             super(new byte[0]);
         }

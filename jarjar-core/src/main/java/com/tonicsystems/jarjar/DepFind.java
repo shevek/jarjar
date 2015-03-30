@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import java.util.*;
-import java.util.zip.ZipEntry;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
 
-public class DepFind
-{
+public class DepFind {
+
     private File curDir = new File(System.getProperty("user.dir"));
 
     public void setCurrentDirectory(File curDir) {
@@ -37,44 +34,44 @@ public class DepFind
             Map<String, String> classes = new HashMap<String, String>();
             ClassPathIterator cp = new ClassPathIterator(curDir, to, null);
             try {
-              while (cp.hasNext()) {
-                ClassPathEntry entry = cp.next();
-                InputStream in = entry.openStream();
-                try {
-                  header.read(in);
-                  classes.put(header.getClassName(), entry.getSource());
-                } catch (Exception e) {
-                  System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
-                } finally {
-                  in.close();
+                while (cp.hasNext()) {
+                    ClassPathEntry entry = cp.next();
+                    InputStream in = entry.openStream();
+                    try {
+                        header.read(in);
+                        classes.put(header.getClassName(), entry.getSource());
+                    } catch (Exception e) {
+                        System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                    } finally {
+                        in.close();
+                    }
                 }
-              }
             } finally {
-              cp.close();
+                cp.close();
             }
 
             handler.handleStart();
             cp = new ClassPathIterator(curDir, from, null);
             try {
-              while (cp.hasNext()) {
-                ClassPathEntry entry = cp.next();
-                InputStream in = entry.openStream();
-                try {
-                  new ClassReader(in).accept(
-                      new DepFindVisitor(classes, entry.getSource(), handler),
-                      ClassReader.SKIP_DEBUG);
-                } catch (Exception e) {
-                  System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
-                } finally {
-                  in.close();
+                while (cp.hasNext()) {
+                    ClassPathEntry entry = cp.next();
+                    InputStream in = entry.openStream();
+                    try {
+                        new ClassReader(in).accept(
+                                new DepFindVisitor(classes, entry.getSource(), handler),
+                                ClassReader.SKIP_DEBUG);
+                    } catch (Exception e) {
+                        System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                    } finally {
+                        in.close();
+                    }
                 }
-              }
             } finally {
-              cp.close();
+                cp.close();
             }
             handler.handleEnd();
         } catch (RuntimeIOException e) {
-            throw (IOException)e.getCause();
+            throw (IOException) e.getCause();
         }
     }
 }

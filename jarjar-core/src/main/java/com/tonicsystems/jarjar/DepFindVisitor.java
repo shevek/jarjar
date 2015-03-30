@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.*;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import org.objectweb.asm.*;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.*;
 
-class DepFindVisitor extends RemappingClassAdapter
-{
+class DepFindVisitor extends RemappingClassAdapter {
+
     public DepFindVisitor(Map<String, String> classes, String source, DepHandler handler) throws IOException {
         super(null, new DepFindRemapper(classes, source, handler));
     }
 
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        ((DepFindRemapper)remapper).setClassName(name);
+        ((DepFindRemapper) remapper).setClassName(name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
-    private static class DepFindRemapper extends Remapper
-    {
+    private static class DepFindRemapper extends Remapper {
+
         private final Map<String, String> classes;
         private final String source;
         private final DepHandler handler;
@@ -53,6 +49,7 @@ class DepFindVisitor extends RemappingClassAdapter
             curPathClass = new PathClass(source, name);
         }
 
+        @Override
         public String map(String key) {
             try {
                 if (classes.containsKey(key)) {

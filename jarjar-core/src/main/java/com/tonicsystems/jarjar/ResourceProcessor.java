@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
-import java.util.*;
 
-class ResourceProcessor implements JarProcessor
-{
+class ResourceProcessor implements JarProcessor {
+
     private PackageRemapper pr;
 
     public ResourceProcessor(PackageRemapper pr) {
@@ -34,4 +32,3 @@ class ResourceProcessor implements JarProcessor
         return true;
     }
 }
-    
