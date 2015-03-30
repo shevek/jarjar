@@ -48,3 +48,12 @@ project(':jarjar-gradle') {
 		testCompile project(':jarjar-core').sourceSets.test.output
 	}
 }
+
+project(':jarjar-command') {
+	dependencies {
+		compile project(':jarjar-core')
+		compile 'net.sf.jopt-simple:jopt-simple:4.8'
+
+		testCompile project(':jarjar-core').sourceSets.test.output
+	}
+}
