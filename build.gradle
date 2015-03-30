@@ -46,6 +46,10 @@ project(':jarjar-gradle') {
 
 		testCompile project(':jarjar-core').sourceSets.test.output
 	}
+
+	animalsniffer {
+		skip = true
+	}
 }
 
 project(':jarjar-command') {
