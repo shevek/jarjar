@@ -1,4 +1,4 @@
-rootProject.name='dhcp4j'
+rootProject.name='jarjar'
 include 'jarjar-core',
 	'jarjar-ant',
 	'jarjar-maven',
