@@ -19,7 +19,6 @@ project(':jarjar-core') {
 		// compile 'org.ow2.asm:asm:5.0.3'
 		compile 'org.ow2.asm:asm:4.0'
 		compile 'org.ow2.asm:asm-commons:4.0'
-		compile 'org.apache.ant:ant:1.7.0'
 	}
 }
 
