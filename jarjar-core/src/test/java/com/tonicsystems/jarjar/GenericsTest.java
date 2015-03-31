@@ -16,10 +16,10 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.config.Rule;
-import com.tonicsystems.jarjar.util.RemappingClassTransformer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.commons.RemappingClassAdapter;
 
 public class GenericsTest {
 
@@ -28,8 +28,7 @@ public class GenericsTest {
         Rule rule = new Rule();
         rule.setPattern("java.lang.String");
         rule.setResult("com.tonicsystems.String");
-        RemappingClassTransformer t = new RemappingClassTransformer(new PackageRemapper(Arrays.asList(rule), false));
-        t.setTarget(new EmptyClassVisitor());
+        RemappingClassAdapter t = new RemappingClassAdapter(null, new PackageRemapper(Arrays.asList(rule)));
         ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
         reader.accept(t, 0);
     }

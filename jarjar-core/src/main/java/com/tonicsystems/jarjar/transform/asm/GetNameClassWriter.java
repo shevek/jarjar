@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.util;
+package com.tonicsystems.jarjar.transform.asm;
 
+import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -33,10 +34,12 @@ public class GetNameClassWriter extends ClassVisitor {
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
+    @Nonnull
     public String getClassName() {
         return className;
     }
 
+    @Nonnull
     public byte[] toByteArray() {
         return ((ClassWriter) cv).toByteArray();
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.util;
+package com.tonicsystems.jarjar.transform.asm;
 
 import java.io.*;
 import java.lang.reflect.Array;

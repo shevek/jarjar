@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar.util;
 
-import java.io.*;
-import java.util.*;
+import com.tonicsystems.jarjar.transform.jar.JarProcessor;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -25,18 +30,18 @@ import org.apache.tools.zip.JarMarker;
 import org.apache.tools.zip.ZipExtraField;
 import org.apache.tools.zip.ZipOutputStream;
 
-abstract public class AntJarProcessor extends Jar
-{
-    private EntryStruct struct = new EntryStruct();
-    private JarProcessor proc;
-    private byte[] buf = new byte[0x2000];
+abstract public class AntJarProcessor extends Jar {
 
-    private Set<String> dirs = new HashSet<String>();
+    private final EntryStruct struct = new EntryStruct();
+    private JarProcessor proc;
+    private final byte[] buf = new byte[0x2000];
+
+    private final Set<String> dirs = new HashSet<String>();
     private boolean filesOnly;
 
     protected boolean verbose;
 
-    private static final ZipExtraField[] JAR_MARKER = new ZipExtraField[] {
+    private static final ZipExtraField[] JAR_MARKER = new ZipExtraField[]{
         JarMarker.getInstance()
     };
 
@@ -44,6 +49,7 @@ abstract public class AntJarProcessor extends Jar
         this.verbose = verbose;
     }
 
+    @Override
     public abstract void execute() throws BuildException;
 
     public void execute(JarProcessor proc) throws BuildException {
@@ -51,17 +57,20 @@ abstract public class AntJarProcessor extends Jar
         super.execute();
     }
 
+    @Override
     public void setFilesonly(boolean f) {
         super.setFilesonly(f);
         filesOnly = f;
     }
 
+    @Override
     protected void zipDir(File dir, ZipOutputStream zOut, String vPath, int mode)
-        throws IOException {
+            throws IOException {
     }
 
+    @Override
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath,
-                                     long lastModified, File fromArchive, int mode) throws IOException {
+            long lastModified, File fromArchive, int mode) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         IoUtil.pipe(is, baos, buf);
         struct.data = baos.toByteArray();
@@ -71,29 +80,31 @@ abstract public class AntJarProcessor extends Jar
             if (mode == 0)
                 mode = ZipFileSet.DEFAULT_FILE_MODE;
             if (!filesOnly) {
-              addParentDirs(struct.name, zOut);
+                addParentDirs(struct.name, zOut);
             }
             super.zipFile(new ByteArrayInputStream(struct.data),
-                          zOut, struct.name, struct.time, fromArchive, mode);
+                    zOut, struct.name, struct.time, fromArchive, mode);
         }
     }
 
     private void addParentDirs(String file, ZipOutputStream zOut) throws IOException {
-      int slash = file.lastIndexOf('/');
-      if (slash >= 0) {
-        String dir = file.substring(0, slash);
-        if (dirs.add(dir)) {
-          addParentDirs(dir, zOut);
-          super.zipDir((File) null, zOut, dir + "/", ZipFileSet.DEFAULT_DIR_MODE, JAR_MARKER);
+        int slash = file.lastIndexOf('/');
+        if (slash >= 0) {
+            String dir = file.substring(0, slash);
+            if (dirs.add(dir)) {
+                addParentDirs(dir, zOut);
+                super.zipDir((File) null, zOut, dir + "/", ZipFileSet.DEFAULT_DIR_MODE, JAR_MARKER);
+            }
         }
-      }
     }
 
+    @Override
     public void reset() {
         super.reset();
         cleanHelper();
     }
 
+    @Override
     protected void cleanUp() {
         super.cleanUp();
         cleanHelper();

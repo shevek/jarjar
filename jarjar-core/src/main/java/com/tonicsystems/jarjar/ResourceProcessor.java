@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
 

@@ -13,16 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.util;
+package com.tonicsystems.jarjar.transform.jar;
 
+import com.tonicsystems.jarjar.util.EntryStruct;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import javax.annotation.Nonnull;
 
-public class JarProcessorChain implements JarProcessor {
+public class JarProcessorChain extends ArrayList<JarProcessor> implements JarProcessor {
 
-    private final JarProcessor[] chain;
+    public JarProcessorChain(@Nonnull Iterable<? extends JarProcessor> processors) {
+        for (JarProcessor processor : processors)
+            add(processor);
+    }
 
-    public JarProcessorChain(JarProcessor[] chain) {
-        this.chain = chain.clone();
+    public JarProcessorChain(@Nonnull JarProcessor... processors) {
+        this(Arrays.asList(processors));
     }
 
     /**
@@ -30,10 +37,10 @@ public class JarProcessorChain implements JarProcessor {
      * @return <code>true</code> if the entry has run the complete chain
      * @throws IOException
      */
+    @Override
     public boolean process(EntryStruct struct) throws IOException {
-
-        for (JarProcessor aChain : chain) {
-            if (!aChain.process(struct)) {
+        for (JarProcessor processor : this) {
+            if (!processor.process(struct)) {
                 return false;
             }
         }

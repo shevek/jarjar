@@ -20,17 +20,17 @@ import java.util.*;
 
 abstract public class AbstractDepHandler implements DepHandler {
 
-    protected final int level;
+    protected final Level level;
     private final Set<List<Object>> seenIt = new HashSet<List<Object>>();
 
-    protected AbstractDepHandler(int level) {
+    protected AbstractDepHandler(Level level) {
         this.level = level;
     }
 
     @Override
     public void handle(PathClass from, PathClass to) throws IOException {
         List<Object> pair;
-        if (level == LEVEL_JAR) {
+        if (level == Level.JAR) {
             pair = createPair(from.getClassPath(), to.getClassPath());
         } else {
             pair = createPair(from.getClassName(), to.getClassName());

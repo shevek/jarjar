@@ -17,6 +17,7 @@ subprojects {
 project(':jarjar-core') {
 	dependencies {
 		compile 'org.ow2.asm:asm-commons:5.0.3'
+		compile 'org.ow2.asm:asm-util:5.0.3'
 		// compile 'org.ow2.asm:asm-commons:4.0'
 	}
 }
@@ -59,4 +60,8 @@ project(':jarjar-command') {
 
 		testCompile project(':jarjar-core').sourceSets.test.output
 	}
+
+	apply plugin: 'application'
+
+	mainClassName = "com.tonicsystems.jarjar.Main"
 }

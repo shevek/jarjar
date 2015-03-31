@@ -22,10 +22,12 @@ import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nonnull;
 
-class Wildcard {
+public class Wildcard {
 
-    static List<Wildcard> createWildcards(List<? extends PatternElement> patterns) {
+    @Nonnull
+    public static List<Wildcard> createWildcards(@Nonnull List<? extends PatternElement> patterns) {
         List<Wildcard> wildcards = new ArrayList<Wildcard>();
         for (PatternElement pattern : patterns) {
             String result = (pattern instanceof Rule) ? ((Rule) pattern).getResult() : "";
@@ -37,9 +39,9 @@ class Wildcard {
         return wildcards;
     }
 
-    private static Pattern dstar = Pattern.compile("\\*\\*");
-    private static Pattern star = Pattern.compile("\\*");
-    private static Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
+    private static final Pattern dstar = Pattern.compile("\\*\\*");
+    private static final Pattern star = Pattern.compile("\\*");
+    private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
     private final Pattern pattern;
     private final int count;

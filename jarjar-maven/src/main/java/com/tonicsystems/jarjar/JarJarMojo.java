@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.config.PatternElement;
-import com.tonicsystems.jarjar.util.*;
+import com.tonicsystems.jarjar.util.StandaloneJarProcessor;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
-public class JarJarMojo extends AbstractMojo
-{
+public class JarJarMojo extends AbstractMojo {
+
     private File fromJar;
     private File toJar;
     private File rulesFile;
     private String rules;
+    @Deprecated // Maven might need this for compatibility.
     private boolean verbose;
-    
+
+    @Override
     public void execute() throws MojoExecutionException {
         if (!((rulesFile == null || !rulesFile.exists()) ^ (rules == null)))
             throw new MojoExecutionException("Exactly one of rules or rulesFile is required");
@@ -44,7 +45,7 @@ public class JarJarMojo extends AbstractMojo
                 patterns = RulesFileParser.parse(rulesFile);
             }
             // TODO: refactor with Main.java
-            MainProcessor proc = new MainProcessor(patterns, verbose, true);
+            MainProcessor proc = new MainProcessor(patterns, true);
             StandaloneJarProcessor.run(fromJar, toJar, proc);
             proc.strip(toJar);
         } catch (IOException e) {

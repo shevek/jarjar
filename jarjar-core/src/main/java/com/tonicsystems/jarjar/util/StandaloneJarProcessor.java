@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar.util;
 
+import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;

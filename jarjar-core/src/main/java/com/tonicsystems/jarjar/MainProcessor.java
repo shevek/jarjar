@@ -15,24 +15,32 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.jar.KeepProcessor;
+import com.tonicsystems.jarjar.transform.jar.JarProcessor;
+import com.tonicsystems.jarjar.transform.jar.JarProcessorChain;
+import com.tonicsystems.jarjar.transform.jar.ZapProcessor;
 import com.tonicsystems.jarjar.config.PatternElement;
 import com.tonicsystems.jarjar.config.Zap;
 import com.tonicsystems.jarjar.config.Keep;
 import com.tonicsystems.jarjar.config.Rule;
+import com.tonicsystems.jarjar.transform.asm.RemappingClassTransform;
+import com.tonicsystems.jarjar.transform.jar.ClassTransformProcessor;
 import com.tonicsystems.jarjar.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MainProcessor implements JarProcessor {
 
-    private final boolean verbose;
+    private static final Logger LOG = LoggerFactory.getLogger(MainProcessor.class);
     private final JarProcessorChain chain;
     private final KeepProcessor kp;
     private final Map<String, String> renames = new HashMap<String, String>();
 
-    public MainProcessor(List<PatternElement> patterns, boolean verbose, boolean skipManifest) {
-        this.verbose = verbose;
+    public MainProcessor(@Nonnull List<PatternElement> patterns, boolean skipManifest) {
         List<Zap> zapList = new ArrayList<Zap>();
         List<Rule> ruleList = new ArrayList<Rule>();
         List<Keep> keepList = new ArrayList<Keep>();
@@ -46,7 +54,7 @@ class MainProcessor implements JarProcessor {
             }
         }
 
-        PackageRemapper pr = new PackageRemapper(ruleList, verbose);
+        PackageRemapper pr = new PackageRemapper(ruleList);
         kp = keepList.isEmpty() ? null : new KeepProcessor(keepList);
 
         List<JarProcessor> processors = new ArrayList<JarProcessor>();
@@ -55,7 +63,7 @@ class MainProcessor implements JarProcessor {
         if (kp != null)
             processors.add(kp);
         processors.add(new ZapProcessor(zapList));
-        processors.add(new JarTransformerChain(new RemappingClassTransformer[]{new RemappingClassTransformer(pr)}));
+        processors.add(new ClassTransformProcessor(new RemappingClassTransform(pr)));
         processors.add(new ResourceProcessor(pr));
         chain = new JarProcessorChain(processors.toArray(new JarProcessor[processors.size()]));
     }
@@ -65,7 +73,7 @@ class MainProcessor implements JarProcessor {
             return;
         Set<String> excludes = getExcludes();
         if (!excludes.isEmpty())
-            StandaloneJarProcessor.run(file, file, new ExcludeProcessor(excludes, verbose));
+            StandaloneJarProcessor.run(file, file, new ExcludeProcessor(excludes));
     }
 
     /**
@@ -90,6 +98,7 @@ class MainProcessor implements JarProcessor {
      * @return <code>true</code> if the entry is to include in the output jar
      * @throws IOException
      */
+    @Override
     public boolean process(EntryStruct struct) throws IOException {
         String name = struct.name;
         boolean keepIt = chain.process(struct);
@@ -97,12 +106,12 @@ class MainProcessor implements JarProcessor {
             if (!name.equals(struct.name)) {
                 if (kp != null)
                     renames.put(name, struct.name);
-                if (verbose)
-                    System.err.println("Renamed " + name + " -> " + struct.name);
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Renamed " + name + " -> " + struct.name);
             }
         } else {
-            if (verbose)
-                System.err.println("Removed " + name);
+            if (LOG.isDebugEnabled())
+                LOG.debug("Removed " + name);
         }
         return keepIt;
     }

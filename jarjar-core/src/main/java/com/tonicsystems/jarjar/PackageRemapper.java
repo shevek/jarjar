@@ -16,31 +16,27 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.config.Rule;
-import org.objectweb.asm.commons.*;
-import java.util.*;
-import java.util.regex.Pattern;
+import com.tonicsystems.jarjar.util.ClassNameUtils;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import org.objectweb.asm.commons.Remapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class PackageRemapper extends Remapper {
+public class PackageRemapper extends Remapper {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PackageRemapper.class);
     private static final String RESOURCE_SUFFIX = "RESOURCE";
-
-    private static final Pattern ARRAY_FOR_NAME_PATTERN
-            = Pattern.compile("\\[L[\\p{javaJavaIdentifierPart}\\.]+?;");
 
     private final List<Wildcard> wildcards;
     private final Map<String, String> typeCache = new HashMap<String, String>();
     private final Map<String, String> pathCache = new HashMap<String, String>();
     private final Map<Object, String> valueCache = new HashMap<Object, String>();
-    private final boolean verbose;
 
-    public PackageRemapper(List<Rule> ruleList, boolean verbose) {
-        this.verbose = verbose;
+    public PackageRemapper(@Nonnull List<Rule> ruleList) {
         wildcards = Wildcard.createWildcards(ruleList);
-    }
-
-    // also used by KeepProcessor
-    static boolean isArrayForName(String value) {
-        return ARRAY_FOR_NAME_PATTERN.matcher(value).matches();
     }
 
     @Override
@@ -90,7 +86,7 @@ class PackageRemapper extends Remapper {
             String s = valueCache.get(value);
             if (s == null) {
                 s = (String) value;
-                if (isArrayForName(s)) {
+                if (ClassNameUtils.isArrayForName(s)) {
                     String desc1 = s.replace('.', '/');
                     String desc2 = mapDesc(desc1);
                     if (!desc2.equals(desc1))
@@ -112,8 +108,9 @@ class PackageRemapper extends Remapper {
                 valueCache.put(value, s);
             }
             // TODO: add back class name to verbose message
-            if (verbose && !s.equals(value))
-                System.err.println("Changed \"" + value + "\" -> \"" + s + "\"");
+            if (!s.equals(value))
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Changed \"" + value + "\" -> \"" + s + "\"");
             return s;
         } else {
             return super.mapValue(value);

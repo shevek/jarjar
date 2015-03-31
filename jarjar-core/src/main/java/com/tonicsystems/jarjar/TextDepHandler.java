@@ -21,7 +21,7 @@ public class TextDepHandler extends AbstractDepHandler {
 
     private final PrintWriter w;
 
-    public TextDepHandler(PrintWriter w, int level) {
+    public TextDepHandler(PrintWriter w, Level level) {
         super(level);
         this.w = w;
     }

@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.strings;
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -23,7 +25,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-abstract class StringReader extends ClassVisitor {
+public abstract class StringReader extends ClassVisitor {
 
     private int line = -1;
     private String className;
@@ -32,7 +34,7 @@ abstract class StringReader extends ClassVisitor {
         super(Opcodes.ASM5);
     }
 
-    abstract public void visitString(String className, String value, int line);
+    public abstract void visitString(@Nonnull String className, @Nonnull String value, @Nonnegative int line);
 
     private void handleObject(Object value) {
         if (value instanceof String)
@@ -79,7 +81,7 @@ abstract class StringReader extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
-        MethodVisitor mv = new MethodVisitor(Opcodes.ASM5) {
+        return new MethodVisitor(Opcodes.ASM5) {
             @Override
             public void visitLdcInsn(Object cst) {
                 handleObject(cst);
@@ -108,6 +110,5 @@ abstract class StringReader extends ClassVisitor {
                 return StringReader.this.visitAnnotation(desc, visible);
             }
         };
-        return mv;
     }
 }

@@ -15,16 +15,17 @@
  */
 package com.tonicsystems.jarjar.config;
 
-import java.util.*;
+import javax.annotation.Nonnull;
 
 public abstract class PatternElement {
 
     private String pattern;
 
-    public void setPattern(String pattern) {
+    public void setPattern(@Nonnull String pattern) {
         this.pattern = pattern;
     }
 
+    @Nonnull
     public String getPattern() {
         return pattern;
     }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import java.io.File;
@@ -22,8 +21,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-class MainUtil
-{
+class MainUtil {
+
     public static void runMain(Object main, String[] args, String defCommand) throws Exception {
         if (args.length > 0) {
             String command = args[0];
@@ -50,7 +49,7 @@ class MainUtil
             }
         }
         if (defCommand != null)
-            runMain(main, new String[]{ defCommand }, null);
+            runMain(main, new String[]{defCommand}, null);
     }
 
     private static Object[] bindParameters(Method method, String[] args) {

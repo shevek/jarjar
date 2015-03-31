@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.jar;
 
+import com.tonicsystems.jarjar.Wildcard;
 import com.tonicsystems.jarjar.config.Zap;
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
 import java.util.*;
+import javax.annotation.Nonnull;
 
-class ZapProcessor implements JarProcessor {
+public class ZapProcessor implements JarProcessor {
 
-    private List<Wildcard> wildcards;
+    private final List<Wildcard> wildcards;
 
-    public ZapProcessor(List<Zap> zapList) {
+    public ZapProcessor(@Nonnull List<Zap> zapList) {
         wildcards = Wildcard.createWildcards(zapList);
     }
 
+    @Override
     public boolean process(EntryStruct struct) throws IOException {
         String name = struct.name;
         if (name.endsWith(".class"))

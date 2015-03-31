@@ -15,20 +15,24 @@
  */
 package com.tonicsystems.jarjar;
 
+import javax.annotation.Nonnull;
+
 public class PathClass {
 
-    private String classPath;
-    private String className;
+    private final String classPath;
+    private final String className;
 
-    public PathClass(String classPath, String className) {
+    public PathClass(@Nonnull String classPath, @Nonnull String className) {
         this.classPath = classPath;
         this.className = className;
     }
 
+    @Nonnull
     public String getClassPath() {
         return classPath;
     }
 
+    @Nonnull
     public String getClassName() {
         return className;
     }

@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.config.Rule;
 import com.tonicsystems.jarjar.config.Zap;
 import com.tonicsystems.jarjar.config.Keep;
 import com.tonicsystems.jarjar.config.PatternElement;
-import com.tonicsystems.jarjar.util.*;
-import java.io.File;
+import com.tonicsystems.jarjar.util.AntJarProcessor;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.tools.ant.BuildException;
 
-public class JarJarTask extends AntJarProcessor
-{
+public class JarJarTask extends AntJarProcessor {
+
     private List<PatternElement> patterns = new ArrayList<PatternElement>();
 
     public void addConfiguredRule(Rule rule) {
@@ -49,7 +48,7 @@ public class JarJarTask extends AntJarProcessor
     }
 
     public void execute() throws BuildException {
-        MainProcessor proc = new MainProcessor(patterns, verbose, false);
+        MainProcessor proc = new MainProcessor(patterns, false);
         execute(proc);
         try {
             proc.strip(getDestFile());
@@ -58,6 +57,7 @@ public class JarJarTask extends AntJarProcessor
         }
     }
 
+    @Override
     protected void cleanHelper() {
         super.cleanHelper();
         patterns.clear();

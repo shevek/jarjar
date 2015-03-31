@@ -30,7 +30,7 @@ public class PackageRemapperTest {
         Rule rule = new Rule();
         rule.setPattern("org.**");
         rule.setResult("foo.@1");
-        remapper = new PackageRemapper(Collections.singletonList(rule), false);
+        remapper = new PackageRemapper(Collections.singletonList(rule));
     }
 
     @Test

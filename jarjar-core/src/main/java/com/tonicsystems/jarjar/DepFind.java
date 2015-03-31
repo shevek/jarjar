@@ -15,9 +15,15 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.util.*;
-import java.io.*;
-import java.util.*;
+import com.tonicsystems.jarjar.transform.asm.ClassHeaderReader;
+import com.tonicsystems.jarjar.classpath.ClassPathEntry;
+import com.tonicsystems.jarjar.classpath.ClassPathIterator;
+import com.tonicsystems.jarjar.util.RuntimeIOException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import org.objectweb.asm.ClassReader;
 
 public class DepFind {

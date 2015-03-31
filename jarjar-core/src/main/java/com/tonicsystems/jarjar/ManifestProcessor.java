@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import com.tonicsystems.jarjar.util.*;
 import java.io.IOException;
 
@@ -30,6 +31,7 @@ class ManifestProcessor implements JarProcessor {
     private ManifestProcessor() {
     }
 
+    @Override
     public boolean process(EntryStruct struct) throws IOException {
         return !struct.name.equalsIgnoreCase(MANIFEST_PATH);
     }

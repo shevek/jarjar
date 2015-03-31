@@ -15,24 +15,28 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.util.*;
+import com.tonicsystems.jarjar.util.EntryStruct;
+import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import java.io.IOException;
-import java.util.*;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ExcludeProcessor implements JarProcessor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ExcludeProcessor.class);
     private final Set<String> excludes;
-    private final boolean verbose;
 
-    public ExcludeProcessor(Set<String> excludes, boolean verbose) {
+    public ExcludeProcessor(@Nonnull Set<String> excludes) {
         this.excludes = excludes;
-        this.verbose = verbose;
     }
 
+    @Override
     public boolean process(EntryStruct struct) throws IOException {
         boolean toKeep = !excludes.contains(struct.name);
-        if (verbose && !toKeep)
-            System.err.println("Excluding " + struct.name);
+        if (!toKeep)
+            LOG.debug("Excluding " + struct.name);
         return toKeep;
     }
 }

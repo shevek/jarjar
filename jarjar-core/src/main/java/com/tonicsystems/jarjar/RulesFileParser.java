@@ -21,54 +21,71 @@ import com.tonicsystems.jarjar.config.Keep;
 import com.tonicsystems.jarjar.config.Rule;
 import java.io.*;
 import java.util.*;
+import javax.annotation.Nonnull;
 
 class RulesFileParser {
 
     private RulesFileParser() {
     }
 
-    public static List<PatternElement> parse(File file) throws IOException {
+    @Nonnull
+    public static List<PatternElement> parse(@Nonnull File file) throws IOException {
         return parse(new FileReader(file));
     }
 
-    public static List<PatternElement> parse(String value) throws IOException {
+    @Nonnull
+    public static List<PatternElement> parse(@Nonnull String value) throws IOException {
         return parse(new java.io.StringReader(value));
     }
 
-    private static String stripComment(String in) {
+    @Nonnull
+    private static String stripComment(@Nonnull String in) {
         int p = in.indexOf("#");
         return p < 0 ? in : in.substring(0, p);
     }
 
-    private static List<PatternElement> parse(Reader r) throws IOException {
+    @Nonnull
+    private static List<String> split(@Nonnull String line) {
+        StringTokenizer tok = new StringTokenizer(line);
+        List<String> out = new ArrayList<String>();
+        while (tok.hasMoreTokens()) {
+            String token = tok.nextToken();
+            if (token.startsWith("#"))
+                break;
+            out.add(token);
+        }
+        return out;
+    }
+
+    @Nonnull
+    private static List<PatternElement> parse(@Nonnull Reader r) throws IOException {
         try {
             List<PatternElement> patterns = new ArrayList<PatternElement>();
             BufferedReader br = new BufferedReader(r);
             int c = 1;
             String line;
             while ((line = br.readLine()) != null) {
-                line = stripComment(line);
-                if ("".equals(line))
+                List<String> words = split(line);
+                if (words.isEmpty())
                     continue;
-                String[] parts = line.split("\\s+");
-                if (parts.length < 2)
-                    error(c, parts);
-                String type = parts[0];
-                PatternElement element = null;
+                if (words.size() < 2)
+                    throw error(c, words, "not enough words on line.");
+                String type = words.get(0);
+                PatternElement element;
                 if (type.equals("rule")) {
-                    if (parts.length < 3)
-                        error(c, parts);
+                    if (words.size() < 3)
+                        throw error(c, words, "'rule' requires 2 arguments.");
                     Rule rule = new Rule();
-                    rule.setResult(parts[2]);
+                    rule.setResult(words.get(2));
                     element = rule;
                 } else if (type.equals("zap")) {
                     element = new Zap();
                 } else if (type.equals("keep")) {
                     element = new Keep();
                 } else {
-                    error(c, parts);
+                    throw error(c, words, "Unrecognized keyword " + type);
                 }
-                element.setPattern(parts[1]);
+                element.setPattern(words.get(1));
                 patterns.add(element);
                 c++;
             }
@@ -78,7 +95,8 @@ class RulesFileParser {
         }
     }
 
-    private static void error(int line, String[] parts) {
-        throw new IllegalArgumentException("Error on line " + line + ": " + Arrays.asList(parts));
+    @Nonnull
+    private static IllegalArgumentException error(int line, List<String> words, String reason) {
+        throw new IllegalArgumentException("Error on line " + line + ": " + words + ": " + reason);
     }
 }

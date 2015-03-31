@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.util;
+package com.tonicsystems.jarjar.classpath;
 
-import org.objectweb.asm.ClassVisitor;
+import java.io.InputStream;
+import java.io.IOException;
 
-public class JarTransformerChain extends JarTransformer {
+public interface ClassPathEntry {
 
-    private final RemappingClassTransformer[] chain;
+    String getSource() throws IOException;
 
-    public JarTransformerChain(RemappingClassTransformer[] chain) {
-        this.chain = chain.clone();
-        for (int i = chain.length - 1; i > 0; i--) {
-            chain[i - 1].setTarget(chain[i]);
-        }
-    }
+    String getName();
 
-    protected ClassVisitor transform(ClassVisitor v) {
-        chain[chain.length - 1].setTarget(v);
-        return chain[0];
-    }
+    InputStream openStream() throws IOException;
 }
