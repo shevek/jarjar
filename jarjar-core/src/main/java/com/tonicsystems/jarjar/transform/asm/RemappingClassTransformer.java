@@ -14,11 +14,11 @@ import org.objectweb.asm.commons.RemappingClassAdapter;
  *
  * @author shevek
  */
-public class RemappingClassTransform implements ClassTransform {
+public class RemappingClassTransformer implements ClassTransformer {
 
     private final Remapper remapper;
 
-    public RemappingClassTransform(@Nonnull Remapper remapper) {
+    public RemappingClassTransformer(@Nonnull Remapper remapper) {
         this.remapper = remapper;
     }
 

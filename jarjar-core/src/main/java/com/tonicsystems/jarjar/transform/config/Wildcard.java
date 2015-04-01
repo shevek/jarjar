@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.config;
 
-import com.tonicsystems.jarjar.config.PatternElement;
-import com.tonicsystems.jarjar.config.Rule;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 public class Wildcard {
 
     @Nonnull
-    public static List<Wildcard> createWildcards(@Nonnull List<? extends PatternElement> patterns) {
+    public static List<Wildcard> createWildcards(@Nonnull Iterable<? extends PatternElement> patterns) {
         List<Wildcard> wildcards = new ArrayList<Wildcard>();
         for (PatternElement pattern : patterns) {
             String result = (pattern instanceof Rule) ? ((Rule) pattern).getResult() : "";
@@ -41,7 +40,7 @@ public class Wildcard {
 
     private static final Pattern dstar = Pattern.compile("\\*\\*");
     private static final Pattern star = Pattern.compile("\\*");
-    private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
+    // private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
     private final Pattern pattern;
     private final int count;
@@ -49,18 +48,18 @@ public class Wildcard {
     private final String[] strings;
     private final int[] refs;
 
-    public Wildcard(String pattern, String result) {
+    public Wildcard(@Nonnull String pattern, @Nonnull String result) {
         if (pattern.equals("**"))
             throw new IllegalArgumentException("'**' is not a valid pattern");
-        if (!checkIdentifierChars(pattern, "/*"))
+        if (!isPossibleQualifiedName(pattern, "/*"))
             throw new IllegalArgumentException("Not a valid package pattern: " + pattern);
         if (pattern.indexOf("***") >= 0)
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
 
         String regex = pattern;
-        regex = replaceAllLiteral(dstar, regex, "(.+?)");
-        regex = replaceAllLiteral(star, regex, "([^/]+)");
-        regex = replaceAllLiteral(estar, regex, "*)");
+        regex = replaceAllLiteral(regex, dstar, "(.+?)");
+        regex = replaceAllLiteral(regex, star, "([^/]+)");
+        // regex = replaceAllLiteral(regex, estar, "*)");
         this.pattern = Pattern.compile("\\A" + regex + "\\Z");
         this.count = this.pattern.matcher("foo").groupCount();
 
@@ -117,7 +116,7 @@ public class Wildcard {
         // System.err.println(this);
     }
 
-    public boolean matches(String value) {
+    public boolean matches(@Nonnull String value) {
         return getMatcher(value) != null;
     }
 
@@ -132,33 +131,39 @@ public class Wildcard {
         return null;
     }
 
-    private Matcher getMatcher(String value) {
+    @CheckForNull
+    private Matcher getMatcher(@Nonnull String value) {
+        if (!isPossibleQualifiedName(value, "/"))
+            return null;
         Matcher matcher = pattern.matcher(value);
-        if (matcher.matches() && checkIdentifierChars(value, "/"))
+        if (matcher.matches())
             return matcher;
         return null;
     }
 
-    private static boolean checkIdentifierChars(String expr, String extra) {
+    public static final String PACKAGE_INFO = "package-info";
+
+    private static boolean isPossibleQualifiedName(@Nonnull String value, @Nonnull String extraAllowedCharacters) {
         // package-info violates the spec for Java Identifiers.
         // Nevertheless, expressions that end with this string are still legal.
         // See 7.4.1.1 of the Java language spec for discussion.
-        if (expr.endsWith("package-info")) {
-            expr = expr.substring(0, expr.length() - "package-info".length());
+        if (value.endsWith(PACKAGE_INFO)) {
+            value = value.substring(0, value.length() - PACKAGE_INFO.length());
         }
-        for (int i = 0, len = expr.length(); i < len; i++) {
-            char c = expr.charAt(i);
-            if (extra.indexOf(c) >= 0)
+        for (int i = 0, len = value.length(); i < len; i++) {
+            char c = value.charAt(i);
+            if (Character.isJavaIdentifierPart(c))
                 continue;
-            if (!Character.isJavaIdentifierPart(c))
-                return false;
+            if (extraAllowedCharacters.indexOf(c) >= 0)
+                continue;
+            return false;
         }
         return true;
     }
 
-    private static String replaceAllLiteral(Pattern pattern, String value, String replace) {
-        replace = replace.replaceAll("([$\\\\])", "\\\\$0");
-        return pattern.matcher(value).replaceAll(replace);
+    @Nonnull
+    private static String replaceAllLiteral(@Nonnull String value, @Nonnull Pattern pattern, @Nonnull String replace) {
+        return pattern.matcher(value).replaceAll(Matcher.quoteReplacement(replace));
     }
 
     @Override

@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.config;
 
-import java.io.*;
+import javax.annotation.Nonnull;
 
-public class TextDepHandler extends AbstractDepHandler {
+public abstract class PatternElement {
 
-    private final PrintWriter w;
+    private String pattern;
 
-    public TextDepHandler(PrintWriter w, Level level) {
-        super(level);
-        this.w = w;
+    public void setPattern(@Nonnull String pattern) {
+        this.pattern = pattern;
     }
 
-    @Override
-    protected void handle(String from, String to) throws IOException {
-        w.println(from + " -> " + to);
+    @Nonnull
+    public String getPattern() {
+        return pattern;
     }
 }

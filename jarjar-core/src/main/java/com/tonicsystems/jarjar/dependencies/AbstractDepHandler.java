@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.dependencies;
 
-import java.io.*;
-import java.util.*;
+import com.tonicsystems.jarjar.dependencies.DepHandler;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 abstract public class AbstractDepHandler implements DepHandler {
 
@@ -52,9 +56,6 @@ abstract public class AbstractDepHandler implements DepHandler {
     }
 
     private static List<Object> createPair(Object o1, Object o2) {
-        List<Object> list = new ArrayList<Object>(2);
-        list.add(o1);
-        list.add(o2);
-        return list;
+        return Arrays.asList(o1, o2);
     }
 }

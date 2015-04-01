@@ -24,8 +24,13 @@ public class GetNameClassWriter extends ClassVisitor {
 
     private String className;
 
-    public GetNameClassWriter(int flags) {
-        super(Opcodes.ASM5, new ClassWriter(flags));
+    /**
+     * Constructs a new GetNameClassWriter.
+     *
+     * @param flags may include {@link ClassWriter#COMPUTE_FRAMES} * or {@link ClassWriter#COMPUTE_MAXS}.
+     */
+    public GetNameClassWriter(ClassVisitor cv) {
+        super(Opcodes.ASM5, cv);
     }
 
     @Override
@@ -37,10 +42,5 @@ public class GetNameClassWriter extends ClassVisitor {
     @Nonnull
     public String getClassName() {
         return className;
-    }
-
-    @Nonnull
-    public byte[] toByteArray() {
-        return ((ClassWriter) cv).toByteArray();
     }
 }

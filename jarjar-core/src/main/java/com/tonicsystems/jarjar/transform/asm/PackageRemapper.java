@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.asm;
 
-import com.tonicsystems.jarjar.config.Rule;
+import com.tonicsystems.jarjar.transform.config.Wildcard;
+import com.tonicsystems.jarjar.transform.config.Rule;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.util.HashMap;
 import java.util.List;

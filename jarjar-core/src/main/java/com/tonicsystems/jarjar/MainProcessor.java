@@ -15,17 +15,22 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.transform.jar.KeepProcessor;
+import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
+import com.tonicsystems.jarjar.transform.jar.PathFilterJarProcessor;
+import com.tonicsystems.jarjar.transform.jar.ManifestFilterJarProcessor;
+import com.tonicsystems.jarjar.transform.jar.ResourceRenamerJarProcessor;
+import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.StandaloneJarProcessor;
+import com.tonicsystems.jarjar.transform.jar.ClassClosureFilterJarProcessor;
 import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import com.tonicsystems.jarjar.transform.jar.JarProcessorChain;
-import com.tonicsystems.jarjar.transform.jar.ZapProcessor;
-import com.tonicsystems.jarjar.config.PatternElement;
-import com.tonicsystems.jarjar.config.Zap;
-import com.tonicsystems.jarjar.config.Keep;
-import com.tonicsystems.jarjar.config.Rule;
-import com.tonicsystems.jarjar.transform.asm.RemappingClassTransform;
-import com.tonicsystems.jarjar.transform.jar.ClassTransformProcessor;
-import com.tonicsystems.jarjar.util.*;
+import com.tonicsystems.jarjar.transform.jar.ClassFilterJarProcessor;
+import com.tonicsystems.jarjar.transform.config.PatternElement;
+import com.tonicsystems.jarjar.transform.config.Zap;
+import com.tonicsystems.jarjar.transform.config.Keep;
+import com.tonicsystems.jarjar.transform.config.Rule;
+import com.tonicsystems.jarjar.transform.asm.RemappingClassTransformer;
+import com.tonicsystems.jarjar.transform.jar.ClassTransformerJarProcessor;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -33,11 +38,11 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class MainProcessor implements JarProcessor {
+public class MainProcessor implements JarProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(MainProcessor.class);
     private final JarProcessorChain chain;
-    private final KeepProcessor kp;
+    private final ClassClosureFilterJarProcessor kp;
     private final Map<String, String> renames = new HashMap<String, String>();
 
     public MainProcessor(@Nonnull List<PatternElement> patterns, boolean skipManifest) {
@@ -55,16 +60,16 @@ class MainProcessor implements JarProcessor {
         }
 
         PackageRemapper pr = new PackageRemapper(ruleList);
-        kp = keepList.isEmpty() ? null : new KeepProcessor(keepList);
+        kp = keepList.isEmpty() ? null : new ClassClosureFilterJarProcessor(keepList);
 
         List<JarProcessor> processors = new ArrayList<JarProcessor>();
         if (skipManifest)
-            processors.add(ManifestProcessor.getInstance());
+            processors.add(ManifestFilterJarProcessor.getInstance());
         if (kp != null)
             processors.add(kp);
-        processors.add(new ZapProcessor(zapList));
-        processors.add(new ClassTransformProcessor(new RemappingClassTransform(pr)));
-        processors.add(new ResourceProcessor(pr));
+        processors.add(new ClassFilterJarProcessor(zapList));
+        processors.add(new ClassTransformerJarProcessor(new RemappingClassTransformer(pr)));
+        processors.add(new ResourceRenamerJarProcessor(pr));
         chain = new JarProcessorChain(processors.toArray(new JarProcessor[processors.size()]));
     }
 
@@ -73,7 +78,7 @@ class MainProcessor implements JarProcessor {
             return;
         Set<String> excludes = getExcludes();
         if (!excludes.isEmpty())
-            StandaloneJarProcessor.run(file, file, new ExcludeProcessor(excludes));
+            StandaloneJarProcessor.run(file, file, new PathFilterJarProcessor(excludes));
     }
 
     /**

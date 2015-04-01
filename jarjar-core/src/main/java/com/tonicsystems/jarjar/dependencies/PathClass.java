@@ -13,7 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.config;
+package com.tonicsystems.jarjar.dependencies;
 
-public class Zap extends PatternElement {
+import javax.annotation.Nonnull;
+
+public class PathClass {
+
+    private final String classPath;
+    private final String className;
+
+    public PathClass(@Nonnull String classPath, @Nonnull String className) {
+        this.classPath = classPath;
+        this.className = className;
+    }
+
+    @Nonnull
+    public String getClassPath() {
+        return classPath;
+    }
+
+    @Nonnull
+    public String getClassName() {
+        return className;
+    }
+
+    @Override
+    public String toString() {
+        return classPath + "!" + className;
+    }
 }

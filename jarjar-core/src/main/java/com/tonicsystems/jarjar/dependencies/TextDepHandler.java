@@ -13,32 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.dependencies;
 
-import javax.annotation.Nonnull;
+import com.tonicsystems.jarjar.dependencies.AbstractDepHandler;
+import java.io.IOException;
 
-public class PathClass {
+public class TextDepHandler extends AbstractDepHandler {
 
-    private final String classPath;
-    private final String className;
+    private final Appendable out;
 
-    public PathClass(@Nonnull String classPath, @Nonnull String className) {
-        this.classPath = classPath;
-        this.className = className;
-    }
-
-    @Nonnull
-    public String getClassPath() {
-        return classPath;
-    }
-
-    @Nonnull
-    public String getClassName() {
-        return className;
+    public TextDepHandler(Appendable out, Level level) {
+        super(level);
+        this.out = out;
     }
 
     @Override
-    public String toString() {
-        return classPath + "!" + className;
+    protected void handle(String from, String to) throws IOException {
+        out.append(from + " -> " + to + "\n");
     }
 }

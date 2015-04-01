@@ -15,33 +15,26 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.Wildcard;
-import com.tonicsystems.jarjar.config.Zap;
-import com.tonicsystems.jarjar.util.*;
-import java.io.IOException;
-import java.util.*;
+import com.tonicsystems.jarjar.transform.config.Wildcard;
+import com.tonicsystems.jarjar.transform.config.Zap;
+import java.util.List;
 import javax.annotation.Nonnull;
 
-public class ZapProcessor implements JarProcessor {
+public class ClassFilterJarProcessor extends AbstractFilterJarProcessor {
 
     private final List<Wildcard> wildcards;
 
-    public ZapProcessor(@Nonnull List<Zap> zapList) {
+    public ClassFilterJarProcessor(@Nonnull Iterable<? extends Zap> zapList) {
         wildcards = Wildcard.createWildcards(zapList);
     }
 
     @Override
-    public boolean process(EntryStruct struct) throws IOException {
-        String name = struct.name;
-        if (name.endsWith(".class"))
-            return !zap(name.substring(0, name.length() - 6));
-        return true;
-    }
-
-    private boolean zap(String desc) {
-        // TODO: optimize
+    protected boolean isFiltered(@Nonnull String name) {
+        if (!name.endsWith(".class"))
+            return false;
+        name = name.substring(0, name.length() - 6);
         for (Wildcard wildcard : wildcards) {
-            if (wildcard.matches(desc))
+            if (wildcard.matches(name))
                 return true;
         }
         return false;

@@ -15,36 +15,31 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
+import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
 import com.tonicsystems.jarjar.transform.EntryStruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 
-public class JarProcessorChain extends ArrayList<JarProcessor> implements JarProcessor {
+/**
+ * Allows any file which is NOT a JAR file.
+ */
+public class ResourceRenamerJarProcessor implements JarProcessor {
 
-    public JarProcessorChain(@Nonnull Iterable<? extends JarProcessor> processors) {
-        for (JarProcessor processor : processors)
-            add(processor);
-    }
+    private final PackageRemapper pr;
 
-    public JarProcessorChain(@Nonnull JarProcessor... processors) {
-        this(Arrays.asList(processors));
+    public ResourceRenamerJarProcessor(@Nonnull PackageRemapper pr) {
+        this.pr = pr;
     }
 
     @Override
     public Result scan(EntryStruct struct) throws IOException {
-        for (JarProcessor processor : this)
-            if (processor.scan(struct) == Result.DISCARD)
-                return Result.DISCARD;
         return Result.KEEP;
     }
 
     @Override
     public Result process(EntryStruct struct) throws IOException {
-        for (JarProcessor processor : this)
-            if (processor.process(struct) == Result.DISCARD)
-                return Result.DISCARD;
+        if (!struct.name.endsWith(".class"))
+            struct.name = pr.mapPath(struct.name);
         return Result.KEEP;
     }
 }

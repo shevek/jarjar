@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.jar;
 
-import java.io.IOException;
+import java.util.Collections;
 
-public interface DepHandler {
+/**
+ * Excludes the manifest.
+ */
+public class ManifestFilterJarProcessor extends PathFilterJarProcessor {
 
-    public enum Level {
+    public static final String MANIFEST_PATH = "META-INF/MANIFEST.MF";
 
-        CLASS, JAR;
+    public ManifestFilterJarProcessor() {
+        super(Collections.singleton(MANIFEST_PATH));
     }
-
-    void handleStart() throws IOException;
-
-    void handle(PathClass from, PathClass to) throws IOException;
-
-    void handleEnd() throws IOException;
 }

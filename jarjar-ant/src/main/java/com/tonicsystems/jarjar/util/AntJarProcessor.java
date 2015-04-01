@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar.util;
 
+import com.tonicsystems.jarjar.transform.EntryStruct;
 import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

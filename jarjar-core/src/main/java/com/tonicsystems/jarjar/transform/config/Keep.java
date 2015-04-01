@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.config;
+package com.tonicsystems.jarjar.transform.config;
 
 public class Keep extends PatternElement {
 }

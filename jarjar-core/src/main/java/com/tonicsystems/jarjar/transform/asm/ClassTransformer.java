@@ -12,7 +12,7 @@ import org.objectweb.asm.ClassVisitor;
  *
  * @author shevek
  */
-public interface ClassTransform {
+public interface ClassTransformer {
 
     @Nonnull
     public ClassVisitor transform(@Nonnull ClassVisitor v);

@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.util;
+package com.tonicsystems.jarjar.transform;
 
 import com.tonicsystems.jarjar.transform.jar.JarProcessor;
+import com.tonicsystems.jarjar.util.IoUtil;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.Enumeration;
-import java.io.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class StandaloneJarProcessor {
 
@@ -42,7 +47,7 @@ public class StandaloneJarProcessor {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 IoUtil.pipe(in.getInputStream(entry), baos, buf);
                 struct.data = baos.toByteArray();
-                if (proc.process(struct)) {
+                if (proc.process(struct) != JarProcessor.Result.DISCARD) {
                     if (entries.add(struct.name)) {
                         entry = new JarEntry(struct.name);
                         entry.setTime(struct.time);

@@ -15,8 +15,9 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.config.PatternElement;
-import com.tonicsystems.jarjar.util.StandaloneJarProcessor;
+import com.tonicsystems.jarjar.transform.config.RulesFileParser;
+import com.tonicsystems.jarjar.transform.config.PatternElement;
+import com.tonicsystems.jarjar.transform.StandaloneJarProcessor;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;

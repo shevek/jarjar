@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.dependencies;
 
 import com.tonicsystems.jarjar.util.*;
 import java.io.*;

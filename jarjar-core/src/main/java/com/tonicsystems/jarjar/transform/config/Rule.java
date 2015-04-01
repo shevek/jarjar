@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.config;
+package com.tonicsystems.jarjar.transform.config;
 
-import javax.annotation.Nonnull;
+public class Rule extends PatternElement {
 
-public abstract class PatternElement {
+    private String result;
 
-    private String pattern;
-
-    public void setPattern(@Nonnull String pattern) {
-        this.pattern = pattern;
+    public void setResult(String result) {
+        this.result = result;
     }
 
-    @Nonnull
-    public String getPattern() {
-        return pattern;
+    public String getResult() {
+        return result;
     }
 }

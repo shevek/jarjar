@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.config;
 
-import com.tonicsystems.jarjar.config.PatternElement;
-import com.tonicsystems.jarjar.config.Zap;
-import com.tonicsystems.jarjar.config.Keep;
-import com.tonicsystems.jarjar.config.Rule;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import javax.annotation.Nonnull;
 
-class RulesFileParser {
+public class RulesFileParser {
 
     private RulesFileParser() {
     }
@@ -36,12 +38,6 @@ class RulesFileParser {
     @Nonnull
     public static List<PatternElement> parse(@Nonnull String value) throws IOException {
         return parse(new java.io.StringReader(value));
-    }
-
-    @Nonnull
-    private static String stripComment(@Nonnull String in) {
-        int p = in.indexOf("#");
-        return p < 0 ? in : in.substring(0, p);
     }
 
     @Nonnull

@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.config.Wildcard;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

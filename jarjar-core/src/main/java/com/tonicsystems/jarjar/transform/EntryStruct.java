@@ -13,23 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform;
 
-import com.tonicsystems.jarjar.transform.jar.JarProcessor;
-import com.tonicsystems.jarjar.util.*;
-import java.io.IOException;
+public class EntryStruct {
 
-class ResourceProcessor implements JarProcessor {
-
-    private PackageRemapper pr;
-
-    public ResourceProcessor(PackageRemapper pr) {
-        this.pr = pr;
-    }
-
-    public boolean process(EntryStruct struct) throws IOException {
-        if (!struct.name.endsWith(".class"))
-            struct.name = pr.mapPath(struct.name);
-        return true;
-    }
+    public byte[] data;
+    public String name;
+    public long time;
 }

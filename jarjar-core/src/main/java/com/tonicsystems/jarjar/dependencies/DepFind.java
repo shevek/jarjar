@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.dependencies;
 
 import com.tonicsystems.jarjar.transform.asm.ClassHeaderReader;
 import com.tonicsystems.jarjar.classpath.ClassPathEntry;
@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.objectweb.asm.ClassReader;
 
@@ -34,11 +35,11 @@ public class DepFind {
         this.curDir = curDir;
     }
 
-    public void run(String from, String to, DepHandler handler) throws IOException {
+    public void run(DepHandler handler, List<File> from, List<File> to) throws IOException {
         try {
             ClassHeaderReader header = new ClassHeaderReader();
             Map<String, String> classes = new HashMap<String, String>();
-            ClassPathIterator cp = new ClassPathIterator(curDir, to, null);
+            ClassPathIterator cp = new ClassPathIterator(curDir, to);
             try {
                 while (cp.hasNext()) {
                     ClassPathEntry entry = cp.next();
@@ -57,7 +58,7 @@ public class DepFind {
             }
 
             handler.handleStart();
-            cp = new ClassPathIterator(curDir, from, null);
+            cp = new ClassPathIterator(curDir, from);
             try {
                 while (cp.hasNext()) {
                     ClassPathEntry entry = cp.next();

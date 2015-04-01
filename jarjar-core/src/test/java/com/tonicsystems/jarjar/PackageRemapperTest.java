@@ -15,7 +15,8 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.config.Rule;
+import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
+import com.tonicsystems.jarjar.transform.config.Rule;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;

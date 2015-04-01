@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.util;
+package com.tonicsystems.jarjar.transform.config;
 
-public class EntryStruct {
-
-    public byte[] data;
-    public String name;
-    public long time;
+public class Zap extends PatternElement {
 }

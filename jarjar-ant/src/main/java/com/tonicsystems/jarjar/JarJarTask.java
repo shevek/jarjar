@@ -15,10 +15,10 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.config.Rule;
-import com.tonicsystems.jarjar.config.Zap;
-import com.tonicsystems.jarjar.config.Keep;
-import com.tonicsystems.jarjar.config.PatternElement;
+import com.tonicsystems.jarjar.transform.config.Rule;
+import com.tonicsystems.jarjar.transform.config.Zap;
+import com.tonicsystems.jarjar.transform.config.Keep;
+import com.tonicsystems.jarjar.transform.config.PatternElement;
 import com.tonicsystems.jarjar.util.AntJarProcessor;
 import java.io.IOException;
 import java.util.ArrayList;

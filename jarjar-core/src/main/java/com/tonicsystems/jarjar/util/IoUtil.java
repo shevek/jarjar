@@ -24,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-class IoUtil {
+public class IoUtil {
 
     private IoUtil() {
     }

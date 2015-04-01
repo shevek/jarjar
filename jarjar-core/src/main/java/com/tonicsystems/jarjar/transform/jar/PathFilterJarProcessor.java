@@ -13,30 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar;
+package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.util.EntryStruct;
-import com.tonicsystems.jarjar.transform.jar.JarProcessor;
-import java.io.IOException;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-class ExcludeProcessor implements JarProcessor {
+/**
+ * Excludes resources by exact name.
+ */
+public class PathFilterJarProcessor extends AbstractFilterJarProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExcludeProcessor.class);
-    private final Set<String> excludes;
+    private final Set<? extends String> excludes;
 
-    public ExcludeProcessor(@Nonnull Set<String> excludes) {
+    public PathFilterJarProcessor(@Nonnull Set<? extends String> excludes) {
         this.excludes = excludes;
     }
 
     @Override
-    public boolean process(EntryStruct struct) throws IOException {
-        boolean toKeep = !excludes.contains(struct.name);
-        if (!toKeep)
-            LOG.debug("Excluding " + struct.name);
-        return toKeep;
+    protected boolean isFiltered(String name) {
+        return excludes.contains(name);
     }
 }

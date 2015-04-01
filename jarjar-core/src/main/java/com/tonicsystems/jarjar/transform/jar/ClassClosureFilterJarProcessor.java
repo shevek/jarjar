@@ -15,10 +15,9 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.Wildcard;
-import com.tonicsystems.jarjar.config.Keep;
-import com.tonicsystems.jarjar.util.EntryStruct;
-import com.tonicsystems.jarjar.transform.jar.JarProcessor;
+import com.tonicsystems.jarjar.transform.config.Wildcard;
+import com.tonicsystems.jarjar.transform.config.Keep;
+import com.tonicsystems.jarjar.transform.EntryStruct;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,10 +35,14 @@ import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: this can probably be refactored into JarClassVisitor, etc.
-public class KeepProcessor implements JarProcessor {
+/**
+ * Keeps all classes reachable from a given set of roots.
+ *
+ * Put this early in the chain as it does not honour renames.
+ */
+public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KeepProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClassClosureFilterJarProcessor.class);
 
     private static class DependencyCollector extends Remapper {
 
@@ -72,45 +75,22 @@ public class KeepProcessor implements JarProcessor {
     private final List<Wildcard> wildcards;
     private final List<String> roots = new ArrayList<String>();
     private final Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
+    private Set<String> closure;
 
-    public KeepProcessor(@Nonnull List<Keep> patterns) {
+    public ClassClosureFilterJarProcessor(@Nonnull Iterable<? extends Keep> patterns) {
         wildcards = Wildcard.createWildcards(patterns);
     }
 
-    public boolean isEnabled() {
+    private boolean isEnabled() {
         return !wildcards.isEmpty();
     }
 
-    /**
-     * Returns the list of namees to remove from the generated JAR file.
-     *
-     * Computes the transitive set of reachable names from the root set.
-     * Removes that from the overall set of names seen in the JAR file.
-     *
-     * @return the residue.
-     */
-    @Nonnull
-    public Set<String> getExcludes() {
-        Set<String> keep = new HashSet<String>();
-        closureHelper(keep, roots);
-        Set<String> remove = new HashSet<String>(dependencies.keySet());
-        remove.removeAll(keep);
-        return remove;
-    }
-
-    private void closureHelper(Set<String> closure, Collection<String> process) {
-        if (process == null)
-            return;
-        for (String name : process) {
-            if (closure.add(name))
-                closureHelper(closure, dependencies.get(name));
-        }
-    }
-
     @Override
-    public boolean process(EntryStruct struct) throws IOException {
+    public Result scan(EntryStruct struct) throws IOException {
+        if (!isEnabled())
+            return Result.KEEP;
         try {
-            if (struct.name.endsWith(".class")) {
+            if (ClassNameUtils.isClass(struct.name)) {
                 String name = struct.name.substring(0, struct.name.length() - 6);
                 for (Wildcard wildcard : wildcards)
                     if (wildcard.matches(name))
@@ -123,6 +103,32 @@ public class KeepProcessor implements JarProcessor {
         } catch (Exception e) {
             LOG.warn("Error reading " + struct.name + ": " + e.getMessage());
         }
-        return true;
+        return Result.KEEP;
+    }
+
+    private void addTransitiveClosure(Collection<String> itemDependencies) {
+        if (itemDependencies == null)
+            return;
+        for (String name : itemDependencies)
+            if (closure.add(name))
+                addTransitiveClosure(dependencies.get(name));
+    }
+
+    @Override
+    protected boolean isFiltered(String name) {
+        if (closure == null) {
+            closure = new HashSet<String>();
+            addTransitiveClosure(roots);
+        }
+        if (!ClassNameUtils.isClass(name))
+            return false;
+        return !closure.contains(name);
+    }
+
+    @Override
+    public Result process(EntryStruct struct) throws IOException {
+        if (!isEnabled())
+            return Result.KEEP;
+        return super.process(struct);
     }
 }
