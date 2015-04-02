@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.config.Rule;
 import com.tonicsystems.jarjar.transform.config.Zap;
 import com.tonicsystems.jarjar.transform.config.Keep;
@@ -48,7 +49,7 @@ public class JarJarTask extends AntJarProcessor {
     }
 
     public void execute() throws BuildException {
-        MainProcessor proc = new MainProcessor(patterns, false);
+        DefaultJarProcessor proc = new DefaultJarProcessor(patterns, false);
         execute(proc);
         try {
             proc.strip(getDestFile());

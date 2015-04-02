@@ -22,6 +22,7 @@ import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +82,14 @@ public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
         wildcards = Wildcard.createWildcards(patterns);
     }
 
+    public ClassClosureFilterJarProcessor(@Nonnull Keep... patterns) {
+        this(Arrays.asList(patterns));
+    }
+
+    public void addKeep(@Nonnull Keep keep) {
+        wildcards.add(Wildcard.createWildcard(keep));
+    }
+
     private boolean isEnabled() {
         return !wildcards.isEmpty();
     }
@@ -106,28 +115,28 @@ public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
         return Result.KEEP;
     }
 
-    private void addTransitiveClosure(Collection<String> itemDependencies) {
+    private void addTransitiveClosure(Collection<? super String> out, Collection<String> itemDependencies) {
         if (itemDependencies == null)
             return;
         for (String name : itemDependencies)
-            if (closure.add(name))
-                addTransitiveClosure(dependencies.get(name));
+            if (out.add(name))
+                addTransitiveClosure(out, dependencies.get(name));
     }
 
     @Override
     protected boolean isFiltered(String name) {
         if (closure == null) {
             closure = new HashSet<String>();
-            addTransitiveClosure(roots);
+            addTransitiveClosure(closure, roots);
         }
-        if (!ClassNameUtils.isClass(name))
-            return false;
         return !closure.contains(name);
     }
 
     @Override
     public Result process(EntryStruct struct) throws IOException {
         if (!isEnabled())
+            return Result.KEEP;
+        if (!ClassNameUtils.isClass(struct.name))
             return Result.KEEP;
         return super.process(struct);
     }

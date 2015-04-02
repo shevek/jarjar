@@ -31,7 +31,7 @@ import org.apache.tools.zip.JarMarker;
 import org.apache.tools.zip.ZipExtraField;
 import org.apache.tools.zip.ZipOutputStream;
 
-abstract public class AntJarProcessor extends Jar {
+public abstract class AntJarProcessor extends Jar {
 
     private final EntryStruct struct = new EntryStruct();
     private JarProcessor proc;
@@ -73,7 +73,7 @@ abstract public class AntJarProcessor extends Jar {
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath,
             long lastModified, File fromArchive, int mode) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IoUtil.pipe(is, baos, buf);
+        IoUtil.copy(is, baos, buf);
         struct.data = baos.toByteArray();
         struct.name = vPath;
         struct.time = lastModified;

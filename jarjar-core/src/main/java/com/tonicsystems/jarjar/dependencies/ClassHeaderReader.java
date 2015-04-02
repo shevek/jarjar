@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.transform.asm;
+package com.tonicsystems.jarjar.dependencies;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 
-public class ClassHeaderReader {
+/* pp */ class ClassHeaderReader {
 
     private int access;
     private String thisClass;
@@ -178,7 +182,7 @@ public class ClassHeaderReader {
         public void readFrom(byte[] buf, int pos) {
             this.buf = buf;
             this.pos = pos;
-            count = buf.length;
+            this.count = buf.length;
         }
     }
 }

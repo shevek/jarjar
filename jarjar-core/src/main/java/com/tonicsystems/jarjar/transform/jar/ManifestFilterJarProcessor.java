@@ -24,7 +24,25 @@ public class ManifestFilterJarProcessor extends PathFilterJarProcessor {
 
     public static final String MANIFEST_PATH = "META-INF/MANIFEST.MF";
 
+    private boolean enabled = false;
+
     public ManifestFilterJarProcessor() {
         super(Collections.singleton(MANIFEST_PATH));
     }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    protected boolean isFiltered(String name) {
+        if (!isEnabled())
+            return false;
+        return super.isFiltered(name);
+    }
+
 }

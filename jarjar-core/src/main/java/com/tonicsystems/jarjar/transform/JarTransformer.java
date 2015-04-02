@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform;
 
+import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import com.tonicsystems.jarjar.util.IoUtil;
 import java.io.ByteArrayOutputStream;
@@ -28,14 +29,14 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-public class StandaloneJarProcessor {
+public class JarTransformer {
 
-    public static void run(File from, File to, JarProcessor proc) throws IOException {
+    public static void run(File outputFile, ClassPath inputPath) throws IOException {
         byte[] buf = new byte[0x2000];
 
-        JarFile in = new JarFile(from);
-        final File tmpTo = File.createTempFile("jarjar", ".jar");
-        JarOutputStream out = new JarOutputStream(new FileOutputStream(tmpTo));
+        final File tmpFile = File.createTempFile("jarjar", ".jar");
+        JarOutputStream tmpJarStream = new JarOutputStream(new FileOutputStream(tmpFile));
+
         Set<String> entries = new HashSet<String>();
         try {
             EntryStruct struct = new EntryStruct();
@@ -45,15 +46,15 @@ public class StandaloneJarProcessor {
                 struct.name = entry.getName();
                 struct.time = entry.getTime();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                IoUtil.pipe(in.getInputStream(entry), baos, buf);
+                IoUtil.copy(in.getInputStream(entry), baos, buf);
                 struct.data = baos.toByteArray();
                 if (proc.process(struct) != JarProcessor.Result.DISCARD) {
                     if (entries.add(struct.name)) {
                         entry = new JarEntry(struct.name);
                         entry.setTime(struct.time);
                         entry.setCompressedSize(-1);
-                        out.putNextEntry(entry);
-                        out.write(struct.data);
+                        tmpJarStream.putNextEntry(entry);
+                        tmpJarStream.write(struct.data);
                     } else if (struct.name.endsWith("/")) {
                         // TODO(chrisn): log
                     } else {
@@ -64,12 +65,12 @@ public class StandaloneJarProcessor {
 
         } finally {
             in.close();
-            out.close();
+            tmpJarStream.close();
         }
 
         // delete the empty directories
-        IoUtil.copyZipWithoutEmptyDirectories(tmpTo, to);
-        tmpTo.delete();
+        IoUtil.copyZipWithoutEmptyDirectories(tmpFile, outputFile);
+        tmpFile.delete();
 
     }
 }

@@ -27,6 +27,8 @@ public interface JarProcessor {
         DISCARD;
     }
 
+    // public boolean isEnabled();
+
     @Nonnull
     public Result scan(@Nonnull EntryStruct struct) throws IOException;
 

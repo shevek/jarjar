@@ -15,37 +15,33 @@
  */
 package com.tonicsystems.jarjar.dependencies;
 
-import com.tonicsystems.jarjar.dependencies.DepHandler;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
-abstract public class AbstractDepHandler implements DepHandler {
+public abstract class AbstractDependencyHandler implements DependencyHandler {
 
     protected final Level level;
-    private final Set<List<Object>> seenIt = new HashSet<List<Object>>();
+    private final Set<Pair<String>> seen = new HashSet<Pair<String>>();
 
-    protected AbstractDepHandler(Level level) {
+    protected AbstractDependencyHandler(Level level) {
         this.level = level;
     }
 
     @Override
-    public void handle(PathClass from, PathClass to) throws IOException {
-        List<Object> pair;
+    public void handle(Dependency from, Dependency to) throws IOException {
+        Pair<String> pair;
         if (level == Level.JAR) {
-            pair = createPair(from.getClassPath(), to.getClassPath());
+            pair = new Pair<String>(from.getClassPath(), to.getClassPath());
         } else {
-            pair = createPair(from.getClassName(), to.getClassName());
+            pair = new Pair<String>(from.getClassName(), to.getClassName());
         }
-        if (!seenIt.contains(pair)) {
-            seenIt.add(pair);
-            handle(pair.get(0).toString(), pair.get(1).toString());
-        }
+        if (seen.add(pair))
+            handle(pair.getLeft(), pair.getRight());
     }
 
-    abstract protected void handle(String from, String to) throws IOException;
+    protected abstract void handle(@Nonnull String from, @Nonnull String to) throws IOException;
 
     @Override
     public void handleStart() throws IOException {
@@ -53,9 +49,5 @@ abstract public class AbstractDepHandler implements DepHandler {
 
     @Override
     public void handleEnd() throws IOException {
-    }
-
-    private static List<Object> createPair(Object o1, Object o2) {
-        return Arrays.asList(o1, o2);
     }
 }

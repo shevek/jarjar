@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.dependencies;
+package com.tonicsystems.jarjar.classpath;
 
-import com.tonicsystems.jarjar.dependencies.AbstractDepHandler;
+import java.io.InputStream;
 import java.io.IOException;
+import javax.annotation.Nonnull;
 
-public class TextDepHandler extends AbstractDepHandler {
+public abstract class ClassPathResource {
 
-    private final Appendable out;
+    @Nonnull
+    public abstract String getArchiveName() throws IOException;
 
-    public TextDepHandler(Appendable out, Level level) {
-        super(level);
-        this.out = out;
-    }
+    @Nonnull
+    public abstract String getName();
+
+    @Nonnull
+    public abstract InputStream openStream() throws IOException;
 
     @Override
-    protected void handle(String from, String to) throws IOException {
-        out.append(from + " -> " + to + "\n");
+    public String toString() {
+        return getArchiveName() + "!" + getName();
     }
+
 }

@@ -18,6 +18,7 @@ package com.tonicsystems.jarjar.transform.jar;
 import com.tonicsystems.jarjar.transform.asm.ClassTransformer;
 import com.tonicsystems.jarjar.transform.asm.GetNameClassWriter;
 import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ClassTransformerJarProcessor implements JarProcessor {
         this.classProcessors = classProcessors;
     }
 
-    public ClassTransformerJarProcessor(@Nonnull ClassTransformer classProcessors) {
+    public ClassTransformerJarProcessor(@Nonnull ClassTransformer... classProcessors) {
         this(Arrays.asList(classProcessors));
     }
 
@@ -52,7 +53,7 @@ public class ClassTransformerJarProcessor implements JarProcessor {
 
     @Override
     public Result process(EntryStruct struct) throws IOException {
-        if (struct.name.endsWith(".class")) {
+        if (ClassNameUtils.isClass(struct.name)) {
             try {
                 ClassReader reader = new ClassReader(struct.data);
                 ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -61,16 +62,12 @@ public class ClassTransformerJarProcessor implements JarProcessor {
                 for (ClassTransformer classProcessor : classProcessors)
                     cv = classProcessor.transform(cv);
                 reader.accept(cv, ClassReader.EXPAND_FRAMES);
-                struct.name = pathFromName(namer.getClassName());
+                struct.name = ClassNameUtils.javaNameToPath(namer.getClassName());
                 struct.data = writer.toByteArray();
             } catch (Exception e) {
                 LOG.warn("Failed to read class " + struct.name + ": " + e);
             }
         }
         return Result.KEEP;
-    }
-
-    private static String pathFromName(String className) {
-        return className.replace('.', '/') + ".class";
     }
 }

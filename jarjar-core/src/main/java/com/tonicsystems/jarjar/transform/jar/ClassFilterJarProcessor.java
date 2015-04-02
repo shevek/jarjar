@@ -17,6 +17,8 @@ package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.config.Wildcard;
 import com.tonicsystems.jarjar.transform.config.Zap;
+import com.tonicsystems.jarjar.util.ClassNameUtils;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -28,9 +30,17 @@ public class ClassFilterJarProcessor extends AbstractFilterJarProcessor {
         wildcards = Wildcard.createWildcards(zapList);
     }
 
+    public ClassFilterJarProcessor(@Nonnull Zap... zapList) {
+        this(Arrays.asList(zapList));
+    }
+
+    public void addZap(@Nonnull Zap zap) {
+        wildcards.add(Wildcard.createWildcard(zap));
+    }
+
     @Override
     protected boolean isFiltered(@Nonnull String name) {
-        if (!name.endsWith(".class"))
+        if (!ClassNameUtils.isClass(name))
             return false;
         name = name.substring(0, name.length() - 6);
         for (Wildcard wildcard : wildcards) {

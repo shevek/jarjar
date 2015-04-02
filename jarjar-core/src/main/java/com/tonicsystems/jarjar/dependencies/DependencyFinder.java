@@ -15,19 +15,18 @@
  */
 package com.tonicsystems.jarjar.dependencies;
 
-import com.tonicsystems.jarjar.transform.asm.ClassHeaderReader;
-import com.tonicsystems.jarjar.classpath.ClassPathEntry;
-import com.tonicsystems.jarjar.classpath.ClassPathIterator;
+import com.tonicsystems.jarjar.classpath.ClassPath;
+import com.tonicsystems.jarjar.classpath.ClassPathArchive;
+import com.tonicsystems.jarjar.classpath.ClassPathResource;
 import com.tonicsystems.jarjar.util.RuntimeIOException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.objectweb.asm.ClassReader;
 
-public class DepFind {
+public class DependencyFinder {
 
     private File curDir = new File(System.getProperty("user.dir"));
 
@@ -35,46 +34,37 @@ public class DepFind {
         this.curDir = curDir;
     }
 
-    public void run(DepHandler handler, List<File> from, List<File> to) throws IOException {
+    public void run(DependencyHandler handler, ClassPath from, ClassPath to) throws IOException {
         try {
             ClassHeaderReader header = new ClassHeaderReader();
-            Map<String, String> classes = new HashMap<String, String>();
-            ClassPathIterator cp = new ClassPathIterator(curDir, to);
-            try {
-                while (cp.hasNext()) {
-                    ClassPathEntry entry = cp.next();
-                    InputStream in = entry.openStream();
+            Map<String, String> classToArchiveMap = new HashMap<String, String>();
+            for (ClassPathArchive toArchive : to) {
+                for (ClassPathResource toResource : toArchive) {
+                    InputStream in = toResource.openStream();
                     try {
                         header.read(in);
-                        classes.put(header.getClassName(), entry.getSource());
+                        classToArchiveMap.put(header.getClassName(), toArchive.getArchiveName());
                     } catch (Exception e) {
-                        System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                        System.err.println("Error reading " + toResource.getName() + ": " + e.getMessage());
                     } finally {
                         in.close();
                     }
                 }
-            } finally {
-                cp.close();
             }
 
             handler.handleStart();
-            cp = new ClassPathIterator(curDir, from);
-            try {
-                while (cp.hasNext()) {
-                    ClassPathEntry entry = cp.next();
-                    InputStream in = entry.openStream();
+            for (ClassPathArchive fromArchive : from) {
+                for (ClassPathResource fromResource : fromArchive) {
+                    InputStream in = fromResource.openStream();
                     try {
-                        new ClassReader(in).accept(
-                                new DepFindVisitor(classes, entry.getSource(), handler),
+                        new ClassReader(in).accept(new DependencyFinderClassVisitor(classToArchiveMap, fromArchive.getArchiveName(), handler),
                                 ClassReader.SKIP_DEBUG);
                     } catch (Exception e) {
-                        System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                        System.err.println("Error reading " + fromResource.getName() + ": " + e.getMessage());
                     } finally {
                         in.close();
                     }
                 }
-            } finally {
-                cp.close();
             }
             handler.handleEnd();
         } catch (RuntimeIOException e) {

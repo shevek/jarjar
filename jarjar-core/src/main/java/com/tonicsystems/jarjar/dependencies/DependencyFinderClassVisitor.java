@@ -15,38 +15,39 @@
  */
 package com.tonicsystems.jarjar.dependencies;
 
-import com.tonicsystems.jarjar.util.*;
-import java.io.*;
-import java.util.*;
-import org.objectweb.asm.commons.*;
+import com.tonicsystems.jarjar.util.RuntimeIOException;
+import java.io.IOException;
+import java.util.Map;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.commons.RemappingClassAdapter;
 
-class DepFindVisitor extends RemappingClassAdapter {
+class DependencyFinderClassVisitor extends RemappingClassAdapter {
 
-    public DepFindVisitor(Map<String, String> classes, String source, DepHandler handler) throws IOException {
-        super(null, new DepFindRemapper(classes, source, handler));
+    public DependencyFinderClassVisitor(Map<String, String> classToArchiveMap, String archiveName, DependencyHandler handler) throws IOException {
+        super(null, new DependencyFinderRemapper(classToArchiveMap, archiveName, handler));
     }
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        ((DepFindRemapper) remapper).setClassName(name);
+        ((DependencyFinderRemapper) remapper).setClassName(name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
-    private static class DepFindRemapper extends Remapper {
+    private static class DependencyFinderRemapper extends Remapper {
 
         private final Map<String, String> classes;
-        private final String source;
-        private final DepHandler handler;
-        private PathClass curPathClass;
+        private final String archiveName;
+        private final DependencyHandler handler;
+        private Dependency curPathClass;
 
-        public DepFindRemapper(Map<String, String> classes, String source, DepHandler handler) throws IOException {
+        public DependencyFinderRemapper(Map<String, String> classes, String archiveName, DependencyHandler handler) throws IOException {
             this.classes = classes;
-            this.source = source;
+            this.archiveName = archiveName;
             this.handler = handler;
         }
 
         public void setClassName(String name) {
-            curPathClass = new PathClass(source, name);
+            curPathClass = new Dependency(archiveName, name);
         }
 
         @Override
@@ -54,9 +55,9 @@ class DepFindVisitor extends RemappingClassAdapter {
             try {
                 if (classes.containsKey(key)) {
                     String otherSource = classes.get(key);
-                    if (!source.equals(otherSource)) {
+                    if (!archiveName.equals(otherSource)) {
                         // TODO: some escape mechanism?
-                        handler.handle(curPathClass, new PathClass(otherSource, key));
+                        handler.handle(curPathClass, new Dependency(otherSource, key));
                     }
                 }
             } catch (IOException e) {

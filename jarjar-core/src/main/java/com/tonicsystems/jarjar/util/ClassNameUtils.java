@@ -5,6 +5,7 @@
  */
 package com.tonicsystems.jarjar.util;
 
+import java.io.File;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
@@ -46,8 +47,26 @@ public class ClassNameUtils {
         return true;
     }
 
+    @Nonnull
+    public static String javaNameToPath(@Nonnull String className) {
+        return className.replace('.', '/') + ClassNameUtils.EXT_CLASS;
+    }
+
+    @Nonnull
+    public static String pathToJavaName(@Nonnull String path) {
+        if (isClass(path))
+            path = path.substring(0, path.length() - EXT_CLASS.length());
+        return path.replace('/', '.');
+    }
+
+    public static final String EXT_CLASS = ".class";
+
     public static boolean isClass(@Nonnull String name) {
-        return hasExtension(name, ".class");
+        return hasExtension(name, EXT_CLASS);
+    }
+
+    public static boolean hasExtension(@Nonnull File file, @Nonnull String ext) {
+        return hasExtension(file.getName(), ext);
     }
 
     public static boolean hasExtension(@Nonnull String name, @Nonnull String ext) {

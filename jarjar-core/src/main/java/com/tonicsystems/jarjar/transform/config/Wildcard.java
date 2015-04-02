@@ -26,14 +26,19 @@ import javax.annotation.Nonnull;
 public class Wildcard {
 
     @Nonnull
+    public static Wildcard createWildcard(@Nonnull PatternElement pattern) {
+        String result = (pattern instanceof Rule) ? ((Rule) pattern).getResult() : "";
+        String expr = pattern.getPattern();
+        if (expr.indexOf('/') >= 0)
+            throw new IllegalArgumentException("Patterns cannot contain slashes");
+        return new Wildcard(expr.replace('.', '/'), result);
+    }
+
+    @Nonnull
     public static List<Wildcard> createWildcards(@Nonnull Iterable<? extends PatternElement> patterns) {
         List<Wildcard> wildcards = new ArrayList<Wildcard>();
         for (PatternElement pattern : patterns) {
-            String result = (pattern instanceof Rule) ? ((Rule) pattern).getResult() : "";
-            String expr = pattern.getPattern();
-            if (expr.indexOf('/') >= 0)
-                throw new IllegalArgumentException("Patterns cannot contain slashes");
-            wildcards.add(new Wildcard(expr.replace('.', '/'), result));
+            wildcards.add(createWildcard(pattern));
         }
         return wildcards;
     }

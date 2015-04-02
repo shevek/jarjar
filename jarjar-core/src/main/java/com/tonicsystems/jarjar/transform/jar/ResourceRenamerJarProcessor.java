@@ -17,6 +17,7 @@ package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
 import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 
@@ -38,7 +39,7 @@ public class ResourceRenamerJarProcessor implements JarProcessor {
 
     @Override
     public Result process(EntryStruct struct) throws IOException {
-        if (!struct.name.endsWith(".class"))
+        if (!ClassNameUtils.isClass(struct.name))
             struct.name = pr.mapPath(struct.name);
         return Result.KEEP;
     }

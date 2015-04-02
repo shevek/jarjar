@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 Google Inc.
+ * Copyright 2007 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.classpath;
+package com.tonicsystems.jarjar.dependencies;
 
-import java.io.InputStream;
 import java.io.IOException;
 
-public interface ClassPathEntry {
+public interface DependencyHandler {
 
-    String getSource() throws IOException;
+    public enum Level {
 
-    String getName();
+        CLASS, JAR;
+    }
 
-    InputStream openStream() throws IOException;
+    void handleStart() throws IOException;
+
+    void handle(Dependency from, Dependency to) throws IOException;
+
+    void handleEnd() throws IOException;
 }

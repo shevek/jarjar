@@ -23,13 +23,15 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import javax.annotation.Nonnull;
+import javax.annotation.WillNotClose;
 
 public class IoUtil {
 
     private IoUtil() {
     }
 
-    public static void pipe(InputStream is, OutputStream out, byte[] buf) throws IOException {
+    public static void copy(@Nonnull @WillNotClose InputStream is, @Nonnull @WillNotClose OutputStream out, @Nonnull byte[] buf) throws IOException {
         for (;;) {
             int amt = is.read(buf);
             if (amt < 0)
@@ -38,12 +40,12 @@ public class IoUtil {
         }
     }
 
-    public static void copy(File from, File to, byte[] buf) throws IOException {
+    public static void copy(@Nonnull File from, @Nonnull File to, @Nonnull byte[] buf) throws IOException {
         InputStream in = new FileInputStream(from);
         try {
             OutputStream out = new FileOutputStream(to);
             try {
-                pipe(in, out, buf);
+                copy(in, out, buf);
             } finally {
                 out.close();
             }
@@ -104,7 +106,7 @@ public class IoUtil {
                     outputStream.putNextEntry(outputEntry);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     final InputStream is = inputZip.getInputStream(inputEntry);
-                    IoUtil.pipe(is, baos, buf);
+                    IoUtil.copy(is, baos, buf);
                     is.close();
                     outputStream.write(baos.toByteArray());
                 }
@@ -113,6 +115,16 @@ public class IoUtil {
             outputStream.close();
         }
 
+    }
+
+    public static void flush(Object o) throws IOException {
+        if (o instanceof Flushable)
+            ((Flushable) o).flush();
+    }
+
+    public static void close(Object o) throws IOException {
+        if (o instanceof Closeable)
+            ((Closeable) o).close();
     }
 
 }

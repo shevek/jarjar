@@ -41,6 +41,8 @@ project(':jarjar-maven') {
 }
 
 project(':jarjar-gradle') {
+	apply plugin: 'java-gradle-plugin'
+
 	dependencies {
 		compile project(':jarjar-core')
 		compile gradleApi()

@@ -15,40 +15,32 @@
  */
 package com.tonicsystems.jarjar.strings;
 
-import com.tonicsystems.jarjar.classpath.ClassPathEntry;
-import com.tonicsystems.jarjar.classpath.ClassPathIterator;
+import com.tonicsystems.jarjar.classpath.ClassPath;
+import com.tonicsystems.jarjar.classpath.ClassPathArchive;
+import com.tonicsystems.jarjar.classpath.ClassPathResource;
+import com.tonicsystems.jarjar.util.IoUtil;
 import com.tonicsystems.jarjar.util.RuntimeIOException;
-import java.io.File;
-import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassReader;
 
 public class StringDumper {
 
-    public void run(File parent, List<File> classPath, Appendable out) throws IOException {
+    public void run(Appendable out, ClassPath classPath) throws IOException {
         StringReader stringReader = new DumpStringReader(out);
-        ClassPathIterator cp = new ClassPathIterator(parent, classPath);
-        try {
-            while (cp.hasNext()) {
-                ClassPathEntry entry = cp.next();
-                InputStream in = entry.openStream();
+        for (ClassPathArchive classPathArchive : classPath) {
+            for (ClassPathResource classPathResource : classPathArchive) {
+                InputStream in = classPathResource.openStream();
                 try {
                     new ClassReader(in).accept(stringReader, 0);
                 } catch (Exception e) {
-                    System.err.println("Error reading " + entry.getName() + ": " + e.getMessage());
+                    System.err.println("Error reading " + classPathResource + ": " + e.getMessage());
                 } finally {
                     in.close();
                 }
-                if (out instanceof Flushable)
-                    ((Flushable) out).flush();
+                IoUtil.flush(out);
             }
-        } catch (RuntimeIOException e) {
-            throw (IOException) e.getCause();
-        } finally {
-            cp.close();
         }
     }
 

@@ -17,16 +17,17 @@ package com.tonicsystems.jarjar.dependencies;
 
 import java.io.IOException;
 
-public interface DepHandler {
+public class TextDependencyHandler extends AbstractDependencyHandler {
 
-    public enum Level {
+    private final Appendable out;
 
-        CLASS, JAR;
+    public TextDependencyHandler(Appendable out, Level level) {
+        super(level);
+        this.out = out;
     }
 
-    void handleStart() throws IOException;
-
-    void handle(PathClass from, PathClass to) throws IOException;
-
-    void handleEnd() throws IOException;
+    @Override
+    protected void handle(String from, String to) throws IOException {
+        out.append(from + " -> " + to + "\n");
+    }
 }

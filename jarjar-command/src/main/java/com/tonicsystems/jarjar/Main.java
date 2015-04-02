@@ -15,13 +15,14 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.config.RulesFileParser;
-import com.tonicsystems.jarjar.dependencies.TextDepHandler;
-import com.tonicsystems.jarjar.dependencies.DepFind;
-import com.tonicsystems.jarjar.dependencies.DepHandler;
+import com.tonicsystems.jarjar.dependencies.TextDependencyHandler;
+import com.tonicsystems.jarjar.dependencies.DependencyFinder;
+import com.tonicsystems.jarjar.dependencies.DependencyHandler;
 import com.tonicsystems.jarjar.strings.StringDumper;
 import com.tonicsystems.jarjar.transform.config.PatternElement;
-import com.tonicsystems.jarjar.transform.StandaloneJarProcessor;
+import com.tonicsystems.jarjar.transform.JarTransformer;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -46,8 +47,8 @@ public class Main {
             .forHelp();
     private final OptionSpec<Mode> modeOption = parser.accepts("mode")
             .withRequiredArg().ofType(Mode.class).defaultsTo(Mode.process).describedAs("Mode to run (strings, find, process)");
-    private final OptionSpec<DepHandler.Level> levelOption = parser.accepts("level")
-            .withRequiredArg().ofType(DepHandler.Level.class).defaultsTo(DepHandler.Level.CLASS).describedAs("Level for DepHandler.");
+    private final OptionSpec<DependencyHandler.Level> levelOption = parser.accepts("level")
+            .withRequiredArg().ofType(DependencyHandler.Level.class).defaultsTo(DependencyHandler.Level.CLASS).describedAs("Level for DepHandler.");
     private final OptionSpec<File> fromFilesOption = parser.accepts("from")
             .withRequiredArg().ofType(File.class).withValuesSeparatedBy(PATH_SEPARATOR).describedAs("Classpath for strings, find.");
     private final OptionSpec<File> rulesOption = parser.accepts("rules")
@@ -114,9 +115,9 @@ public class Main {
         List<File> fromFiles = options.valuesOf(fromFilesOption);
         if (isEmpty(fromFiles))
             fromFiles = toFiles;
-        DepHandler.Level level = valueOf(options, levelOption);
-        DepHandler handler = new TextDepHandler(System.out, level);
-        new DepFind().run(handler, fromFiles, toFiles);
+        DependencyHandler.Level level = valueOf(options, levelOption);
+        DependencyHandler handler = new TextDependencyHandler(System.out, level);
+        new DependencyFinder().run(handler, fromFiles, toFiles);
         System.out.flush();
     }
 
@@ -126,8 +127,8 @@ public class Main {
         List<File> files = valuesOf(options, filesOption);
         List<PatternElement> rules = RulesFileParser.parse(rulesFile);
         boolean skipManifest = Boolean.getBoolean("skipManifest");
-        MainProcessor proc = new MainProcessor(rules, skipManifest);
-        StandaloneJarProcessor.run(inJar, outJar, proc);
+        DefaultJarProcessor proc = new DefaultJarProcessor(rules, skipManifest);
+        JarTransformer.run(inJar, outJar, proc);
         proc.strip(outputFile);
     }
 

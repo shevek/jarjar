@@ -20,24 +20,36 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import javax.annotation.WillClose;
 
 public class RulesFileParser {
+
+    public interface Output {
+
+        public void addZap(@Nonnull Zap zap);
+
+        public void addKeep(@Nonnull Keep keep);
+
+        public void addRule(@Nonnull Rule rule);
+    }
 
     private RulesFileParser() {
     }
 
     @Nonnull
-    public static List<PatternElement> parse(@Nonnull File file) throws IOException {
-        return parse(new FileReader(file));
+    public static void parse(@Nonnull Output output, @Nonnull File file) throws IOException {
+        parse(output, new FileReader(file));
     }
 
     @Nonnull
-    public static List<PatternElement> parse(@Nonnull String value) throws IOException {
-        return parse(new java.io.StringReader(value));
+    public static void parse(@Nonnull Output output, @Nonnull String value) throws IOException {
+        parse(output, new StringReader(value));
     }
 
     @Nonnull
@@ -54,45 +66,45 @@ public class RulesFileParser {
     }
 
     @Nonnull
-    private static List<PatternElement> parse(@Nonnull Reader r) throws IOException {
+    private static void parse(@Nonnull Output output, @Nonnull @WillClose Reader r) throws IOException {
         try {
-            List<PatternElement> patterns = new ArrayList<PatternElement>();
             BufferedReader br = new BufferedReader(r);
-            int c = 1;
+            int lineNumber = 1;
             String line;
             while ((line = br.readLine()) != null) {
                 List<String> words = split(line);
                 if (words.isEmpty())
                     continue;
                 if (words.size() < 2)
-                    throw error(c, words, "not enough words on line.");
+                    throw error(lineNumber, words, "not enough words on line.");
                 String type = words.get(0);
-                PatternElement element;
                 if (type.equals("rule")) {
                     if (words.size() < 3)
-                        throw error(c, words, "'rule' requires 2 arguments.");
-                    Rule rule = new Rule();
-                    rule.setResult(words.get(2));
-                    element = rule;
+                        throw error(lineNumber, words, "'rule' requires 2 arguments.");
+                    Rule element = new Rule();
+                    element.setPattern(words.get(1));
+                    element.setResult(words.get(2));
+                    output.addRule(element);
                 } else if (type.equals("zap")) {
-                    element = new Zap();
+                    Zap element = new Zap();
+                    element.setPattern(words.get(1));
+                    output.addZap(element);
                 } else if (type.equals("keep")) {
-                    element = new Keep();
+                    Keep element = new Keep();
+                    element.setPattern(words.get(1));
+                    output.addKeep(element);
                 } else {
-                    throw error(c, words, "Unrecognized keyword " + type);
+                    throw error(lineNumber, words, "Unrecognized keyword " + type);
                 }
-                element.setPattern(words.get(1));
-                patterns.add(element);
-                c++;
+                lineNumber++;
             }
-            return patterns;
         } finally {
             r.close();
         }
     }
 
     @Nonnull
-    private static IllegalArgumentException error(int line, List<String> words, String reason) {
-        throw new IllegalArgumentException("Error on line " + line + ": " + words + ": " + reason);
+    private static IllegalArgumentException error(@Nonnegative int lineNumber, @Nonnull List<String> words, @Nonnull String reason) {
+        throw new IllegalArgumentException("Error on line " + lineNumber + ": " + words + ": " + reason);
     }
 }

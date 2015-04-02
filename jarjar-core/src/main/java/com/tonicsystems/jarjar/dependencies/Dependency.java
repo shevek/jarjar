@@ -17,12 +17,12 @@ package com.tonicsystems.jarjar.dependencies;
 
 import javax.annotation.Nonnull;
 
-public class PathClass {
+public class Dependency {
 
     private final String classPath;
     private final String className;
 
-    public PathClass(@Nonnull String classPath, @Nonnull String className) {
+    public Dependency(@Nonnull String classPath, @Nonnull String className) {
         this.classPath = classPath;
         this.className = className;
     }

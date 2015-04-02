@@ -15,9 +15,10 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.config.RulesFileParser;
 import com.tonicsystems.jarjar.transform.config.PatternElement;
-import com.tonicsystems.jarjar.transform.StandaloneJarProcessor;
+import com.tonicsystems.jarjar.transform.JarTransformer;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -46,8 +47,8 @@ public class JarJarMojo extends AbstractMojo {
                 patterns = RulesFileParser.parse(rulesFile);
             }
             // TODO: refactor with Main.java
-            MainProcessor proc = new MainProcessor(patterns, true);
-            StandaloneJarProcessor.run(fromJar, toJar, proc);
+            DefaultJarProcessor proc = new DefaultJarProcessor(patterns, true);
+            JarTransformer.run(fromJar, toJar, proc);
             proc.strip(toJar);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
