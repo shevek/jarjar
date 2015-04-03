@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform;
 
-public class EntryStruct {
+public class Transformable {
 
     public byte[] data;
     public String name;

@@ -17,6 +17,11 @@ package com.tonicsystems.jarjar.transform.config;
 
 import javax.annotation.Nonnull;
 
+/**
+ * This object and its subclasses are also exposed to ant, so need setters for XML.
+ *
+ * @author shevek
+ */
 public abstract class PatternElement {
 
     private String pattern;

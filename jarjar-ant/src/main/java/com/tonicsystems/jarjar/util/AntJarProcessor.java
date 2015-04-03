@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.util;
 
-import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.Transformable;
 import com.tonicsystems.jarjar.transform.jar.JarProcessor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +33,7 @@ import org.apache.tools.zip.ZipOutputStream;
 
 public abstract class AntJarProcessor extends Jar {
 
-    private final EntryStruct struct = new EntryStruct();
+    private final Transformable struct = new Transformable();
     private JarProcessor proc;
     private final byte[] buf = new byte[0x2000];
 
@@ -69,6 +69,7 @@ public abstract class AntJarProcessor extends Jar {
             throws IOException {
     }
 
+    // TODO: Rewrite this entirely.
     @Override
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath,
             long lastModified, File fromArchive, int mode) throws IOException {
@@ -77,7 +78,7 @@ public abstract class AntJarProcessor extends Jar {
         struct.data = baos.toByteArray();
         struct.name = vPath;
         struct.time = lastModified;
-        if (proc.process(struct)) {
+        if (proc.process(struct) != JarProcessor.Result.DISCARD) {
             if (mode == 0)
                 mode = ZipFileSet.DEFAULT_FILE_MODE;
             if (!filesOnly) {

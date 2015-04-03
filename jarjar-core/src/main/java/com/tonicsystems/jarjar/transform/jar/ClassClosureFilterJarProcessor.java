@@ -17,7 +17,7 @@ package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.config.Wildcard;
 import com.tonicsystems.jarjar.transform.config.Keep;
-import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.Transformable;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -95,7 +95,7 @@ public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
     }
 
     @Override
-    public Result scan(EntryStruct struct) throws IOException {
+    public Result scan(Transformable struct) throws IOException {
         if (!isEnabled())
             return Result.KEEP;
         try {
@@ -133,7 +133,7 @@ public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
     }
 
     @Override
-    public Result process(EntryStruct struct) throws IOException {
+    public Result process(Transformable struct) throws IOException {
         if (!isEnabled())
             return Result.KEEP;
         if (!ClassNameUtils.isClass(struct.name))

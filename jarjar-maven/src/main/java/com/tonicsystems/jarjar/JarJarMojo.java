@@ -15,13 +15,13 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.config.RulesFileParser;
-import com.tonicsystems.jarjar.transform.config.PatternElement;
 import com.tonicsystems.jarjar.transform.JarTransformer;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
@@ -40,16 +40,16 @@ public class JarJarMojo extends AbstractMojo {
             throw new MojoExecutionException("Exactly one of rules or rulesFile is required");
 
         try {
-            List<PatternElement> patterns;
+            DefaultJarProcessor processor = new DefaultJarProcessor();
             if (rules != null) {
-                patterns = RulesFileParser.parse(rules);
+                RulesFileParser.parse(processor, rules);
             } else {
-                patterns = RulesFileParser.parse(rulesFile);
+                RulesFileParser.parse(processor, rulesFile);
             }
             // TODO: refactor with Main.java
-            DefaultJarProcessor proc = new DefaultJarProcessor(patterns, true);
-            JarTransformer.run(fromJar, toJar, proc);
-            proc.strip(toJar);
+            JarTransformer transformer = new JarTransformer(toJar, processor);
+            ClassPath fromClassPath = new ClassPath(new File(System.getProperty("user.dir")), Collections.singleton(fromJar));
+            transformer.transform(fromClassPath);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

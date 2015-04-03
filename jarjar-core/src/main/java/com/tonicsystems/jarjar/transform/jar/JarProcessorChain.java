@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.Transformable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ public class JarProcessorChain extends ArrayList<JarProcessor> implements JarPro
     }
 
     @Override
-    public Result scan(EntryStruct struct) throws IOException {
+    public Result scan(Transformable struct) throws IOException {
         for (JarProcessor processor : this)
             if (processor.scan(struct) == Result.DISCARD)
                 return Result.DISCARD;
@@ -41,7 +41,7 @@ public class JarProcessorChain extends ArrayList<JarProcessor> implements JarPro
     }
 
     @Override
-    public Result process(EntryStruct struct) throws IOException {
+    public Result process(Transformable struct) throws IOException {
         for (JarProcessor processor : this)
             if (processor.process(struct) == Result.DISCARD)
                 return Result.DISCARD;

@@ -11,7 +11,6 @@ import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -20,11 +19,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
 
 /**
@@ -95,6 +91,11 @@ public abstract class ClassPathArchive implements Iterable<ClassPathResource> {
                 @Override
                 public String getName() {
                     return entry.getName();
+                }
+
+                @Override
+                public long getLastModifiedTime() {
+                    return entry.getTime();
                 }
 
                 @Override
@@ -170,6 +171,11 @@ public abstract class ClassPathArchive implements Iterable<ClassPathResource> {
                 @Override
                 public String getName() {
                     return file.getName();
+                }
+
+                @Override
+                public long getLastModifiedTime() {
+                    return file.lastModified();
                 }
 
                 @Override

@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.Transformable;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 
@@ -30,7 +30,7 @@ public interface JarProcessor {
     // public boolean isEnabled();
 
     @Nonnull
-    public Result scan(@Nonnull EntryStruct struct) throws IOException;
+    public Result scan(@Nonnull Transformable struct) throws IOException;
 
     /**
      * Process the entry (e.g. rename the file)
@@ -44,5 +44,5 @@ public interface JarProcessor {
      * @throws IOException
      */
     @Nonnull
-    public Result process(@Nonnull EntryStruct struct) throws IOException;
+    public Result process(@Nonnull Transformable struct) throws IOException;
 }

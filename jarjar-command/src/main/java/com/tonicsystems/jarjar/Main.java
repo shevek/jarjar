@@ -15,6 +15,7 @@
  */
 package com.tonicsystems.jarjar;
 
+import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.config.RulesFileParser;
 import com.tonicsystems.jarjar.dependencies.TextDependencyHandler;
@@ -103,10 +104,14 @@ public class Main {
         return values;
     }
 
+    private static ClassPath newClassPath(Iterable<? extends File> files) {
+        return new ClassPath(new File(System.getProperty("user.dir")), files);
+    }
+
     public void strings(@Nonnull OptionSet options) throws IOException {
         List<File> files = options.valuesOf(filesOption);
         File parent = new File(System.getProperty("user.dir"));
-        new StringDumper().run(parent, files, System.out);
+        new StringDumper().run(System.out, newClassPath(files));
         System.out.flush();
     }
 
@@ -117,7 +122,7 @@ public class Main {
             fromFiles = toFiles;
         DependencyHandler.Level level = valueOf(options, levelOption);
         DependencyHandler handler = new TextDependencyHandler(System.out, level);
-        new DependencyFinder().run(handler, fromFiles, toFiles);
+        new DependencyFinder().run(handler, newClassPath(fromFiles), newClassPath(toFiles));
         System.out.flush();
     }
 
@@ -125,11 +130,13 @@ public class Main {
         File outputFile = valueOf(options, outputOption);
         File rulesFile = valueOf(options, rulesOption);
         List<File> files = valuesOf(options, filesOption);
-        List<PatternElement> rules = RulesFileParser.parse(rulesFile);
-        boolean skipManifest = Boolean.getBoolean("skipManifest");
-        DefaultJarProcessor proc = new DefaultJarProcessor(rules, skipManifest);
-        JarTransformer.run(inJar, outJar, proc);
-        proc.strip(outputFile);
+
+        DefaultJarProcessor processor = new DefaultJarProcessor();
+        RulesFileParser.parse(processor, rulesFile);
+        processor.setSkipManifest(Boolean.getBoolean("skipManifest"));
+
+        JarTransformer transformer = new JarTransformer(outputFile, processor);
+        transformer.transform(newClassPath(files));
     }
 
     public static void main(String[] args) throws Exception {

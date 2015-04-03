@@ -17,7 +17,7 @@ package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.asm.ClassTransformer;
 import com.tonicsystems.jarjar.transform.asm.GetNameClassWriter;
-import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.Transformable;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.IOException;
 import java.util.Arrays;
@@ -47,12 +47,12 @@ public class ClassTransformerJarProcessor implements JarProcessor {
     }
 
     @Override
-    public Result scan(EntryStruct struct) throws IOException {
+    public Result scan(Transformable struct) throws IOException {
         return Result.KEEP;
     }
 
     @Override
-    public Result process(EntryStruct struct) throws IOException {
+    public Result process(Transformable struct) throws IOException {
         if (ClassNameUtils.isClass(struct.name)) {
             try {
                 ClassReader reader = new ClassReader(struct.data);

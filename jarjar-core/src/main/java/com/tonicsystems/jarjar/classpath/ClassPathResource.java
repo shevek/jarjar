@@ -22,10 +22,12 @@ import javax.annotation.Nonnull;
 public abstract class ClassPathResource {
 
     @Nonnull
-    public abstract String getArchiveName() throws IOException;
+    public abstract String getArchiveName();
 
     @Nonnull
     public abstract String getName();
+
+    public abstract long getLastModifiedTime();
 
     @Nonnull
     public abstract InputStream openStream() throws IOException;

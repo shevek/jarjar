@@ -5,7 +5,7 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.transform.EntryStruct;
+import com.tonicsystems.jarjar.transform.Transformable;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public abstract class AbstractFilterJarProcessor implements JarProcessor {
     protected abstract boolean isFiltered(@Nonnull String name);
 
     @Override
-    public Result scan(EntryStruct struct) throws IOException {
+    public Result scan(Transformable struct) throws IOException {
         if (isFiltered(struct.name)) {
             LOG.debug("{}.scan discarded {}", getClass().getSimpleName(), struct.name);
             return Result.DISCARD;
@@ -31,7 +31,7 @@ public abstract class AbstractFilterJarProcessor implements JarProcessor {
     }
 
     @Override
-    public Result process(EntryStruct struct) throws IOException {
+    public Result process(Transformable struct) throws IOException {
         if (isFiltered(struct.name)) {
             LOG.debug("{}.process discarded {}", getClass().getSimpleName(), struct.name);
             return Result.DISCARD;

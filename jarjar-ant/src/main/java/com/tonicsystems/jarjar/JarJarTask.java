@@ -19,48 +19,39 @@ import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.config.Rule;
 import com.tonicsystems.jarjar.transform.config.Zap;
 import com.tonicsystems.jarjar.transform.config.Keep;
-import com.tonicsystems.jarjar.transform.config.PatternElement;
 import com.tonicsystems.jarjar.util.AntJarProcessor;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.tools.ant.BuildException;
 
 public class JarJarTask extends AntJarProcessor {
 
-    private List<PatternElement> patterns = new ArrayList<PatternElement>();
+    private DefaultJarProcessor processor = new DefaultJarProcessor();
 
     public void addConfiguredRule(Rule rule) {
         if (rule.getPattern() == null || rule.getResult() == null)
             throw new IllegalArgumentException("The <rule> element requires both \"pattern\" and \"result\" attributes.");
-        patterns.add(rule);
+        processor.addRule(rule);
     }
 
     public void addConfiguredZap(Zap zap) {
         if (zap.getPattern() == null)
             throw new IllegalArgumentException("The <zap> element requires a \"pattern\" attribute.");
-        patterns.add(zap);
+        processor.addZap(zap);
     }
 
     public void addConfiguredKeep(Keep keep) {
         if (keep.getPattern() == null)
             throw new IllegalArgumentException("The <keep> element requires a \"pattern\" attribute.");
-        patterns.add(keep);
+        processor.addKeep(keep);
     }
 
+    @Override
     public void execute() throws BuildException {
-        DefaultJarProcessor proc = new DefaultJarProcessor(patterns, false);
-        execute(proc);
-        try {
-            proc.strip(getDestFile());
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
+        execute(processor);
     }
 
     @Override
     protected void cleanHelper() {
         super.cleanHelper();
-        patterns.clear();
+        processor = new DefaultJarProcessor();
     }
 }
