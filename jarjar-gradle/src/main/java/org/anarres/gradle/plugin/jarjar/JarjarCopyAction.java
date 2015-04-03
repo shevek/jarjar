@@ -40,7 +40,7 @@ public class JarjarCopyAction implements CopyAction {
     private final ZipCompressor compressor;
     private final DocumentationRegistry documentationRegistry;
 
-    public JarjarCopyAction(File zipFile, ZipCompressor compressor, DocumentationRegistry documentationRegistry) {
+    public JarjarCopyAction(@Nonnull File zipFile, @Nonnull ZipCompressor compressor, @Nonnull DocumentationRegistry documentationRegistry) {
         this.zipFile = zipFile;
         this.compressor = compressor;
         this.documentationRegistry = documentationRegistry;
@@ -49,6 +49,8 @@ public class JarjarCopyAction implements CopyAction {
     @Nonnull
     @Override
     public WorkResult execute(@Nonnull final CopyActionProcessingStream stream) {
+        stream.process(new ScanAction());
+
         final ZipOutputStream zipOutStr;
 
         try {
@@ -61,7 +63,7 @@ public class JarjarCopyAction implements CopyAction {
             IoActions.withResource(zipOutStr, new Action<ZipOutputStream>() {
                 @Override
                 public void execute(@Nonnull ZipOutputStream outputStream) {
-                    stream.process(new StreamAction(outputStream));
+                    stream.process(new ProcessAction(outputStream));
                 }
             });
         } catch (UncheckedIOException e) {
@@ -75,16 +77,26 @@ public class JarjarCopyAction implements CopyAction {
         return new SimpleWorkResult(true);
     }
 
-    private class StreamAction implements CopyActionProcessingStreamAction {
+    private class ScanAction implements CopyActionProcessingStreamAction {
+
+        @Override
+        public void processFile(FileCopyDetailsInternal details) {
+            LOG.info("Scanning " + details);
+        }
+    }
+
+    private class ProcessAction implements CopyActionProcessingStreamAction {
 
         private final ZipOutputStream zipOutStr;
 
-        public StreamAction(@Nonnull ZipOutputStream zipOutStr) {
+        public ProcessAction(@Nonnull ZipOutputStream zipOutStr) {
             this.zipOutStr = zipOutStr;
         }
 
         @Override
         public void processFile(@Nonnull FileCopyDetailsInternal details) {
+            LOG.info("Processing " + details);
+
             if (details.isDirectory()) {
                 visitDir(details);
             } else {

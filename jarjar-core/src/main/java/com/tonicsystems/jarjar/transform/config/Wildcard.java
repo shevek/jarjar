@@ -45,7 +45,7 @@ public class Wildcard {
 
     private static final Pattern dstar = Pattern.compile("\\*\\*");
     private static final Pattern star = Pattern.compile("\\*");
-    // private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
+    private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
     private final Pattern pattern;
     private final int count;
@@ -62,9 +62,9 @@ public class Wildcard {
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
 
         String regex = pattern;
-        regex = replaceAllLiteral(regex, dstar, "(.+?)");
+        regex = replaceAllLiteral(regex, dstar, "(.+?)");   // One wildcard test requires the argument to be allowably empty.
         regex = replaceAllLiteral(regex, star, "([^/]+)");
-        // regex = replaceAllLiteral(regex, estar, "*)");
+        regex = replaceAllLiteral(regex, estar, "*\\??)");  // Although we replaced with + above, we mean *
         this.pattern = Pattern.compile("\\A" + regex + "\\Z");
         this.count = this.pattern.matcher("foo").groupCount();
 

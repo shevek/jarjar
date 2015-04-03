@@ -17,9 +17,13 @@ package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.transform.config.Wildcard;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static org.junit.Assert.*;
 
 public class WildcardTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WildcardTest.class);
 
     @Test
     public void testWildcards() {
@@ -33,9 +37,11 @@ public class WildcardTest {
         wildcard("net/sf/cglib/*/*", "foo/@2/@1", "net/sf/cglib/Bar/Baz", "foo/Baz/Bar");
     }
 
-    private void wildcard(String pattern, String result, String value, String expect) {
+    private static void wildcard(String pattern, String result, String value, String expect) {
         Wildcard wc = new Wildcard(pattern, result);
-        // System.err.println(wc);
-        assertEquals(expect, wc.replace(value));
+        LOG.info("Compile: " + pattern + " -> " + wc);
+        String actual = wc.replace(value);
+        LOG.info("Replace: " + value + " -> " + actual + " (expected " + expect + ")");
+        assertEquals(expect, actual);
     }
 }
