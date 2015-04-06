@@ -54,6 +54,8 @@ project(':jarjar-core') {
 		compile 'org.ow2.asm:asm-commons:5.0.3'
 		compile 'org.ow2.asm:asm-util:5.0.3'
 		// compile 'org.ow2.asm:asm-commons:4.0'
+
+		// testCompile project(':jarjar-testdata')
 	}
 
 	def samplesProject = project(':jarjar-testdata')

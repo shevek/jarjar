@@ -6,12 +6,10 @@
 package com.tonicsystems.jarjar.transform;
 
 import com.tonicsystems.jarjar.classpath.ClassPath;
-import com.tonicsystems.jarjar.transform.JarTransformer;
-import com.tonicsystems.jarjar.transform.config.Zap;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.transform.jar.PathFilterJarProcessor;
 import java.io.File;
-import java.util.Arrays;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,19 +23,27 @@ public class JarTransformerTest extends AbstractJarTransformerTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(JarTransformerTest.class);
 
-    private File outputJar = new File("build/tmp/output.jar");
-    private DefaultJarProcessor processor = new DefaultJarProcessor();
-    private JarTransformer transformer = new JarTransformer(outputJar, processor);
+    private final File outputJar = new File("build/tmp/output.jar");
+    private final DefaultJarProcessor processor = new DefaultJarProcessor();
+    private final JarTransformer transformer = new JarTransformer(outputJar, processor);
+    private final ClassPath classPath = new ClassPath(new File("/"), jars);
 
+    /*
+     @Test
+     public void testTransformNoop() throws Exception {
+     processor.setSkipManifest(true);
+     processor.add(new PathFilterJarProcessor(Collections.singleton("META-INF/jarjar-testdata.properties")));
+     transformer.transform(classPath);
+     }
+     */
     @Test
-    public void testTransform() throws Exception {
-        LOG.info("j: " + jar);
-        LOG.info("ja: " + Arrays.toString(jars));
-        ClassPath classPath = new ClassPath(new File("/"), jars);
-
+    public void testTransformRename() throws Exception {
         processor.setSkipManifest(true);
         processor.add(new PathFilterJarProcessor(Collections.singleton("META-INF/jarjar-testdata.properties")));
         transformer.transform(classPath);
+
+        Method m = getMethod(outputJar, "org.anarres.jarjar.testdata.pkg0.Main", "main", String[].class);
+        m.invoke(null, (Object) new String[]{});
     }
 
 }

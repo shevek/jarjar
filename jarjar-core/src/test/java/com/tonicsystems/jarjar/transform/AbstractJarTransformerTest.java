@@ -6,6 +6,9 @@
 package com.tonicsystems.jarjar.transform;
 
 import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import javax.annotation.Nonnull;
 
 /**
@@ -25,4 +28,11 @@ public class AbstractJarTransformerTest {
         newJar("jar2"),
         newJar("jar3")
     };
+
+    @Nonnull
+    protected Method getMethod(@Nonnull File file, @Nonnull String className, @Nonnull String methodName, @Nonnull Class<?>... parameterTypes) throws Exception {
+        URLClassLoader loader = new URLClassLoader(new URL[]{file.toURI().toURL()}, getClass().getClassLoader());
+        Class<?> c = loader.loadClass(className);
+        return c.getMethod("main", parameterTypes);
+    }
 }
