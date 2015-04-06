@@ -17,7 +17,6 @@ package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
 import com.tonicsystems.jarjar.transform.config.ClassRename;
-import java.util.Arrays;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.commons.RemappingClassAdapter;
@@ -26,10 +25,8 @@ public class GenericsTest {
 
     @Test
     public void testTransform() throws Exception {
-        ClassRename rule = new ClassRename();
-        rule.setPattern("java.lang.String");
-        rule.setResult("com.tonicsystems.String");
-        RemappingClassAdapter t = new RemappingClassAdapter(null, new PackageRemapper(Arrays.asList(rule)));
+        ClassRename rule = new ClassRename("java.lang.String", "com.tonicsystems.String");
+        RemappingClassAdapter t = new RemappingClassAdapter(null, new PackageRemapper(rule));
         ClassReader reader = new ClassReader(getClass().getResourceAsStream("/Generics.class"));
         reader.accept(t, 0);
     }

@@ -15,14 +15,20 @@
  */
 package com.tonicsystems.jarjar.transform.config;
 
-public class ClassRename extends PatternElement {
+import javax.annotation.Nonnull;
 
-    private String result;
+public class ClassRename extends AbstractPattern {
 
-    public void setResult(String result) {
+    private final String result;
+
+    public ClassRename(@Nonnull String pattern, @Nonnull String result) {
+        super(pattern);
+        if (result == null)
+            throw new IllegalArgumentException("Result may not be null.");
         this.result = result;
     }
 
+    @Nonnull
     public String getResult() {
         return result;
     }

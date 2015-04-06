@@ -22,7 +22,7 @@ import com.tonicsystems.jarjar.dependencies.TextDependencyHandler;
 import com.tonicsystems.jarjar.dependencies.DependencyFinder;
 import com.tonicsystems.jarjar.dependencies.DependencyHandler;
 import com.tonicsystems.jarjar.strings.StringDumper;
-import com.tonicsystems.jarjar.transform.config.PatternElement;
+import com.tonicsystems.jarjar.transform.config.AbstractPattern;
 import com.tonicsystems.jarjar.transform.JarTransformer;
 import java.io.File;
 import java.io.IOException;

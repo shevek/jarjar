@@ -13,6 +13,8 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'jarjar'
 
+mainClassName = "org.anarres.jarjar.test.Main"
+
 // println project.ext.dump()
 
 repositories {
@@ -31,10 +33,13 @@ dependencies {
 
 task('jarjarOutput', type: JarjarDependency) {
 	doLast {
-		println "Running jarjar"
+		println "Running jarjar on " + inputs.dump()
 	}
-	// from configurations.jarjarInput.artifacts.files
+	from configurations.jarjarInput.artifacts.files
 }
+
 artifacts {
 	compile jarjarOutput
+	runtime jarjarOutput
 }
+

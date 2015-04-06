@@ -22,23 +22,18 @@ import javax.annotation.Nonnull;
  *
  * @author shevek
  */
-public abstract class PatternElement {
+public abstract class AbstractPattern {
 
-    private String pattern;
+    private final String pattern;
+
+    public AbstractPattern(@Nonnull String pattern) {
+        if (pattern == null)
+            throw new IllegalArgumentException("Pattern may not be null.");
+        this.pattern = pattern;
+    }
 
     @Nonnull
     public String getPattern() {
         return pattern;
     }
-
-    public void setPattern(@Nonnull String pattern) {
-        this.pattern = pattern;
-    }
-
-    @Nonnull
-    public PatternElement withPattern(@Nonnull String pattern) {
-        setPattern(pattern);
-        return this;
-    }
-
 }

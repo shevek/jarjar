@@ -45,10 +45,10 @@ public class JarTransformerTest extends AbstractJarTransformerTest {
         m.invoke(null, (Object) new String[]{});
 
         JarFile jarFile = new JarFile(outputFile);
-        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Main");
-        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Cls1");
-        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Cls2");
-        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Cls3");
+        assertContains(jarFile, "org/anarres/jarjar/testdata/pkg0/Main.class");
+        assertContains(jarFile, "org/anarres/jarjar/testdata/pkg1/Cls1.class");
+        assertContains(jarFile, "org/anarres/jarjar/testdata/pkg2/Cls2.class");
+        assertContains(jarFile, "org/anarres/jarjar/testdata/pkg3/Cls3.class");
     }
 
 }

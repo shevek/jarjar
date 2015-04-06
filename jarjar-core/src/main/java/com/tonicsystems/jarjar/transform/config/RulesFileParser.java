@@ -81,18 +81,11 @@ public class RulesFileParser {
                 if (type.equals("rule")) {
                     if (words.size() < 3)
                         throw error(lineNumber, words, "'rule' requires 2 arguments.");
-                    ClassRename element = new ClassRename();
-                    element.setPattern(words.get(1));
-                    element.setResult(words.get(2));
-                    output.addRule(element);
+                    output.addRule(new ClassRename(words.get(1), words.get(2)));
                 } else if (type.equals("zap")) {
-                    ClassDelete element = new ClassDelete();
-                    element.setPattern(words.get(1));
-                    output.addZap(element);
+                    output.addZap(new ClassDelete(words.get(1)));
                 } else if (type.equals("keep")) {
-                    ClassClosureRoot element = new ClassClosureRoot();
-                    element.setPattern(words.get(1));
-                    output.addKeep(element);
+                    output.addKeep(new ClassClosureRoot(words.get(1)));
                 } else {
                     throw error(lineNumber, words, "Unrecognized keyword " + type);
                 }

@@ -18,7 +18,6 @@ package com.tonicsystems.jarjar.transform.config;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -26,7 +25,7 @@ import javax.annotation.Nonnull;
 public class Wildcard {
 
     @Nonnull
-    public static Wildcard createWildcard(@Nonnull PatternElement pattern) {
+    public static Wildcard createWildcard(@Nonnull AbstractPattern pattern) {
         String result = (pattern instanceof ClassRename) ? ((ClassRename) pattern).getResult() : "";
         String expr = pattern.getPattern();
         if (expr.indexOf('/') >= 0)
@@ -35,9 +34,9 @@ public class Wildcard {
     }
 
     @Nonnull
-    public static List<Wildcard> createWildcards(@Nonnull Iterable<? extends PatternElement> patterns) {
+    public static List<Wildcard> createWildcards(@Nonnull Iterable<? extends AbstractPattern> patterns) {
         List<Wildcard> wildcards = new ArrayList<Wildcard>();
-        for (PatternElement pattern : patterns) {
+        for (AbstractPattern pattern : patterns) {
             wildcards.add(createWildcard(pattern));
         }
         return wildcards;
@@ -47,11 +46,14 @@ public class Wildcard {
     private static final Pattern star = Pattern.compile("\\*");
     private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
+    private static enum State {
+
+        NORMAL, ESCAPE;
+    }
+
     private final Pattern pattern;
     private final int count;
     private final ArrayList<Object> parts = new ArrayList<Object>(16); // kept for debugging
-    private final String[] strings;
-    private final int[] refs;
 
     public Wildcard(@Nonnull String pattern, @Nonnull String result) {
         if (pattern.equals("**"))
@@ -69,53 +71,46 @@ public class Wildcard {
         this.count = this.pattern.matcher("foo").groupCount();
 
         // TODO: check for illegal characters
-        char[] chars = result.toCharArray();
         int max = 0;
-        for (int i = 0, mark = 0, state = 0, len = chars.length; i < len + 1; i++) {
-            char ch = (i == len) ? '@' : chars[i];
-            if (state == 0) {
-                if (ch == '@') {
-                    parts.add(new String(chars, mark, i - mark));
-                    mark = i + 1;
-                    state = 1;
-                }
-            } else {
-                switch (ch) {
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        break;
-                    default:
-                        if (i == mark)
-                            throw new IllegalArgumentException("Backslash not followed by a digit");
-                        int n = Integer.parseInt(new String(chars, mark, i - mark));
-                        if (n > max)
-                            max = n;
-                        parts.add(new Integer(n));
-                        mark = i--;
-                        state = 0;
-                }
+        State state = State.NORMAL;
+        for (int i = 0, mark = 0, len = result.length(); i < len + 1; i++) {
+            char ch = (i == len) ? '@' : result.charAt(i);
+            switch (state) {
+                case NORMAL:
+                    if (ch == '@') {
+                        parts.add(result.substring(mark, i).replace('.', '/'));
+                        mark = i + 1;
+                        state = State.ESCAPE;
+                    }
+                    break;
+                case ESCAPE:
+                    switch (ch) {
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                            break;
+                        default:
+                            if (i == mark)
+                                throw new IllegalArgumentException("Backslash not followed by a digit");
+                            int n = Integer.parseInt(result.substring(mark, i));
+                            if (n > max)
+                                max = n;
+                            parts.add(Integer.valueOf(n));
+                            mark = i--;
+                            state = State.NORMAL;
+                            break;
+                    }
+                    break;
             }
         }
-        int size = parts.size();
-        strings = new String[size];
-        refs = new int[size];
-        Arrays.fill(refs, -1);
-        for (int i = 0; i < size; i++) {
-            Object v = parts.get(i);
-            if (v instanceof String) {
-                strings[i] = ((String) v).replace('.', '/');
-            } else {
-                refs[i] = ((Integer) v).intValue();
-            }
-        }
+
         if (count < max)
             throw new IllegalArgumentException("Result includes impossible placeholder \"@" + max + "\": " + result);
         // System.err.println(this);
@@ -125,12 +120,18 @@ public class Wildcard {
         return getMatcher(value) != null;
     }
 
-    public String replace(String value) {
+    @CheckForNull
+    public String replace(@Nonnull String value) {
         Matcher matcher = getMatcher(value);
         if (matcher != null) {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < strings.length; i++)
-                sb.append((refs[i] >= 0) ? matcher.group(refs[i]) : strings[i]);
+            for (int i = 0; i < parts.size(); i++) {
+                Object part = parts.get(i);
+                if (part instanceof String)
+                    sb.append((String) part);
+                else
+                    sb.append(matcher.group((Integer) part));
+            }
             return sb.toString();
         }
         return null;

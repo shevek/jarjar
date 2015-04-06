@@ -13,14 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tonicsystems.jarjar.transform.config;
+package com.tonicsystems.jarjar;
 
 import javax.annotation.Nonnull;
 
-public class ClassDelete extends AbstractPattern {
+/**
+ * This object and its subclasses are also exposed to ant, so need setters for XML.
+ *
+ * @author shevek
+ */
+public abstract class PatternElement {
 
-    public ClassDelete(@Nonnull String pattern) {
-        super(pattern);
+    private String pattern;
+
+    @Nonnull
+    public String getPattern() {
+        return pattern;
+    }
+
+    public void setPattern(@Nonnull String pattern) {
+        this.pattern = pattern;
     }
 
 }

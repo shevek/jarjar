@@ -28,9 +28,7 @@ public class PackageRemapperTest {
 
     @Before
     public void setUp() {
-        ClassRename rule = new ClassRename();
-        rule.setPattern("org.**");
-        rule.setResult("foo.@1");
+        ClassRename rule = new ClassRename("org.**", "foo.@1");
         remapper = new PackageRemapper(Collections.singletonList(rule));
     }
 
