@@ -6,10 +6,11 @@
 package org.anarres.gradle.plugin.jarjar;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import javax.annotation.Nonnull;
-import org.apache.tools.zip.UnixStat;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
+import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
+import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.UnixStat;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.UncheckedIOException;
@@ -37,12 +38,12 @@ public class JarjarCopyAction implements CopyAction {
 
     private static final Logger LOG = LoggerFactory.getLogger(JarjarCopyAction.class);
     private final File zipFile;
-    private final ZipCompressor compressor;
+    // private final ZipCompressor compressor;
     private final DocumentationRegistry documentationRegistry;
 
     public JarjarCopyAction(@Nonnull File zipFile, @Nonnull ZipCompressor compressor, @Nonnull DocumentationRegistry documentationRegistry) {
         this.zipFile = zipFile;
-        this.compressor = compressor;
+        // this.compressor = compressor;
         this.documentationRegistry = documentationRegistry;
     }
 
@@ -51,18 +52,18 @@ public class JarjarCopyAction implements CopyAction {
     public WorkResult execute(@Nonnull final CopyActionProcessingStream stream) {
         stream.process(new ScanAction());
 
-        final ZipOutputStream zipOutStr;
+        final JarArchiveOutputStream zipOutStr;
 
         try {
-            zipOutStr = compressor.createArchiveOutputStream(zipFile);
+            zipOutStr = new JarArchiveOutputStream(new FileOutputStream(zipFile));
         } catch (Exception e) {
             throw new GradleException(String.format("Could not create ZIP '%s'.", zipFile), e);
         }
 
         try {
-            IoActions.withResource(zipOutStr, new Action<ZipOutputStream>() {
+            IoActions.withResource(zipOutStr, new Action<JarArchiveOutputStream>() {
                 @Override
-                public void execute(@Nonnull ZipOutputStream outputStream) {
+                public void execute(@Nonnull JarArchiveOutputStream outputStream) {
                     stream.process(new ProcessAction(outputStream));
                 }
             });
@@ -87,9 +88,9 @@ public class JarjarCopyAction implements CopyAction {
 
     private class ProcessAction implements CopyActionProcessingStreamAction {
 
-        private final ZipOutputStream zipOutStr;
+        private final JarArchiveOutputStream zipOutStr;
 
-        public ProcessAction(@Nonnull ZipOutputStream zipOutStr) {
+        public ProcessAction(@Nonnull JarArchiveOutputStream zipOutStr) {
             this.zipOutStr = zipOutStr;
         }
 
@@ -106,12 +107,12 @@ public class JarjarCopyAction implements CopyAction {
 
         private void visitFile(@Nonnull FileCopyDetails fileDetails) {
             try {
-                ZipEntry archiveEntry = new ZipEntry(fileDetails.getRelativePath().getPathString());
+                JarArchiveEntry archiveEntry = new JarArchiveEntry(fileDetails.getRelativePath().getPathString());
                 archiveEntry.setTime(fileDetails.getLastModified());
                 archiveEntry.setUnixMode(UnixStat.FILE_FLAG | fileDetails.getMode());
-                zipOutStr.putNextEntry(archiveEntry);
+                zipOutStr.putArchiveEntry(archiveEntry);
                 fileDetails.copyTo(zipOutStr);
-                zipOutStr.closeEntry();
+                zipOutStr.closeArchiveEntry();
             } catch (Exception e) {
                 throw new GradleException(String.format("Could not add %s to ZIP '%s'.", fileDetails, zipFile), e);
             }
@@ -120,11 +121,11 @@ public class JarjarCopyAction implements CopyAction {
         private void visitDir(@Nonnull FileCopyDetails dirDetails) {
             try {
                 // Trailing slash in name indicates that entry is a directory
-                ZipEntry archiveEntry = new ZipEntry(dirDetails.getRelativePath().getPathString() + '/');
+                JarArchiveEntry archiveEntry = new JarArchiveEntry(dirDetails.getRelativePath().getPathString() + '/');
                 archiveEntry.setTime(dirDetails.getLastModified());
                 archiveEntry.setUnixMode(UnixStat.DIR_FLAG | dirDetails.getMode());
-                zipOutStr.putNextEntry(archiveEntry);
-                zipOutStr.closeEntry();
+                zipOutStr.putArchiveEntry(archiveEntry);
+                zipOutStr.closeArchiveEntry();
             } catch (Exception e) {
                 throw new GradleException(String.format("Could not add %s to ZIP '%s'.", dirDetails, zipFile), e);
             }

@@ -87,10 +87,19 @@ project(':jarjar-maven') {
 }
 
 project(':jarjar-gradle') {
-	apply plugin: 'java-gradle-plugin'
+	tasks.removeAll {
+		// println it.dump();
+		// println it.name;
+		return it.name == "sourcesJar";
+	}
+
+	// apply plugin: 'java-gradle-plugin'
+	// apply plugin: 'nu.studer.plugindev'
+	// apply from: file('../gradle/plugin.gradle')
 
 	dependencies {
 		compile project(':jarjar-core')
+		compile 'org.apache.commons:commons-compress:1.9'
 		compile gradleApi()
 
 		testCompile project(':jarjar-core').sourceSets.test.output

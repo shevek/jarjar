@@ -32,11 +32,11 @@ public class RulesFileParser {
 
     public interface Output {
 
-        public void addZap(@Nonnull Zap zap);
+        public void addZap(@Nonnull ClassDelete zap);
 
-        public void addKeep(@Nonnull Keep keep);
+        public void addKeep(@Nonnull ClassClosureRoot keep);
 
-        public void addRule(@Nonnull Rule rule);
+        public void addRule(@Nonnull ClassRename rule);
     }
 
     private RulesFileParser() {
@@ -81,16 +81,16 @@ public class RulesFileParser {
                 if (type.equals("rule")) {
                     if (words.size() < 3)
                         throw error(lineNumber, words, "'rule' requires 2 arguments.");
-                    Rule element = new Rule();
+                    ClassRename element = new ClassRename();
                     element.setPattern(words.get(1));
                     element.setResult(words.get(2));
                     output.addRule(element);
                 } else if (type.equals("zap")) {
-                    Zap element = new Zap();
+                    ClassDelete element = new ClassDelete();
                     element.setPattern(words.get(1));
                     output.addZap(element);
                 } else if (type.equals("keep")) {
-                    Keep element = new Keep();
+                    ClassClosureRoot element = new ClassClosureRoot();
                     element.setPattern(words.get(1));
                     output.addKeep(element);
                 } else {

@@ -1,0 +1,40 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath "org.anarres.jarjar:jarjar-gradle:1.0.0-SNAPSHOT"
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'jarjar'
+
+// println project.ext.dump()
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	jarjarInput
+}
+
+dependencies {
+	jarjarInput 'com.google.guava:guava:17.0'
+}
+
+// println "Configuration: " + configurations.jarjarInput.dump()
+
+task('jarjarOutput', type: JarjarDependency) {
+	doLast {
+		println "Running jarjar"
+	}
+	// from configurations.jarjarInput.artifacts.files
+}
+artifacts {
+	compile jarjarOutput
+}

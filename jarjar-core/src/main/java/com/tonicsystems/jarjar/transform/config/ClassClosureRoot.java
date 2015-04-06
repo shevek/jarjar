@@ -15,5 +15,5 @@
  */
 package com.tonicsystems.jarjar.transform.config;
 
-public class Keep extends PatternElement {
+public class ClassClosureRoot extends PatternElement {
 }

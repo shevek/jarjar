@@ -19,4 +19,5 @@ dependencies {
 	classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
 	classpath 'be.insaneprogramming.gradle:animalsniffer-gradle-plugin:1.4.0'
 	classpath 'com.github.ben-manes:gradle-versions-plugin:0.8'
+	classpath 'nu.studer:gradle-plugindev-plugin:1.0.3'
 }

@@ -27,7 +27,7 @@ public class Wildcard {
 
     @Nonnull
     public static Wildcard createWildcard(@Nonnull PatternElement pattern) {
-        String result = (pattern instanceof Rule) ? ((Rule) pattern).getResult() : "";
+        String result = (pattern instanceof ClassRename) ? ((ClassRename) pattern).getResult() : "";
         String expr = pattern.getPattern();
         if (expr.indexOf('/') >= 0)
             throw new IllegalArgumentException("Patterns cannot contain slashes");

@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform.config;
 
-public class Rule extends PatternElement {
+public class ClassRename extends PatternElement {
 
     private String result;
 

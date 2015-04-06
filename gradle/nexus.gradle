@@ -1,4 +1,6 @@
 subprojects {
+	// if (it.name == "jarjar-gradle") return;
+
 	apply plugin: 'com.bmuschko.nexus'
 
 	project.afterEvaluate {

@@ -17,10 +17,10 @@ package com.tonicsystems.jarjar.transform.config;
 
 import javax.annotation.Nonnull;
 
-public class Zap extends PatternElement {
+public class ClassDelete extends PatternElement {
 
     @Override
-    public Zap withPattern(@Nonnull String pattern) {
+    public ClassDelete withPattern(@Nonnull String pattern) {
         super.withPattern(pattern);
         return this;
     }

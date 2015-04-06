@@ -20,9 +20,6 @@ public class ClassNameUtils {
 
     /**
      * Returns true if the given string looks like a Java array name.
-     *
-     * @param value
-     * @return
      */
     // also used by KeepProcessor
     public static boolean isArrayForName(String value) {

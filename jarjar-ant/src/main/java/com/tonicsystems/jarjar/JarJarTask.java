@@ -16,9 +16,9 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
-import com.tonicsystems.jarjar.transform.config.Rule;
-import com.tonicsystems.jarjar.transform.config.Zap;
-import com.tonicsystems.jarjar.transform.config.Keep;
+import com.tonicsystems.jarjar.transform.config.ClassRename;
+import com.tonicsystems.jarjar.transform.config.ClassDelete;
+import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
 import com.tonicsystems.jarjar.util.AntJarProcessor;
 import org.apache.tools.ant.BuildException;
 
@@ -26,19 +26,19 @@ public class JarJarTask extends AntJarProcessor {
 
     private DefaultJarProcessor processor = new DefaultJarProcessor();
 
-    public void addConfiguredRule(Rule rule) {
+    public void addConfiguredRule(ClassRename rule) {
         if (rule.getPattern() == null || rule.getResult() == null)
             throw new IllegalArgumentException("The <rule> element requires both \"pattern\" and \"result\" attributes.");
         processor.addRule(rule);
     }
 
-    public void addConfiguredZap(Zap zap) {
+    public void addConfiguredZap(ClassDelete zap) {
         if (zap.getPattern() == null)
             throw new IllegalArgumentException("The <zap> element requires a \"pattern\" attribute.");
         processor.addZap(zap);
     }
 
-    public void addConfiguredKeep(Keep keep) {
+    public void addConfiguredKeep(ClassClosureRoot keep) {
         if (keep.getPattern() == null)
             throw new IllegalArgumentException("The <keep> element requires a \"pattern\" attribute.");
         processor.addKeep(keep);

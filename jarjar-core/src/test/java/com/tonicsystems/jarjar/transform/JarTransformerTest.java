@@ -7,10 +7,9 @@ package com.tonicsystems.jarjar.transform;
 
 import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
-import com.tonicsystems.jarjar.transform.jar.PathFilterJarProcessor;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Collections;
+import java.util.jar.JarFile;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +22,9 @@ public class JarTransformerTest extends AbstractJarTransformerTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(JarTransformerTest.class);
 
-    private final File outputJar = new File("build/tmp/output.jar");
+    private final File outputFile = new File("build/tmp/output.jar");
     private final DefaultJarProcessor processor = new DefaultJarProcessor();
-    private final JarTransformer transformer = new JarTransformer(outputJar, processor);
+    private final JarTransformer transformer = new JarTransformer(outputFile, processor);
     private final ClassPath classPath = new ClassPath(new File("/"), jars);
 
     /*
@@ -39,11 +38,17 @@ public class JarTransformerTest extends AbstractJarTransformerTest {
     @Test
     public void testTransformRename() throws Exception {
         processor.setSkipManifest(true);
-        processor.add(new PathFilterJarProcessor(Collections.singleton("META-INF/jarjar-testdata.properties")));
+        // processor.add(new PathFilterJarProcessor(Collections.singleton("META-INF/jarjar-testdata.properties")));
         transformer.transform(classPath);
 
-        Method m = getMethod(outputJar, "org.anarres.jarjar.testdata.pkg0.Main", "main", String[].class);
+        Method m = getMethod(outputFile, "org.anarres.jarjar.testdata.pkg0.Main", "main", String[].class);
         m.invoke(null, (Object) new String[]{});
+
+        JarFile jarFile = new JarFile(outputFile);
+        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Main");
+        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Cls1");
+        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Cls2");
+        assertContains(jarFile, "org.anarres.jarjar.testdata.pkg0.Cls3");
     }
 
 }

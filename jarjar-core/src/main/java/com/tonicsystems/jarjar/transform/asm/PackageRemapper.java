@@ -16,7 +16,7 @@
 package com.tonicsystems.jarjar.transform.asm;
 
 import com.tonicsystems.jarjar.transform.config.Wildcard;
-import com.tonicsystems.jarjar.transform.config.Rule;
+import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,15 +37,15 @@ public class PackageRemapper extends Remapper {
     private final Map<String, String> pathCache = new HashMap<String, String>();
     private final Map<Object, String> valueCache = new HashMap<Object, String>();
 
-    public PackageRemapper(@Nonnull List<Rule> ruleList) {
+    public PackageRemapper(@Nonnull List<ClassRename> ruleList) {
         wildcards = Wildcard.createWildcards(ruleList);
     }
 
-    public PackageRemapper(@Nonnull Rule... ruleList) {
+    public PackageRemapper(@Nonnull ClassRename... ruleList) {
         this(Arrays.asList(ruleList));
     }
 
-    public void addRule(@Nonnull Rule rule) {
+    public void addRule(@Nonnull ClassRename rule) {
         wildcards.add(Wildcard.createWildcard(rule));
     }
 

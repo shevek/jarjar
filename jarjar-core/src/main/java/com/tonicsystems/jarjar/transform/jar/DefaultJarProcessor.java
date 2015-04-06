@@ -16,9 +16,9 @@
 package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
-import com.tonicsystems.jarjar.transform.config.Zap;
-import com.tonicsystems.jarjar.transform.config.Keep;
-import com.tonicsystems.jarjar.transform.config.Rule;
+import com.tonicsystems.jarjar.transform.config.ClassDelete;
+import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
+import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.transform.asm.RemappingClassTransformer;
 import com.tonicsystems.jarjar.transform.config.RulesFileParser;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class DefaultJarProcessor extends JarProcessorChain implements RulesFileP
 
     private final ManifestFilterJarProcessor manifestFilterJarProcessor = new ManifestFilterJarProcessor();
     private final ClassFilterJarProcessor classFilterJarProcessor = new ClassFilterJarProcessor();
-    private final ClassClosureFilterJarProcessor classClosureFilterJarProcessor = new ClassClosureFilterJarProcessor();
+    private final ClassClosureJarProcessor classClosureFilterJarProcessor = new ClassClosureJarProcessor();
     private final PackageRemapper packageRemapper = new PackageRemapper();
     private final RemappingClassTransformer remappingClassTransformer = new RemappingClassTransformer(packageRemapper);
     private final ResourceRenamerJarProcessor resourceRenamerJarProcessor = new ResourceRenamerJarProcessor(packageRemapper);
@@ -46,17 +46,17 @@ public class DefaultJarProcessor extends JarProcessorChain implements RulesFileP
     }
 
     @Override
-    public void addZap(Zap zap) {
+    public void addZap(ClassDelete zap) {
         classFilterJarProcessor.addZap(zap);
     }
 
     @Override
-    public void addKeep(Keep keep) {
+    public void addKeep(ClassClosureRoot keep) {
         classClosureFilterJarProcessor.addKeep(keep);
     }
 
     @Override
-    public void addRule(Rule rule) {
+    public void addRule(ClassRename rule) {
         packageRemapper.addRule(rule);
     }
 

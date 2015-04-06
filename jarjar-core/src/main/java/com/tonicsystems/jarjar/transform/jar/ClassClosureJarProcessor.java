@@ -16,7 +16,7 @@
 package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.config.Wildcard;
-import com.tonicsystems.jarjar.transform.config.Keep;
+import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
 import com.tonicsystems.jarjar.transform.Transformable;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.ByteArrayInputStream;
@@ -41,9 +41,9 @@ import org.slf4j.LoggerFactory;
  *
  * Put this early in the chain as it does not honour renames.
  */
-public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
+public class ClassClosureJarProcessor extends AbstractFilterJarProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClassClosureFilterJarProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClassClosureJarProcessor.class);
 
     private static class DependencyCollector extends Remapper {
 
@@ -78,15 +78,15 @@ public class ClassClosureFilterJarProcessor extends AbstractFilterJarProcessor {
     private final Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
     private Set<String> closure;
 
-    public ClassClosureFilterJarProcessor(@Nonnull Iterable<? extends Keep> patterns) {
+    public ClassClosureJarProcessor(@Nonnull Iterable<? extends ClassClosureRoot> patterns) {
         wildcards = Wildcard.createWildcards(patterns);
     }
 
-    public ClassClosureFilterJarProcessor(@Nonnull Keep... patterns) {
+    public ClassClosureJarProcessor(@Nonnull ClassClosureRoot... patterns) {
         this(Arrays.asList(patterns));
     }
 
-    public void addKeep(@Nonnull Keep keep) {
+    public void addKeep(@Nonnull ClassClosureRoot keep) {
         wildcards.add(Wildcard.createWildcard(keep));
     }
 

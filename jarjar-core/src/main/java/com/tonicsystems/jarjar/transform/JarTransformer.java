@@ -36,10 +36,17 @@ import org.slf4j.LoggerFactory;
 public class JarTransformer {
 
     private static final Logger LOG = LoggerFactory.getLogger(JarTransformer.class);
+
+    public static enum DuplicatePolicy {
+
+        DISCARD, ERROR;
+    }
     private final File outputFile;
     private final JarProcessor processor;
+    private DuplicatePolicy duplicatePolicy = DuplicatePolicy.DISCARD;
     private final byte[] buf = new byte[0x2000];
     private final Set<String> dirs = new HashSet<String>();
+    private final Set<String> files = new HashSet<String>();
 
     public JarTransformer(@Nonnull File outputFile, @Nonnull JarProcessor processor) {
         this.outputFile = outputFile;
@@ -95,7 +102,7 @@ public class JarTransformer {
 
             JarOutputStream outputJarStream = new JarOutputStream(new FileOutputStream(outputFile));
             for (ClassPathArchive inputArchive : inputPath) {
-                LOG.debug("Transforming archive " + inputArchive);
+                LOG.debug("Transforming archive {}", inputArchive);
                 for (ClassPathResource inputResource : inputArchive) {
                     Transformable struct = newTransformable(inputResource);
                     if (processor.process(struct) == JarProcessor.Result.DISCARD)
@@ -103,7 +110,14 @@ public class JarTransformer {
 
                     addDirs(outputJarStream, struct.name);
 
-                    LOG.debug("Writing " + struct.name);
+                    if (DuplicatePolicy.DISCARD.equals(duplicatePolicy)) {
+                        if (!files.add(struct.name)) {
+                            LOG.debug("Discarding duplicate {}", struct.name);
+                            continue;
+                        }
+                    }
+
+                    LOG.debug("Writing {}", struct.name);
                     JarEntry outputEntry = new JarEntry(struct.name);
                     outputEntry.setTime(struct.time);
                     outputEntry.setCompressedSize(-1);

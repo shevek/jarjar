@@ -16,7 +16,7 @@
 package com.tonicsystems.jarjar;
 
 import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
-import com.tonicsystems.jarjar.transform.config.Rule;
+import com.tonicsystems.jarjar.transform.config.ClassRename;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class PackageRemapperTest {
 
     @Before
     public void setUp() {
-        Rule rule = new Rule();
+        ClassRename rule = new ClassRename();
         rule.setPattern("org.**");
         rule.setResult("foo.@1");
         remapper = new PackageRemapper(Collections.singletonList(rule));

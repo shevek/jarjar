@@ -9,7 +9,10 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import javax.annotation.Nonnull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -35,4 +38,15 @@ public class AbstractJarTransformerTest {
         Class<?> c = loader.loadClass(className);
         return c.getMethod("main", parameterTypes);
     }
+
+    protected static void assertContains(@Nonnull JarFile jarFile, @Nonnull String resourceName) {
+        JarEntry jarEntry = jarFile.getJarEntry(resourceName);
+        assertNotNull("JarFile " + jarFile + " does not contain entry " + resourceName, jarEntry);
+    }
+
+    protected static void assertNotContains(@Nonnull JarFile jarFile, @Nonnull String resourceName) {
+        JarEntry jarEntry = jarFile.getJarEntry(resourceName);
+        assertNull("JarFile " + jarFile + " does contains unexpected entry " + resourceName, jarEntry);
+    }
+
 }
