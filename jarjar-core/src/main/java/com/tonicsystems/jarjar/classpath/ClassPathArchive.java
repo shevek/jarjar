@@ -192,4 +192,9 @@ public abstract class ClassPathArchive implements Iterable<ClassPathResource> {
 
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + root + ")";
+    }
+
 }

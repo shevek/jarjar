@@ -26,12 +26,19 @@ public abstract class PatternElement {
 
     private String pattern;
 
+    @Nonnull
+    public String getPattern() {
+        return pattern;
+    }
+
     public void setPattern(@Nonnull String pattern) {
         this.pattern = pattern;
     }
 
     @Nonnull
-    public String getPattern() {
-        return pattern;
+    public PatternElement withPattern(@Nonnull String pattern) {
+        setPattern(pattern);
+        return this;
     }
+
 }

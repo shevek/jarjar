@@ -5,8 +5,8 @@
  */
 package com.tonicsystems.jarjar.classpath;
 
-import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
 
@@ -22,6 +22,10 @@ public class ClassPath implements Iterable<ClassPathArchive> {
     public ClassPath(@Nonnull File root, @Nonnull Iterable<? extends File> entries) {
         this.root = root;
         this.entries = entries;
+    }
+
+    public ClassPath(@Nonnull File root, @Nonnull File[] entries) {
+        this(root, Arrays.asList(entries));
     }
 
     @Nonnull

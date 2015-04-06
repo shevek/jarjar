@@ -37,6 +37,7 @@ public class DefaultJarProcessor extends JarProcessorChain implements RulesFileP
     private final ResourceRenamerJarProcessor resourceRenamerJarProcessor = new ResourceRenamerJarProcessor(packageRemapper);
 
     public DefaultJarProcessor() {
+        add(new DirectoryFilterJarProcessor());
         add(manifestFilterJarProcessor);
         add(classFilterJarProcessor);
         add(classClosureFilterJarProcessor);

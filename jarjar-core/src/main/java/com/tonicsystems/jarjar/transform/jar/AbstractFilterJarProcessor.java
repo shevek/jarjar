@@ -21,10 +21,15 @@ public abstract class AbstractFilterJarProcessor implements JarProcessor {
 
     protected abstract boolean isFiltered(@Nonnull String name);
 
+    protected boolean isVerbose() {
+        return true;
+    }
+
     @Override
     public Result scan(Transformable struct) throws IOException {
         if (isFiltered(struct.name)) {
-            LOG.debug("{}.scan discarded {}", getClass().getSimpleName(), struct.name);
+            if (isVerbose())
+                LOG.debug("{}.scan discarded {}", getClass().getSimpleName(), struct.name);
             return Result.DISCARD;
         }
         return Result.KEEP;
@@ -33,7 +38,8 @@ public abstract class AbstractFilterJarProcessor implements JarProcessor {
     @Override
     public Result process(Transformable struct) throws IOException {
         if (isFiltered(struct.name)) {
-            LOG.debug("{}.process discarded {}", getClass().getSimpleName(), struct.name);
+            if (isVerbose())
+                LOG.debug("{}.process discarded {}", getClass().getSimpleName(), struct.name);
             return Result.DISCARD;
         }
         return Result.KEEP;

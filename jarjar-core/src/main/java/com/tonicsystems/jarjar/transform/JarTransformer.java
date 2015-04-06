@@ -25,15 +25,21 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JarTransformer {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JarTransformer.class);
     private final File outputFile;
     private final JarProcessor processor;
     private final byte[] buf = new byte[0x2000];
+    private final Set<String> dirs = new HashSet<String>();
 
     public JarTransformer(@Nonnull File outputFile, @Nonnull JarProcessor processor) {
         this.outputFile = outputFile;
@@ -59,13 +65,23 @@ public class JarTransformer {
         return struct;
     }
 
-    public void transform(@Nonnull ClassPath inputPath) throws IOException {
+    private void addDirs(JarOutputStream outputJarStream, String name) throws IOException {
+        int dirIdx = name.lastIndexOf('/');
+        if (dirIdx == -1)
+            return;
+        String dirName = name.substring(0, dirIdx + 1);
+        if (dirs.add(dirName)) {
+            JarEntry dirEntry = new JarEntry(dirName);
+            outputJarStream.putNextEntry(dirEntry);
+        }
+    }
 
-        final File tmpFile = File.createTempFile("jarjar", ".jar");
+    public void transform(@Nonnull ClassPath inputPath) throws IOException {
 
         SCAN:
         {
             for (ClassPathArchive inputArchive : inputPath) {
+                LOG.debug("Scanning archive " + inputArchive);
                 for (ClassPathResource inputResource : inputArchive) {
                     Transformable struct = newTransformable(inputResource);
                     processor.scan(struct);
@@ -75,26 +91,28 @@ public class JarTransformer {
 
         OUT:
         {
-            JarOutputStream tmpJarStream = new JarOutputStream(new FileOutputStream(tmpFile));
+            Set<String> dirs = new HashSet<String>();
+
+            JarOutputStream outputJarStream = new JarOutputStream(new FileOutputStream(outputFile));
             for (ClassPathArchive inputArchive : inputPath) {
+                LOG.debug("Transforming archive " + inputArchive);
                 for (ClassPathResource inputResource : inputArchive) {
                     Transformable struct = newTransformable(inputResource);
                     if (processor.process(struct) == JarProcessor.Result.DISCARD)
                         continue;
 
-                    JarEntry tmpEntry = new JarEntry(struct.name);
-                    tmpEntry.setTime(struct.time);
-                    tmpEntry.setCompressedSize(-1);
-                    tmpJarStream.putNextEntry(tmpEntry);
-                    tmpJarStream.write(struct.data);
+                    addDirs(outputJarStream, struct.name);
+
+                    LOG.debug("Writing " + struct.name);
+                    JarEntry outputEntry = new JarEntry(struct.name);
+                    outputEntry.setTime(struct.time);
+                    outputEntry.setCompressedSize(-1);
+                    outputJarStream.putNextEntry(outputEntry);
+                    outputJarStream.write(struct.data);
                 }
             }
-            tmpJarStream.close();
+            outputJarStream.close();
         }
-
-        // delete the empty directories
-        IoUtil.copyZipWithoutEmptyDirectories(tmpFile, outputFile);
-        tmpFile.delete();
 
     }
 }

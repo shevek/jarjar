@@ -1,5 +1,6 @@
 rootProject.name='jarjar'
-include 'jarjar-core',
+include 'jarjar-testdata',
+	'jarjar-core',
 	'jarjar-ant',
 	'jarjar-maven',
 	'jarjar-gradle',
