@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.transform.config.ClassRename;
+import com.tonicsystems.jarjar.transform.config.ResourceRename;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class WildcardTest {
     }
 
     private static void wildcard(String pattern, String result, String value, String expect) {
-        ClassRename wc = new ClassRename(pattern, result);
+        ResourceRename wc = new ResourceRename(pattern, result);
         LOG.info("Compile: " + pattern + " -> " + wc);
         String actual = wc.replace(value);
         LOG.info("Replace: " + value + " -> " + actual + " (expected " + expect + ")");

@@ -108,7 +108,7 @@ public class PatternUtils {
         return parts;
     }
 
-    public static String replace(AbstractPattern pattern, List<Object> replace, String value) {
+    public static String replace(@Nonnull AbstractPattern pattern, @Nonnull List<Object> replace, String value) {
         Matcher matcher = pattern.getMatcher(value);
         if (matcher == null)
             return null;
