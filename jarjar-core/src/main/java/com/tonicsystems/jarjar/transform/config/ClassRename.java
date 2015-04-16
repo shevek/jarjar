@@ -15,21 +15,25 @@
  */
 package com.tonicsystems.jarjar.transform.config;
 
+import java.util.List;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-public class ClassRename extends AbstractPattern {
+public class ClassRename extends AbstractClassPattern {
 
-    private final String result;
+    // private final String replaceText;
+    private final List<Object> replace;
 
-    public ClassRename(@Nonnull String pattern, @Nonnull String result) {
-        super(pattern);
-        if (result == null)
+    public ClassRename(@Nonnull String patternText, @Nonnull String replaceText) {
+        super(patternText);
+        if (replaceText == null)
             throw new IllegalArgumentException("Result may not be null.");
-        this.result = result;
+        // this.replaceText = replaceText;
+        this.replace = PatternUtils.newReplace(getPattern(), replaceText);
     }
 
-    @Nonnull
-    public String getResult() {
-        return result;
+    @CheckForNull
+    public String replace(@Nonnull String value) {
+        return PatternUtils.replace(this, replace, value);
     }
 }

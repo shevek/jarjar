@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.transform.config.Wildcard;
+import com.tonicsystems.jarjar.transform.config.PatternUtils;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.util.Arrays;
@@ -24,18 +24,18 @@ import javax.annotation.Nonnull;
 
 public class ClassFilterJarProcessor extends AbstractFilterJarProcessor {
 
-    private final List<Wildcard> wildcards;
+    private final List<ClassDelete> patterns;
 
-    public ClassFilterJarProcessor(@Nonnull Iterable<? extends ClassDelete> zapList) {
-        wildcards = Wildcard.createWildcards(zapList);
+    public ClassFilterJarProcessor(@Nonnull Iterable<? extends ClassDelete> patterns) {
+        this.patterns = PatternUtils.toList(patterns);
     }
 
-    public ClassFilterJarProcessor(@Nonnull ClassDelete... zapList) {
-        this(Arrays.asList(zapList));
+    public ClassFilterJarProcessor(@Nonnull ClassDelete... patterns) {
+        this(Arrays.asList(patterns));
     }
 
-    public void addZap(@Nonnull ClassDelete zap) {
-        wildcards.add(Wildcard.createWildcard(zap));
+    public void addZap(@Nonnull ClassDelete pattern) {
+        patterns.add(pattern);
     }
 
     @Override
@@ -43,8 +43,8 @@ public class ClassFilterJarProcessor extends AbstractFilterJarProcessor {
         if (!ClassNameUtils.isClass(name))
             return false;
         name = name.substring(0, name.length() - 6);
-        for (Wildcard wildcard : wildcards) {
-            if (wildcard.matches(name))
+        for (ClassDelete pattern : patterns) {
+            if (pattern.matches(name))
                 return true;
         }
         return false;

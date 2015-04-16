@@ -15,7 +15,7 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.transform.config.Wildcard;
+import com.tonicsystems.jarjar.transform.config.PatternUtils;
 import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
 import com.tonicsystems.jarjar.transform.Transformable;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
@@ -73,25 +73,25 @@ public class ClassClosureJarProcessor extends AbstractFilterJarProcessor {
         }
     }
 
-    private final List<Wildcard> wildcards;
+    private final List<ClassClosureRoot> patterns;
     private final List<String> roots = new ArrayList<String>();
     private final Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
     private Set<String> closure;
 
     public ClassClosureJarProcessor(@Nonnull Iterable<? extends ClassClosureRoot> patterns) {
-        wildcards = Wildcard.createWildcards(patterns);
+        this.patterns = PatternUtils.toList(patterns);
     }
 
     public ClassClosureJarProcessor(@Nonnull ClassClosureRoot... patterns) {
         this(Arrays.asList(patterns));
     }
 
-    public void addKeep(@Nonnull ClassClosureRoot keep) {
-        wildcards.add(Wildcard.createWildcard(keep));
+    public void addKeep(@Nonnull ClassClosureRoot pattern) {
+        patterns.add(pattern);
     }
 
     private boolean isEnabled() {
-        return !wildcards.isEmpty();
+        return !patterns.isEmpty();
     }
 
     @Override
@@ -101,8 +101,8 @@ public class ClassClosureJarProcessor extends AbstractFilterJarProcessor {
         try {
             if (ClassNameUtils.isClass(struct.name)) {
                 String name = struct.name.substring(0, struct.name.length() - 6);
-                for (Wildcard wildcard : wildcards)
-                    if (wildcard.matches(name))
+                for (ClassClosureRoot pattern : patterns)
+                    if (pattern.matches(name))
                         roots.add(name);
                 DependencyCollector collector = new DependencyCollector();
                 dependencies.put(name, collector.dependencies);

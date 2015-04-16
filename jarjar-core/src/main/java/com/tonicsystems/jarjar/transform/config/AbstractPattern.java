@@ -15,6 +15,9 @@
  */
 package com.tonicsystems.jarjar.transform.config;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -24,16 +27,42 @@ import javax.annotation.Nonnull;
  */
 public abstract class AbstractPattern {
 
-    private final String pattern;
+    private final String patternText;
+    private final Pattern pattern;
 
-    public AbstractPattern(@Nonnull String pattern) {
-        if (pattern == null)
-            throw new IllegalArgumentException("Pattern may not be null.");
-        this.pattern = pattern;
+    public AbstractPattern(@Nonnull String patternText) {
+        if (patternText == null)
+            throw new IllegalArgumentException("Pattern text may not be null.");
+        this.patternText = patternText;
+        this.pattern = PatternUtils.newPattern(patternText);
     }
 
     @Nonnull
-    public String getPattern() {
+    public String getPatternText() {
+        return patternText;
+    }
+
+    @Nonnull
+    public Pattern getPattern() {
         return pattern;
+    }
+
+    @CheckForNull
+    protected Matcher getMatcher(@Nonnull String value) {
+        if (!PatternUtils.isPossibleQualifiedName(value, "/"))
+            return null;
+        Matcher matcher = pattern.matcher(value);
+        if (matcher.matches())
+            return matcher;
+        return null;
+    }
+
+    public boolean matches(@Nonnull String value) {
+        return getMatcher(value) != null;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + pattern + ")";
     }
 }

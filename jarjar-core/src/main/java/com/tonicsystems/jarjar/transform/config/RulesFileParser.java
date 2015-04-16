@@ -32,11 +32,11 @@ public class RulesFileParser {
 
     public interface Output {
 
-        public void addZap(@Nonnull ClassDelete zap);
+        public void addClassDelete(@Nonnull ClassDelete classDelete);
 
-        public void addKeep(@Nonnull ClassClosureRoot keep);
+        public void addClassRename(@Nonnull ClassRename classRename);
 
-        public void addRule(@Nonnull ClassRename rule);
+        public void addClassClosureRoot(@Nonnull ClassClosureRoot classClosureRoot);
     }
 
     private RulesFileParser() {
@@ -81,11 +81,11 @@ public class RulesFileParser {
                 if (type.equals("rule")) {
                     if (words.size() < 3)
                         throw error(lineNumber, words, "'rule' requires 2 arguments.");
-                    output.addRule(new ClassRename(words.get(1), words.get(2)));
+                    output.addClassRename(new ClassRename(words.get(1), words.get(2)));
                 } else if (type.equals("zap")) {
-                    output.addZap(new ClassDelete(words.get(1)));
+                    output.addClassDelete(new ClassDelete(words.get(1)));
                 } else if (type.equals("keep")) {
-                    output.addKeep(new ClassClosureRoot(words.get(1)));
+                    output.addClassClosureRoot(new ClassClosureRoot(words.get(1)));
                 } else {
                     throw error(lineNumber, words, "Unrecognized keyword " + type);
                 }

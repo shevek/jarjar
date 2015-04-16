@@ -36,20 +36,20 @@ public class JarJarTask extends AntJarProcessor {
     }
 
     public void addConfiguredRule(Rule rule) {
-        processor.addRule(new ClassRename(
+        processor.addClassRename(new ClassRename(
                 checkNotNull(rule.getPattern(), "The <rule> element requires the \"pattern\" attribute."),
                 checkNotNull(rule.getResult(), "The <rule> element requires the \"result\" attribute.")
         ));
     }
 
     public void addConfiguredZap(Zap zap) {
-        processor.addZap(new ClassDelete(
+        processor.addClassDelete(new ClassDelete(
                 checkNotNull(zap.getPattern(), "The <zap> element requires a \"pattern\" attribute.")
         ));
     }
 
     public void addConfiguredKeep(Keep keep) {
-        processor.addKeep(new ClassClosureRoot(
+        processor.addClassClosureRoot(new ClassClosureRoot(
                 checkNotNull(keep.getPattern(), "The <keep> element requires a \"pattern\" attribute.")
         ));
     }

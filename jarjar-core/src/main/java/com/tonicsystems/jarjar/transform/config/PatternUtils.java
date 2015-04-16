@@ -19,43 +19,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-public class Wildcard {
+public class PatternUtils {
 
-    @Nonnull
-    public static Wildcard createWildcard(@Nonnull AbstractPattern pattern) {
-        String result = (pattern instanceof ClassRename) ? ((ClassRename) pattern).getResult() : "";
-        String expr = pattern.getPattern();
-        if (expr.indexOf('/') >= 0)
-            throw new IllegalArgumentException("Patterns cannot contain slashes");
-        return new Wildcard(expr.replace('.', '/'), result);
-    }
-
-    @Nonnull
-    public static List<Wildcard> createWildcards(@Nonnull Iterable<? extends AbstractPattern> patterns) {
-        List<Wildcard> wildcards = new ArrayList<Wildcard>();
-        for (AbstractPattern pattern : patterns) {
-            wildcards.add(createWildcard(pattern));
-        }
-        return wildcards;
+    private PatternUtils() {
     }
 
     private static final Pattern dstar = Pattern.compile("\\*\\*");
     private static final Pattern star = Pattern.compile("\\*");
     private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
 
-    private static enum State {
-
-        NORMAL, ESCAPE;
+    @Nonnull
+    private static String replaceAllLiteral(@Nonnull String value, @Nonnull Pattern pattern, @Nonnull String replace) {
+        return pattern.matcher(value).replaceAll(Matcher.quoteReplacement(replace));
     }
 
-    private final Pattern pattern;
-    private final int count;
-    private final ArrayList<Object> parts = new ArrayList<Object>(16); // kept for debugging
-
-    public Wildcard(@Nonnull String pattern, @Nonnull String result) {
+    @Nonnull
+    public static Pattern newPattern(@Nonnull String pattern) {
         if (pattern.equals("**"))
             throw new IllegalArgumentException("'**' is not a valid pattern");
         if (!isPossibleQualifiedName(pattern, "/*"))
@@ -67,9 +48,18 @@ public class Wildcard {
         regex = replaceAllLiteral(regex, dstar, "(.+?)");   // One wildcard test requires the argument to be allowably empty.
         regex = replaceAllLiteral(regex, star, "([^/]+)");
         regex = replaceAllLiteral(regex, estar, "*\\??)");  // Although we replaced with + above, we mean *
-        this.pattern = Pattern.compile("\\A" + regex + "\\Z");
-        this.count = this.pattern.matcher("foo").groupCount();
+        return Pattern.compile("\\A" + regex + "\\Z");
+        // this.count = this.pattern.matcher("foo").groupCount();
+    }
 
+    private static enum State {
+
+        NORMAL, ESCAPE;
+    }
+
+    @Nonnull
+    public static List<Object> newReplace(@Nonnull Pattern pattern, @Nonnull String result) {
+        List<Object> parts = new ArrayList<Object>(16);
         // TODO: check for illegal characters
         int max = 0;
         State state = State.NORMAL;
@@ -111,45 +101,30 @@ public class Wildcard {
             }
         }
 
+        int count = pattern.matcher("foo").groupCount();
         if (count < max)
             throw new IllegalArgumentException("Result includes impossible placeholder \"@" + max + "\": " + result);
         // System.err.println(this);
+        return parts;
     }
 
-    public boolean matches(@Nonnull String value) {
-        return getMatcher(value) != null;
-    }
-
-    @CheckForNull
-    public String replace(@Nonnull String value) {
-        Matcher matcher = getMatcher(value);
-        if (matcher != null) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < parts.size(); i++) {
-                Object part = parts.get(i);
-                if (part instanceof String)
-                    sb.append((String) part);
-                else
-                    sb.append(matcher.group((Integer) part));
-            }
-            return sb.toString();
-        }
-        return null;
-    }
-
-    @CheckForNull
-    private Matcher getMatcher(@Nonnull String value) {
-        if (!isPossibleQualifiedName(value, "/"))
+    public static String replace(AbstractPattern pattern, List<Object> replace, String value) {
+        Matcher matcher = pattern.getMatcher(value);
+        if (matcher == null)
             return null;
-        Matcher matcher = pattern.matcher(value);
-        if (matcher.matches())
-            return matcher;
-        return null;
+        StringBuilder sb = new StringBuilder();
+        for (Object part : replace) {
+            if (part instanceof String)
+                sb.append((String) part);
+            else
+                sb.append(matcher.group((Integer) part));
+        }
+        return sb.toString();
     }
 
     public static final String PACKAGE_INFO = "package-info";
 
-    private static boolean isPossibleQualifiedName(@Nonnull String value, @Nonnull String extraAllowedCharacters) {
+    /* pp */ static boolean isPossibleQualifiedName(@Nonnull String value, @Nonnull String extraAllowedCharacters) {
         // package-info violates the spec for Java Identifiers.
         // Nevertheless, expressions that end with this string are still legal.
         // See 7.4.1.1 of the Java language spec for discussion.
@@ -167,13 +142,12 @@ public class Wildcard {
         return true;
     }
 
+    /** Always copies into a new, mutable {@link ArrayList}. */
     @Nonnull
-    private static String replaceAllLiteral(@Nonnull String value, @Nonnull Pattern pattern, @Nonnull String replace) {
-        return pattern.matcher(value).replaceAll(Matcher.quoteReplacement(replace));
-    }
-
-    @Override
-    public String toString() {
-        return "Wildcard{pattern=" + pattern + ",parts=" + parts + "}";
+    public static <T extends AbstractPattern> List<T> toList(@Nonnull Iterable<? extends T> in) {
+        List<T> out = new ArrayList<T>();
+        for (T i : in)
+            out.add(i);
+        return out;
     }
 }

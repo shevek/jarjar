@@ -17,7 +17,7 @@ package com.tonicsystems.jarjar.transform.config;
 
 import javax.annotation.Nonnull;
 
-public class ClassClosureRoot extends AbstractPattern {
+public class ClassClosureRoot extends AbstractClassPattern {
 
     public ClassClosureRoot(@Nonnull String pattern) {
         super(pattern);

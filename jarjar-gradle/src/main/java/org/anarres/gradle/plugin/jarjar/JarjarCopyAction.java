@@ -50,6 +50,8 @@ public class JarjarCopyAction implements CopyAction {
     @Nonnull
     @Override
     public WorkResult execute(@Nonnull final CopyActionProcessingStream stream) {
+        LOG.info("CopyAction Executing  " + stream);
+
         stream.process(new ScanAction());
 
         final JarArchiveOutputStream zipOutStr;
@@ -82,7 +84,7 @@ public class JarjarCopyAction implements CopyAction {
 
         @Override
         public void processFile(FileCopyDetailsInternal details) {
-            LOG.info("Scanning " + details);
+            LOG.info("CopyAction Scanning " + details);
         }
     }
 
@@ -96,7 +98,7 @@ public class JarjarCopyAction implements CopyAction {
 
         @Override
         public void processFile(@Nonnull FileCopyDetailsInternal details) {
-            LOG.info("Processing " + details);
+            LOG.info("CopyAction Processing " + details);
 
             if (details.isDirectory()) {
                 visitDir(details);

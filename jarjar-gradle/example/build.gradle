@@ -1,0 +1,57 @@
+buildscript {
+	def properties = new Properties();
+	file('../../gradle.properties').withReader { properties.load(it); }
+
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath "org.anarres.jarjar:jarjar-gradle:${properties.version}"
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'jarjar'
+
+mainClassName = "org.anarres.jarjar.test.Main"
+
+// println project.ext.dump()
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	jarjarInput
+}
+
+dependencies {
+	jarjarInput 'com.google.guava:guava:17.0'
+}
+
+// println "Configuration: " + configurations.jarjarInput.dump()
+
+task('jarjarOutput', type: Jarjar) {
+	doLast {
+		// println "Running jarjar on " + inputs.dump()
+		// println "config is " + configurations.jarjarInput.dump()
+		// println "artifacts is " + configurations.jarjarInput.artifacts.dump()
+		// println "files is " + configurations.jarjarInput.artifacts.files.dump()
+	}
+	configurations.jarjarInput.each { file ->
+		from file
+	}
+
+	// classes: rewrite, delete
+	// access: public, protected, packageprotected, private
+	// resources: delete
+}
+
+artifacts {
+	compile jarjarOutput
+	runtime jarjarOutput
+}
+

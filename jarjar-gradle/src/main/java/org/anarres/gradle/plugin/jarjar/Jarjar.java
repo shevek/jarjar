@@ -5,6 +5,8 @@
  */
 package org.anarres.gradle.plugin.jarjar;
 
+import groovy.lang.Closure;
+import javax.annotation.Nonnull;
 import org.gradle.api.internal.DocumentationRegistry;
 import org.gradle.api.internal.file.copy.CopyAction;
 import org.gradle.api.tasks.bundling.Jar;
@@ -13,12 +15,18 @@ import org.gradle.api.tasks.bundling.Jar;
  *
  * @author shevek
  */
-public class JarjarDependency extends Jar {
+public class Jarjar extends Jar {
 
     @Override
     protected CopyAction createCopyAction() {
         DocumentationRegistry documentationRegistry = getServices().get(DocumentationRegistry.class);
         return new JarjarCopyAction(getArchivePath(), getCompressor(), documentationRegistry);
+    }
+
+    public void fromJar(@Nonnull Object... sourcePaths) {
+    }
+
+    public void fromJar(@Nonnull Object sourcePath, @Nonnull Closure c) {
     }
 
 }

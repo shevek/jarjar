@@ -46,18 +46,18 @@ public class DefaultJarProcessor extends JarProcessorChain implements RulesFileP
     }
 
     @Override
-    public void addZap(ClassDelete zap) {
-        classFilterJarProcessor.addZap(zap);
+    public void addClassDelete(ClassDelete classDelete) {
+        classFilterJarProcessor.addZap(classDelete);
     }
 
     @Override
-    public void addKeep(ClassClosureRoot keep) {
-        classClosureFilterJarProcessor.addKeep(keep);
+    public void addClassRename(ClassRename classRename) {
+        packageRemapper.addRule(classRename);
     }
 
     @Override
-    public void addRule(ClassRename rule) {
-        packageRemapper.addRule(rule);
+    public void addClassClosureRoot(ClassClosureRoot classClosureRoot) {
+        classClosureFilterJarProcessor.addKeep(classClosureRoot);
     }
 
     public void setSkipManifest(boolean value) {

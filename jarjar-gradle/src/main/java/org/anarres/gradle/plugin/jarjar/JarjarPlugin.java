@@ -17,7 +17,7 @@ public class JarjarPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getLogger().info("Applying " + this);
-        project.getExtensions().getExtraProperties().set("JarjarDependency", JarjarDependency.class);
+        project.getExtensions().getExtraProperties().set("Jarjar", Jarjar.class);
     }
 
 }

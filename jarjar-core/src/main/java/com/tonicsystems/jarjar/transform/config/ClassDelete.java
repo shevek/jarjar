@@ -17,7 +17,7 @@ package com.tonicsystems.jarjar.transform.config;
 
 import javax.annotation.Nonnull;
 
-public class ClassDelete extends AbstractPattern {
+public class ClassDelete extends AbstractClassPattern {
 
     public ClassDelete(@Nonnull String pattern) {
         super(pattern);
