@@ -142,7 +142,13 @@ public class PatternUtils {
         return true;
     }
 
-    /** Always copies into a new, mutable {@link ArrayList}. */
+    /**
+     * Copies the given {@link Iterable} into a new {@link List}.
+     * 
+     * @param <T> The free parameter for the element type.
+     * @param in The Iterable to copy.
+     * @return A new, mutable {@link ArrayList}.
+     */
     @Nonnull
     public static <T extends AbstractPattern> List<T> toList(@Nonnull Iterable<? extends T> in) {
         List<T> out = new ArrayList<T>();
