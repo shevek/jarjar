@@ -23,6 +23,21 @@ subprojects {
 
 		testRuntime 'ch.qos.logback:logback-classic:1.1.3'
 	}
+
+	stdmodule {
+		description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
+		author {
+			id 'shevek'
+			name 'Shevek'
+			email 'github@anarres.org'
+		}
+		license 'Apache-2.0'
+	}
+
+	sourceCompatibility = 1.5
+	animalsniffer {
+		signature = "org.codehaus.mojo.signature:java15:+@signature"
+	}
 }
 
 project(':jarjar-testdata') {
@@ -101,7 +116,7 @@ project(':jarjar-gradle') {
 	apply plugin: 'org.anarres.stdplugin'
 
 	stdplugin {
-		pluginImplementation "org.anarres.jarjar", "org.anarres.gradle.plugin.jarjar.JarjarPlugin"
+		implementation "org.anarres.jarjar", "org.anarres.gradle.plugin.jarjar.JarjarPlugin"
 	}
 
 /*
