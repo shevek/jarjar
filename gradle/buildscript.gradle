@@ -7,5 +7,5 @@ repositories {
 }
 
 dependencies {
-	classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.0'
+	classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.2'
 }
