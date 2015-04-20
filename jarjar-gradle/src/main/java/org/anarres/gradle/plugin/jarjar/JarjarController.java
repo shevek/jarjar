@@ -8,6 +8,7 @@ package org.anarres.gradle.plugin.jarjar;
 import com.google.common.base.Throwables;
 import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.JarTransformer;
+import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
 import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * This object appears as 'jarjar' in the project extensions.
  *
  * @author shevek
  */
@@ -43,6 +45,9 @@ public class JarjarController extends GroovyObjectSupport {
         this.project = project;
     }
 
+    /**
+     * This object defines the DSL for {@link #repackage(groovy.lang.Closure)}.
+     */
     public class Repackage extends GroovyObjectSupport {
 
         private final DefaultJarProcessor processor = new DefaultJarProcessor();
@@ -68,6 +73,10 @@ public class JarjarController extends GroovyObjectSupport {
 
         public void classDelete(@Nonnull String pattern) {
             processor.addClassDelete(new ClassDelete(pattern));
+        }
+
+        public void classClosureRoot(@Nonnull String pattern) {
+            processor.addClassClosureRoot(new ClassClosureRoot(pattern));
         }
     }
 
@@ -95,7 +104,7 @@ public class JarjarController extends GroovyObjectSupport {
 
                     final File outputFile = new File(project.getBuildDir(), "jarjar/" + name);
                     outputFile.getParentFile().mkdirs();
-                    LOG.info("Running jarjar for " + outputFile);
+                    LOG.info("Running jarjar for {}", outputFile);
 
                     JarTransformer transformer = new JarTransformer(outputFile, repackage.processor);
                     transformer.transform(new ClassPath(project.getProjectDir(), inputFiles));
