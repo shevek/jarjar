@@ -1,25 +1,16 @@
-ext.githubProjectName = rootProject.name
-
 buildscript {
 	apply from: file('gradle/buildscript.gradle'), to: buildscript
 }
 
-// apply from: file('gradle/convention.gradle')
-// apply from: file('gradle/github.gradle')
-// apply from: file('gradle/nexus.gradle')
-// apply from: file('gradle/check.gradle')
-// apply from: file('gradle/license.gradle')
-
 apply plugin: 'org.anarres.stdproject'
+stdproject {
+}
+
 subprojects {
 	apply plugin: 'org.anarres.stdmodule'
 	stdmodule {
 		description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
-		author {
-			id 'shevek'
-			name 'Shevek'
-			email 'github@anarres.org'
-		}
+		author id: 'shevek', name: 'Shevek', email: 'github@anarres.org'
 		license 'Apache-2.0'
 	}
 
@@ -28,10 +19,6 @@ subprojects {
 	dependencies {
 		compile 'com.google.code.findbugs:jsr305:2.0.2'
 		compile 'org.slf4j:slf4j-api:1.7.12'
-
-		testCompile 'junit:junit:4.12'
-
-		testRuntime 'ch.qos.logback:logback-classic:1.1.3'
 	}
 
 	sourceCompatibility = 1.5
