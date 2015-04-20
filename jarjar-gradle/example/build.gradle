@@ -18,8 +18,6 @@ subprojects {
 
 	mainClassName = "org.anarres.jarjar.test.Main"
 
-// println project.ext.dump()
-
 	repositories {
 		mavenCentral()
 		maven { url 'http://repo.hortonworks.com/content/repositories/releases/' }
