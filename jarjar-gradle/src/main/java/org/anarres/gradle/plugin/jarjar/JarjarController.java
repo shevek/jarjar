@@ -6,6 +6,7 @@
 package org.anarres.gradle.plugin.jarjar;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.JarTransformer;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
@@ -24,6 +25,8 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.AbstractFileCollection;
 import org.gradle.api.internal.file.collections.LazilyInitializedFileCollection;
 import org.gradle.util.ConfigureUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,6 +34,7 @@ import org.gradle.util.ConfigureUtil;
  */
 public class JarjarController extends GroovyObjectSupport {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JarjarController.class);
     private static final AtomicInteger SEQ = new AtomicInteger(0);
     private final Project project;
 
@@ -41,7 +45,6 @@ public class JarjarController extends GroovyObjectSupport {
     public class Repackage extends GroovyObjectSupport {
 
         private final DefaultJarProcessor processor = new DefaultJarProcessor();
-        public String name = "jarjar-" + SEQ.getAndIncrement() + ".jar";
         private FileCollection inputs = project.files();
 
         public void from(@Nonnull FileCollection files) {
@@ -65,17 +68,32 @@ public class JarjarController extends GroovyObjectSupport {
             @Override
             public FileCollection createDelegate() {
                 try {
-                    final File outputFile = new File(project.getBuildDir(), "jarjar/" + repackage.name);
+                    Set<File> inputFiles = repackage.inputs.getFiles();
+                    String name;
+                    NAME:
+                    {
+                        if (inputFiles.isEmpty()) {
+                            name = "jarjar-" + SEQ.getAndIncrement() + ".jar";
+                            break NAME;
+                        }
+                        name = inputFiles.iterator().next().getName();
+                        if (name.endsWith(".jar"))
+                            name = name.substring(0, name.length() - 4);
+                        name = name + "-jarjar.jar";
+                    }
+
+                    final File outputFile = new File(project.getBuildDir(), "jarjar/" + name);
                     outputFile.getParentFile().mkdirs();
-                    ClassPath inputFiles = new ClassPath(project.getProjectDir(), repackage.inputs.getFiles());
+                    LOG.info("Running jarjar for " + outputFile);
 
                     JarTransformer transformer = new JarTransformer(outputFile, repackage.processor);
-                    transformer.transform(inputFiles);
+                    transformer.transform(new ClassPath(project.getProjectDir(), inputFiles));
 
+                    final String displayName = "JarjarOutput(" + name + ")";
                     return new AbstractFileCollection() {
                         @Override
                         public String getDisplayName() {
-                            return "Output of jarjar repackage " + repackage.name;
+                            return displayName;
                         }
 
                         @Override

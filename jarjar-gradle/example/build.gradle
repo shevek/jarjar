@@ -1,20 +1,19 @@
 buildscript {
-	def properties = new Properties();
-	file('../../gradle.properties').withReader { properties.load(it); }
-
 	repositories {
 		mavenLocal()
 		mavenCentral()
 	}
 
 	dependencies {
+		def properties = new Properties();
+		file('../../gradle.properties').withReader { properties.load(it); }
 		classpath "org.anarres.jarjar:jarjar-gradle:${properties.version}"
 	}
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
-apply plugin: 'jarjar'
+apply plugin: 'org.anarres.jarjar'
 
 mainClassName = "org.anarres.jarjar.test.Main"
 
@@ -22,6 +21,7 @@ mainClassName = "org.anarres.jarjar.test.Main"
 
 repositories {
 	mavenCentral()
+	maven { url 'http://repo.hortonworks.com/content/repositories/releases/' }
 }
 
 configurations {
@@ -29,10 +29,23 @@ configurations {
 }
 
 dependencies {
-	jarjarInput 'com.google.guava:guava:17.0'
+	jarjarInput('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
+		exclude group: 'net.hydromatic', module: 'optiq-core'
+		// transitive = false
+	}
 
 	compile jarjar.repackage {
+		// name "hive"
 		from configurations.jarjarInput
-		classDelete "com.google.common.base.**"
+
+		classDelete "org.apache.thrift.**"
+
+		classRename 'org.json.**', 'org.anarres.hive.json..@1'
+		classRename 'org.iq80.**', 'org.anarres.hive.iq80.@1'
+		classRename 'org.codehaus.jackson.**', 'org.anarres.hive.jackson.@1'
+		classRename 'com.google.**', 'org.anarres.hive.google.@1'
+		classRename 'javolution.**', 'org.anarres.hive.javolution.@1'
+		classRename 'com.esotericsoftware.kryo.**', 'org.anarres.hive.kryo.@1'
+
 	}
 }

@@ -88,7 +88,7 @@ public class JarTransformer {
         SCAN:
         {
             for (ClassPathArchive inputArchive : inputPath) {
-                LOG.debug("Scanning archive " + inputArchive);
+                LOG.debug("Scanning archive {}", inputArchive);
                 for (ClassPathResource inputResource : inputArchive) {
                     Transformable struct = newTransformable(inputResource);
                     processor.scan(struct);
@@ -102,7 +102,7 @@ public class JarTransformer {
 
             JarOutputStream outputJarStream = new JarOutputStream(new FileOutputStream(outputFile));
             for (ClassPathArchive inputArchive : inputPath) {
-                LOG.debug("Transforming archive {}", inputArchive);
+                LOG.info("Transforming archive {}", inputArchive);
                 for (ClassPathResource inputResource : inputArchive) {
                     Transformable struct = newTransformable(inputResource);
                     if (processor.process(struct) == JarProcessor.Result.DISCARD)
