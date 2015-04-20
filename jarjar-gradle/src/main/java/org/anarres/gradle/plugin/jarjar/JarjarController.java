@@ -6,7 +6,6 @@
 package org.anarres.gradle.plugin.jarjar;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.JarTransformer;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
@@ -21,6 +20,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.AbstractFileCollection;
 import org.gradle.api.internal.file.collections.LazilyInitializedFileCollection;
@@ -49,6 +50,16 @@ public class JarjarController extends GroovyObjectSupport {
 
         public void from(@Nonnull FileCollection files) {
             inputs = inputs.plus(files);
+        }
+
+        public void from(@Nonnull String dependency, Closure c) {
+            Dependency d = project.getDependencies().create(dependency, c);
+            Configuration configuration = project.getConfigurations().detachedConfiguration(d);
+            inputs = inputs.plus(configuration);
+        }
+
+        public void from(@Nonnull String dependency) {
+            from(dependency, Closure.IDENTITY);
         }
 
         public void classRename(@Nonnull String pattern, @Nonnull String replacement) {

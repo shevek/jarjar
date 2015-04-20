@@ -11,41 +11,73 @@ buildscript {
 	}
 }
 
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'org.anarres.jarjar'
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'application'
+	apply plugin: 'org.anarres.jarjar'
 
-mainClassName = "org.anarres.jarjar.test.Main"
+	mainClassName = "org.anarres.jarjar.test.Main"
 
 // println project.ext.dump()
 
-repositories {
-	mavenCentral()
-	maven { url 'http://repo.hortonworks.com/content/repositories/releases/' }
-}
-
-configurations {
-	jarjarInput
-}
-
-dependencies {
-	jarjarInput('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
-		exclude group: 'net.hydromatic', module: 'optiq-core'
-		// transitive = false
+	repositories {
+		mavenCentral()
+		maven { url 'http://repo.hortonworks.com/content/repositories/releases/' }
 	}
 
-	compile jarjar.repackage {
-		// name "hive"
-		from configurations.jarjarInput
-
-		classDelete "org.apache.thrift.**"
-
-		classRename 'org.json.**', 'org.anarres.hive.json..@1'
-		classRename 'org.iq80.**', 'org.anarres.hive.iq80.@1'
-		classRename 'org.codehaus.jackson.**', 'org.anarres.hive.jackson.@1'
-		classRename 'com.google.**', 'org.anarres.hive.google.@1'
-		classRename 'javolution.**', 'org.anarres.hive.javolution.@1'
-		classRename 'com.esotericsoftware.kryo.**', 'org.anarres.hive.kryo.@1'
-
+	sourceSets {
+		main {
+			java { srcDir rootProject.file('src/main/java') }
+		}
 	}
+}
+
+project(':sub0') {
+
+	configurations {
+		jarjarInput
+	}
+
+	dependencies {
+		jarjarInput('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
+			exclude group: 'net.hydromatic', module: 'optiq-core'
+			// transitive = false
+		}
+
+		compile jarjar.repackage {
+			from configurations.jarjarInput
+
+			classDelete "org.apache.thrift.**"
+
+			classRename 'org.json.**', 'org.anarres.hive.json..@1'
+			classRename 'org.iq80.**', 'org.anarres.hive.iq80.@1'
+			classRename 'org.codehaus.jackson.**', 'org.anarres.hive.jackson.@1'
+			classRename 'com.google.**', 'org.anarres.hive.google.@1'
+			classRename 'javolution.**', 'org.anarres.hive.javolution.@1'
+			classRename 'com.esotericsoftware.kryo.**', 'org.anarres.hive.kryo.@1'
+		}
+	}
+
+}
+
+project(':sub1') {
+
+	dependencies {
+		compile jarjar.repackage {
+			from ('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
+				exclude group: 'net.hydromatic', module: 'optiq-core'
+				// transitive = false
+			}
+
+			classDelete "org.apache.thrift.**"
+
+			classRename 'org.json.**', 'org.anarres.hive.json..@1'
+			classRename 'org.iq80.**', 'org.anarres.hive.iq80.@1'
+			classRename 'org.codehaus.jackson.**', 'org.anarres.hive.jackson.@1'
+			classRename 'com.google.**', 'org.anarres.hive.google.@1'
+			classRename 'javolution.**', 'org.anarres.hive.javolution.@1'
+			classRename 'com.esotericsoftware.kryo.**', 'org.anarres.hive.kryo.@1'
+		}
+	}
+
 }
