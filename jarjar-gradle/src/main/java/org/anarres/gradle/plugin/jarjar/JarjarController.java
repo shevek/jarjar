@@ -23,9 +23,11 @@ import javax.annotation.Nonnull;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.AbstractFileCollection;
 import org.gradle.api.internal.file.collections.LazilyInitializedFileCollection;
+import org.gradle.api.tasks.TaskOutputs;
 import org.gradle.util.ConfigureUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,18 +55,48 @@ public class JarjarController extends GroovyObjectSupport {
         private final DefaultJarProcessor processor = new DefaultJarProcessor();
         private FileCollection inputs = project.files();
 
+        /**
+         * Processes a FileCollection, which may be simple, a {@link Configuration},
+         * or derived from a {@link TaskOutputs}.
+         *
+         * @param files The input FileCollection to consume.
+         */
         public void from(@Nonnull FileCollection files) {
             inputs = inputs.plus(files);
         }
 
-        public void from(@Nonnull String dependency, Closure c) {
-            Dependency d = project.getDependencies().create(dependency, c);
-            Configuration configuration = project.getConfigurations().detachedConfiguration(d);
+        /**
+         * Processes a Dependency directly, which may be derived from
+         * {@link DependencyHandler#create(java.lang.Object)},
+         * {@link DependencyHandler#project(java.util.Map)},
+         * {@link DependencyHandler#module(java.lang.Object)},
+         * {@link DependencyHandler#gradleApi()}, etc.
+         *
+         * @param dependency The dependency to process.
+         */
+        public void from(@Nonnull Dependency dependency) {
+            Configuration configuration = project.getConfigurations().detachedConfiguration(dependency);
             inputs = inputs.plus(configuration);
         }
 
-        public void from(@Nonnull String dependency) {
-            from(dependency, Closure.IDENTITY);
+        /**
+         * Processes a dependency specified by name.
+         *
+         * @param dependencyNotation The dependency, in a notation described in {@link DependencyHandler}.
+         * @param configClosure The closure to use to configure the dependency.
+         * @see DependencyHandler
+         */
+        public void from(@Nonnull String dependencyNotation, Closure configClosure) {
+            from(project.getDependencies().create(dependencyNotation, configClosure));
+        }
+
+        /**
+         * Processes a dependency specified by name.
+         *
+         * @param dependencyNotation The dependency, in a notation described in {@link DependencyHandler}.
+         */
+        public void from(@Nonnull String dependencyNotation) {
+            from(project.getDependencies().create(dependencyNotation));
         }
 
         public void classRename(@Nonnull String pattern, @Nonnull String replacement) {
