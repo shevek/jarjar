@@ -79,3 +79,13 @@ project(':sub1') {
 	}
 
 }
+
+project(':sub2') {
+
+	dependencies {
+		compile jarjar.repackage {
+			from gradleApi()
+		}
+	}
+
+}

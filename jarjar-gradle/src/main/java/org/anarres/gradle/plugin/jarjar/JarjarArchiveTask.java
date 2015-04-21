@@ -15,7 +15,7 @@ import org.gradle.api.tasks.bundling.Jar;
  *
  * @author shevek
  */
-public class Jarjar extends Jar {
+public class JarjarArchiveTask extends Jar {
 
     @Override
     protected CopyAction createCopyAction() {

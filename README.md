@@ -86,6 +86,21 @@ The special @0 reference refers to the entire class name.
 Using with gradle
 -----------------
 
+```
+	dependencies {
+		// Use jarjar.repackage in place of a dependency notation.
+		compile jarjar.repackage {
+			from 'com.google.guava:guava:18.0'
+
+			classDelete "com.google.common.base.**"
+
+			classRename "com.google.**" "org.private.google.@1"
+		}
+	}
+```
+
+See (jarjar-gradle/example/build.gradle) for some complete examples.
+
 Using from the command line
 ---------------------------
 
