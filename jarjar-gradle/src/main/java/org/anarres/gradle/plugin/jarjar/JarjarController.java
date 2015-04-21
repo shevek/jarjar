@@ -28,7 +28,7 @@ public class JarjarController extends GroovyObjectSupport {
     }
 
     @Nonnull
-    public FileCollection repackage(@Nonnull String name, @Nonnull Closure c) {
+    public FileCollection repackage(@Nonnull String name, @Nonnull Closure<?> c) {
         JarjarTask jarjar = project.getTasks().create(
                 name,
                 JarjarTask.class,
@@ -37,7 +37,7 @@ public class JarjarController extends GroovyObjectSupport {
     }
 
     @Nonnull
-    public FileCollection repackage(@Nonnull Closure c) {
+    public FileCollection repackage(@Nonnull Closure<?> c) {
         return repackage("jarjar-" + SEQ.getAndIncrement(), c);
     }
 
