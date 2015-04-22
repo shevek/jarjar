@@ -13,7 +13,9 @@ import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import groovy.lang.Closure;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.apache.oro.text.GlobCompiler;
@@ -29,6 +31,7 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskOutputs;
 
@@ -40,45 +43,55 @@ public class JarjarTask extends ConventionTask {
 
     private class FilterSpec implements Spec<File> {
 
-        private final Perl5Matcher matcher = new Perl5Matcher();
-        private final Set<Pattern> includes = new HashSet<Pattern>();
-        private final Set<Pattern> excludes = new HashSet<Pattern>();
+        private final String message;
+        private final Iterable<? extends Pattern> patterns;
+        private final boolean result;
 
-        private boolean matchesAny(@Nonnull Iterable<? extends Pattern> patterns, @Nonnull String text) {
-            for (Pattern pattern : patterns) {
-                // getLogger().info("Trying " + text + " against " + pattern.getPattern());
-                if (matcher.matches(text, pattern)) {
-                    return true;
-                }
-            }
-            return false;
+        public FilterSpec(@Nonnull String message, @Nonnull Iterable<? extends Pattern> patterns, boolean result) {
+            this.message = message;
+            this.patterns = patterns;
+            this.result = result;
         }
 
+        @Override
         public boolean isSatisfiedBy(File t) {
-            INCLUDE:
-            {
-                if (includes.isEmpty())
-                    break INCLUDE;
-                if (matchesAny(includes, t.getName()))
-                    break INCLUDE;
-                getLogger().info("Skipping archive " + t + ": not included by any pattern.");
-                return false;
+            if (matchesAny(patterns, t.getName())) {
+                getLogger().info(message + " " + t);
+                return result;
             }
-            if (matchesAny(excludes, t.getName())) {
-                getLogger().info("Skipping archive " + t + ": excluded by pattern.");
-                return false;
-            }
-            return true;
+            return !result;
         }
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "(include=" + includes + "; exclude=" + excludes + ")";
+            return getClass().getSimpleName() + "(patterns=" + patterns + ")";
         }
     }
-    private final GlobCompiler globCompiler = new GlobCompiler();
+
+    private static final Perl5Matcher globMatcher = new Perl5Matcher();
+
+    private static boolean matchesAny(@Nonnull Iterable<? extends Pattern> patterns, @Nonnull String text) {
+        for (Pattern pattern : patterns) {
+            if (globMatcher.matches(text, pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nonnull
+    private static Iterable<Pattern> toPatterns(@Nonnull Iterable<? extends String>... patterns) throws MalformedPatternException {
+        GlobCompiler compiler = new GlobCompiler();
+        List<Pattern> out = new ArrayList<Pattern>();
+        for (Iterable<? extends String> in : patterns)
+            for (String pattern : in)
+                out.add(compiler.compile(pattern));
+        return out;
+    }
+
     private final ConfigurableFileCollection sourceFiles;
-    private final FilterSpec sourceFilterSpec = new FilterSpec();
+    private final Set<String> archiveBypasses = new HashSet<String>();
+    private final Set<String> archiveExcludes = new HashSet<String>();
     private File destinationDir;
     private String destinationName;
 
@@ -136,6 +149,11 @@ public class JarjarTask extends ConventionTask {
         return new File(getDestinationDir(), getDestinationName());
     }
 
+    @OutputFiles
+    public FileCollection getBypassedArchives() throws MalformedPatternException {
+        return sourceFiles.filter(new FilterSpec("Bypassing archive", toPatterns(archiveBypasses), true));
+    }
+
     /**
      * Processes a FileCollection, which may be simple, a {@link Configuration},
      * or derived from a {@link TaskOutputs}.
@@ -180,12 +198,12 @@ public class JarjarTask extends ConventionTask {
         from(getProject().getDependencies().create(dependencyNotation));
     }
 
-    public void archiveInclude(@Nonnull String pattern) throws MalformedPatternException {
-        sourceFilterSpec.includes.add(globCompiler.compile(pattern));
+    public void archiveBypass(@Nonnull String pattern) throws MalformedPatternException {
+        archiveBypasses.add(pattern);
     }
 
     public void archiveExclude(@Nonnull String pattern) throws MalformedPatternException {
-        sourceFilterSpec.excludes.add(globCompiler.compile(pattern));
+        archiveExcludes.add(pattern);
     }
 
     public void classRename(@Nonnull String pattern, @Nonnull String replacement) {
@@ -202,12 +220,11 @@ public class JarjarTask extends ConventionTask {
 
     @TaskAction
     public void run() throws Exception {
-        FileCollection inputFiles = sourceFiles.filter(sourceFilterSpec);
+        FileCollection inputFiles = sourceFiles.filter(new FilterSpec("Excluding archive", toPatterns(archiveBypasses, archiveExcludes), false));
         final File outputFile = getDestinationPath();
         outputFile.getParentFile().mkdirs();
         getLogger().info("Running jarjar for {}", outputFile);
         getLogger().info("Inputs are {}", inputFiles);
-        getLogger().info("Filter is {}", sourceFilterSpec);
 
         JarTransformer transformer = new JarTransformer(outputFile, processor);
         transformer.transform(new ClassPath(getProject().getProjectDir(), inputFiles));

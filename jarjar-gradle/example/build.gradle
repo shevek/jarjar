@@ -45,7 +45,8 @@ project(':sub0') {
 		compile jarjar.repackage {
 			from configurations.jarjarInput
 
-			archiveExclude "commons*.jar"
+			archiveBypass "commons*.jar"
+			archiveExclude "slf4j*.jar"
 
 			classDelete "org.apache.thrift.**"
 
@@ -69,7 +70,8 @@ project(':sub1') {
 				// transitive = false
 			}
 
-			archiveExclude "commons*.jar"
+			archiveBypass "commons*.jar"
+			archiveExclude "slf4j*.jar"
 
 			classDelete "org.apache.thrift.**"
 
@@ -90,7 +92,9 @@ project(':sub2') {
 		compile jarjar.repackage {
 			from gradleApi()
 
-			archiveExclude "commons*.jar"
+			archiveBypass "commons*.jar"
+			archiveExclude "slf4j*.jar"
+
 		}
 	}
 
