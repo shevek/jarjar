@@ -15,8 +15,8 @@
  */
 package com.tonicsystems.jarjar;
 
-import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
+import com.tonicsystems.jarjar.transform.config.ClassKeepTransitive;
 import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import com.tonicsystems.jarjar.util.AntJarProcessor;
@@ -49,7 +49,7 @@ public class JarJarTask extends AntJarProcessor {
     }
 
     public void addConfiguredKeep(Keep keep) {
-        processor.addClassClosureRoot(new ClassClosureRoot(
+        processor.addClassKeepTransitive(new ClassKeepTransitive(
                 checkNotNull(keep.getPattern(), "The <keep> element requires a \"pattern\" attribute.")
         ));
     }

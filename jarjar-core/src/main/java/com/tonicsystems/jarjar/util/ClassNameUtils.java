@@ -20,6 +20,8 @@ public class ClassNameUtils {
 
     /**
      * Returns true if the given string looks like a Java array name.
+     * @param value The name to inspect.
+     * @return true if the given string looks like a Java array name.
      */
     // also used by KeepProcessor
     public static boolean isArrayForName(String value) {
@@ -32,6 +34,8 @@ public class ClassNameUtils {
     // TODO: use this for package remapping too?
     /**
      * Returns true if the String looks like a Java type name.
+     * @param value The name to inspect.
+     * @return true if the String looks like a Java type name.
      */
     public static boolean isForName(@Nonnull String value) {
         if (value.equals(""))

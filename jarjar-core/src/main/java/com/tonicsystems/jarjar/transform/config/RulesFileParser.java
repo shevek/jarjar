@@ -36,7 +36,9 @@ public class RulesFileParser {
 
         public void addClassRename(@Nonnull ClassRename classRename);
 
-        public void addClassClosureRoot(@Nonnull ClassClosureRoot classClosureRoot);
+        public void addClassKeep(@Nonnull ClassKeep classKeep);
+
+        public void addClassKeepTransitive(@Nonnull ClassKeepTransitive classKeepTransitive);
     }
 
     private RulesFileParser() {
@@ -85,7 +87,7 @@ public class RulesFileParser {
                 } else if (type.equals("zap")) {
                     output.addClassDelete(new ClassDelete(words.get(1)));
                 } else if (type.equals("keep")) {
-                    output.addClassClosureRoot(new ClassClosureRoot(words.get(1)));
+                    output.addClassKeepTransitive(new ClassKeepTransitive(words.get(1)));
                 } else {
                     throw error(lineNumber, words, "Unrecognized keyword " + type);
                 }

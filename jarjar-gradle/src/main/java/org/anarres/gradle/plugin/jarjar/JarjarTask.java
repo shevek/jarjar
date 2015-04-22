@@ -7,23 +7,30 @@ package org.anarres.gradle.plugin.jarjar;
 
 import com.tonicsystems.jarjar.classpath.ClassPath;
 import com.tonicsystems.jarjar.transform.JarTransformer;
-import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
+import com.tonicsystems.jarjar.transform.config.ClassKeepTransitive;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
 import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.transform.jar.DefaultJarProcessor;
 import groovy.lang.Closure;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.apache.oro.text.regex.Pattern;
+import org.apache.oro.text.regex.Perl5Matcher;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskOutputs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,11 +38,60 @@ import org.slf4j.LoggerFactory;
  */
 public class JarjarTask extends ConventionTask {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JarjarTask.class);
+    private class FilterSpec implements Spec<File> {
+
+        private final Perl5Matcher matcher = new Perl5Matcher();
+        private final Set<Pattern> includes = new HashSet<Pattern>();
+        private final Set<Pattern> excludes = new HashSet<Pattern>();
+
+        private boolean matchesAny(@Nonnull Iterable<? extends Pattern> patterns, @Nonnull String text) {
+            for (Pattern pattern : patterns) {
+                // getLogger().info("Trying " + text + " against " + pattern.getPattern());
+                if (matcher.matches(text, pattern)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean isSatisfiedBy(File t) {
+            INCLUDE:
+            {
+                if (includes.isEmpty())
+                    break INCLUDE;
+                if (matchesAny(includes, t.getName()))
+                    break INCLUDE;
+                getLogger().info("Skipping archive " + t + ": not included by any pattern.");
+                return false;
+            }
+            if (matchesAny(excludes, t.getName())) {
+                getLogger().info("Skipping archive " + t + ": excluded by pattern.");
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(include=" + includes + "; exclude=" + excludes + ")";
+        }
+    }
+    private final GlobCompiler globCompiler = new GlobCompiler();
+    private final ConfigurableFileCollection sourceFiles;
+    private final FilterSpec sourceFilterSpec = new FilterSpec();
     private File destinationDir;
     private String destinationName;
 
     private final DefaultJarProcessor processor = new DefaultJarProcessor();
+
+    public JarjarTask() {
+        sourceFiles = getProject().files();
+    }
+
+    @InputFiles
+    public FileCollection getSourceFiles() {
+        return sourceFiles;
+    }
 
     /**
      * Returns the directory where the archive is generated into.
@@ -87,7 +143,7 @@ public class JarjarTask extends ConventionTask {
      * @param files The input FileCollection to consume.
      */
     public void from(@Nonnull FileCollection files) {
-        getInputs().files(files);
+        sourceFiles.from(files);
     }
 
     /**
@@ -124,6 +180,14 @@ public class JarjarTask extends ConventionTask {
         from(getProject().getDependencies().create(dependencyNotation));
     }
 
+    public void archiveInclude(@Nonnull String pattern) throws MalformedPatternException {
+        sourceFilterSpec.includes.add(globCompiler.compile(pattern));
+    }
+
+    public void archiveExclude(@Nonnull String pattern) throws MalformedPatternException {
+        sourceFilterSpec.excludes.add(globCompiler.compile(pattern));
+    }
+
     public void classRename(@Nonnull String pattern, @Nonnull String replacement) {
         processor.addClassRename(new ClassRename(pattern, replacement));
     }
@@ -133,15 +197,17 @@ public class JarjarTask extends ConventionTask {
     }
 
     public void classClosureRoot(@Nonnull String pattern) {
-        processor.addClassClosureRoot(new ClassClosureRoot(pattern));
+        processor.addClassKeepTransitive(new ClassKeepTransitive(pattern));
     }
 
     @TaskAction
     public void run() throws Exception {
-        FileCollection inputFiles = getInputs().getFiles();
+        FileCollection inputFiles = sourceFiles.filter(sourceFilterSpec);
         final File outputFile = getDestinationPath();
         outputFile.getParentFile().mkdirs();
-        LOG.info("Running jarjar for {}", outputFile);
+        getLogger().info("Running jarjar for {}", outputFile);
+        getLogger().info("Inputs are {}", inputFiles);
+        getLogger().info("Filter is {}", sourceFilterSpec);
 
         JarTransformer transformer = new JarTransformer(outputFile, processor);
         transformer.transform(new ClassPath(getProject().getProjectDir(), inputFiles));

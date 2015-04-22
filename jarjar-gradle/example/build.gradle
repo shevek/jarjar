@@ -45,6 +45,8 @@ project(':sub0') {
 		compile jarjar.repackage {
 			from configurations.jarjarInput
 
+			archiveExclude "commons*.jar"
+
 			classDelete "org.apache.thrift.**"
 
 			classRename 'org.json.**', 'org.anarres.hive.json..@1'
@@ -67,6 +69,8 @@ project(':sub1') {
 				// transitive = false
 			}
 
+			archiveExclude "commons*.jar"
+
 			classDelete "org.apache.thrift.**"
 
 			classRename 'org.json.**', 'org.anarres.hive.json..@1'
@@ -85,6 +89,8 @@ project(':sub2') {
 	dependencies {
 		compile jarjar.repackage {
 			from gradleApi()
+
+			archiveExclude "commons*.jar"
 		}
 	}
 

@@ -122,6 +122,7 @@ project(':jarjar-gradle') {
 		compile project(':jarjar-core')
 		compile 'org.apache.commons:commons-compress:1.9'
 		compile gradleApi()
+		compile 'oro:oro:2.0.8'
 
 		testCompile project(':jarjar-core').sourceSets.test.output
 	}

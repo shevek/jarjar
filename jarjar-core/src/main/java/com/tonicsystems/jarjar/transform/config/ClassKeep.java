@@ -18,14 +18,13 @@ package com.tonicsystems.jarjar.transform.config;
 import javax.annotation.Nonnull;
 
 /**
- * Requires that any matched class is removed.
+ * Requires that any matched class is kept.
  *
  * @author shevek
  */
-public class ClassDelete extends AbstractClassPattern {
+public class ClassKeep extends AbstractClassPattern {
 
-    public ClassDelete(@Nonnull String pattern) {
+    public ClassKeep(@Nonnull String pattern) {
         super(pattern);
     }
-
 }

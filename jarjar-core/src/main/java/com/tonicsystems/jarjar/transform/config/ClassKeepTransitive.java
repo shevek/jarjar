@@ -17,9 +17,14 @@ package com.tonicsystems.jarjar.transform.config;
 
 import javax.annotation.Nonnull;
 
-public class ClassClosureRoot extends AbstractClassPattern {
+/**
+ * Requires that any matched class and all classes directly or indirectly reachable from it are kept.
+ *
+ * @author shevek
+ */
+public class ClassKeepTransitive extends AbstractClassPattern {
 
-    public ClassClosureRoot(@Nonnull String pattern) {
+    public ClassKeepTransitive(@Nonnull String pattern) {
         super(pattern);
     }
 }

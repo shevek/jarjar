@@ -15,27 +15,51 @@
  */
 package com.tonicsystems.jarjar.transform.jar;
 
-import com.tonicsystems.jarjar.transform.config.PatternUtils;
+import com.tonicsystems.jarjar.transform.config.AbstractPattern;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
+import com.tonicsystems.jarjar.transform.config.ClassKeep;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Filters classes by name.
+ *
+ * Keeps all classes specified by ClassKeep (default all classes).
+ * Then removes all classes specified by ClassDelete (default no classes).
+ * Ignores non-class resources.
+ *
+ * @see ClassNameUtils#isClass(String)
+ * @author shevek
+ */
 public class ClassFilterJarProcessor extends AbstractFilterJarProcessor {
 
-    private final List<ClassDelete> patterns;
+    // private static final Logger LOG = LoggerFactory.getLogger(ClassFilterJarProcessor.class);
+    private final List<ClassKeep> keepPatterns = new ArrayList<ClassKeep>();
+    private final List<ClassDelete> deletePatterns = new ArrayList<ClassDelete>();
 
-    public ClassFilterJarProcessor(@Nonnull Iterable<? extends ClassDelete> patterns) {
-        this.patterns = PatternUtils.toList(patterns);
+    public void addClassKeep(@Nonnull ClassKeep pattern) {
+        keepPatterns.add(pattern);
     }
 
-    public ClassFilterJarProcessor(@Nonnull ClassDelete... patterns) {
-        this(Arrays.asList(patterns));
+    public void addClassDelete(@Nonnull ClassDelete pattern) {
+        deletePatterns.add(pattern);
     }
 
-    public void addZap(@Nonnull ClassDelete pattern) {
-        patterns.add(pattern);
+    @CheckForNull
+    protected <T extends AbstractPattern> T getMatchingPattern(@Nonnull List<? extends T> patterns, @Nonnull String name) {
+        for (T pattern : patterns) {
+            if (pattern.matches(name)) {
+                // LOG.debug(pattern + " matches " + name);
+                return pattern;
+            }
+        }
+        // LOG.debug("No pattern matches " + name);
+        return null;
     }
 
     @Override
@@ -43,10 +67,17 @@ public class ClassFilterJarProcessor extends AbstractFilterJarProcessor {
         if (!ClassNameUtils.isClass(name))
             return false;
         name = name.substring(0, name.length() - 6);
-        for (ClassDelete pattern : patterns) {
-            if (pattern.matches(name))
-                return true;
+        // LOG.debug("Looking to include " + name);
+        INCLUDE:
+        {
+            if (keepPatterns.isEmpty())
+                break INCLUDE;
+            if (getMatchingPattern(keepPatterns, name) != null)
+                break INCLUDE;
+            // We have include patterns, but none matched. Filter it.
+            return true;
         }
-        return false;
+        // LOG.debug("Looking to exclude " + name);
+        return getMatchingPattern(deletePatterns, name) != null;
     }
 }

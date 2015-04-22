@@ -39,9 +39,9 @@ public interface JarProcessor {
      * from the jar file in a future time. Return <code>false</code> for the entries which do not have been changed and
      * there fore are not to be deleted
      *
-     * @param struct
+     * @param struct The archive entry to be transformed.
      * @return <code>true</code> if he process chain can continue after this process
-     * @throws IOException
+     * @throws IOException if it all goes upside down
      */
     @Nonnull
     public Result process(@Nonnull Transformable struct) throws IOException;

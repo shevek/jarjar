@@ -16,7 +16,7 @@
 package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.config.PatternUtils;
-import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
+import com.tonicsystems.jarjar.transform.config.ClassKeepTransitive;
 import com.tonicsystems.jarjar.transform.Transformable;
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import java.io.ByteArrayInputStream;
@@ -73,20 +73,20 @@ public class ClassClosureJarProcessor extends AbstractFilterJarProcessor {
         }
     }
 
-    private final List<ClassClosureRoot> patterns;
+    private final List<ClassKeepTransitive> patterns;
     private final List<String> roots = new ArrayList<String>();
     private final Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
     private Set<String> closure;
 
-    public ClassClosureJarProcessor(@Nonnull Iterable<? extends ClassClosureRoot> patterns) {
+    public ClassClosureJarProcessor(@Nonnull Iterable<? extends ClassKeepTransitive> patterns) {
         this.patterns = PatternUtils.toList(patterns);
     }
 
-    public ClassClosureJarProcessor(@Nonnull ClassClosureRoot... patterns) {
+    public ClassClosureJarProcessor(@Nonnull ClassKeepTransitive... patterns) {
         this(Arrays.asList(patterns));
     }
 
-    public void addKeep(@Nonnull ClassClosureRoot pattern) {
+    public void addKeep(@Nonnull ClassKeepTransitive pattern) {
         patterns.add(pattern);
     }
 
@@ -101,7 +101,7 @@ public class ClassClosureJarProcessor extends AbstractFilterJarProcessor {
         try {
             if (ClassNameUtils.isClass(struct.name)) {
                 String name = struct.name.substring(0, struct.name.length() - 6);
-                for (ClassClosureRoot pattern : patterns)
+                for (ClassKeepTransitive pattern : patterns)
                     if (pattern.matches(name))
                         roots.add(name);
                 DependencyCollector collector = new DependencyCollector();

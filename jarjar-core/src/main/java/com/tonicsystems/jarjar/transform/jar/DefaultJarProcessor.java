@@ -17,9 +17,10 @@ package com.tonicsystems.jarjar.transform.jar;
 
 import com.tonicsystems.jarjar.transform.asm.PackageRemapper;
 import com.tonicsystems.jarjar.transform.config.ClassDelete;
-import com.tonicsystems.jarjar.transform.config.ClassClosureRoot;
+import com.tonicsystems.jarjar.transform.config.ClassKeepTransitive;
 import com.tonicsystems.jarjar.transform.config.ClassRename;
 import com.tonicsystems.jarjar.transform.asm.RemappingClassTransformer;
+import com.tonicsystems.jarjar.transform.config.ClassKeep;
 import com.tonicsystems.jarjar.transform.config.RulesFileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class DefaultJarProcessor extends JarProcessorChain implements RulesFileP
 
     @Override
     public void addClassDelete(ClassDelete classDelete) {
-        classFilterJarProcessor.addZap(classDelete);
+        classFilterJarProcessor.addClassDelete(classDelete);
     }
 
     @Override
@@ -56,8 +57,13 @@ public class DefaultJarProcessor extends JarProcessorChain implements RulesFileP
     }
 
     @Override
-    public void addClassClosureRoot(ClassClosureRoot classClosureRoot) {
-        classClosureFilterJarProcessor.addKeep(classClosureRoot);
+    public void addClassKeep(ClassKeep classKeep) {
+        classFilterJarProcessor.addClassKeep(classKeep);
+    }
+
+    @Override
+    public void addClassKeepTransitive(ClassKeepTransitive classKeepTransitive) {
+        classClosureFilterJarProcessor.addKeep(classKeepTransitive);
     }
 
     public void setSkipManifest(boolean value) {
