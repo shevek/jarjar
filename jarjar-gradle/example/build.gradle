@@ -49,7 +49,7 @@ project(':sub0') {
 
 			classDelete "org.apache.thrift.**"
 
-			classRename 'org.json.**', 'org.anarres.hive.json..@1'
+			classRename 'org.json.**', 'org.anarres.hive.json.@1'
 			classRename 'org.iq80.**', 'org.anarres.hive.iq80.@1'
 			classRename 'org.codehaus.jackson.**', 'org.anarres.hive.jackson.@1'
 			classRename 'com.google.**', 'org.anarres.hive.google.@1'
@@ -73,7 +73,7 @@ project(':sub1') {
 
 			classDelete "org.apache.thrift.**"
 
-			classRename 'org.json.**', 'org.anarres.hive.json..@1'
+			classRename 'org.json.**', 'org.anarres.hive.json.@1'
 			classRename 'org.iq80.**', 'org.anarres.hive.iq80.@1'
 			classRename 'org.codehaus.jackson.**', 'org.anarres.hive.jackson.@1'
 			classRename 'com.google.**', 'org.anarres.hive.google.@1'
