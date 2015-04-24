@@ -33,17 +33,36 @@ subprojects {
 project(':sub0') {
 
 	configurations {
-		jarjarInput
+		upstream
+		literal {
+			extendsFrom upstream
+			resolutionStrategy {
+				// http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolutionStrategy.html
+				eachDependency { DependencyResolveDetails details ->
+					println "DependencyResolveDetails " + details.dump()
+				}
+				// http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ComponentSelectionRules.html
+				componentSelection {
+					withModule("org.apache.hive:hive-metastore") { ComponentSelection selection ->
+						selection.reject("Rejecting all hive-metastore")
+						println "ComponentSelection: " + selection.dump()
+					}
+				}
+			}
+		}
+		compile {
+			extendsFrom literal
+		}
 	}
 
 	dependencies {
-		jarjarInput('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
+		upstream('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
 			exclude group: 'net.hydromatic', module: 'optiq-core'
 			// transitive = false
 		}
 
 		compile jarjar.repackage {
-			from configurations.jarjarInput
+			from configurations.upstream
 
 			archiveBypass "commons*.jar"
 			archiveExclude "slf4j*.jar"
@@ -99,3 +118,13 @@ project(':sub2') {
 	}
 
 }
+
+/*
+project(':sub3') {
+	dependencies {
+		compile jarjar.dependency('org.apache.hive:hive-exec:0.13.0.2.1.5.0-695') {
+		}
+	}
+}
+*/
+
