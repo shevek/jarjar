@@ -60,6 +60,8 @@ project(':jarjar-testdata') {
 		println jar0.archivePath
 	}
 */
+
+	uploadArchives.enabled = false
 }
 
 project(':jarjar-core') {
