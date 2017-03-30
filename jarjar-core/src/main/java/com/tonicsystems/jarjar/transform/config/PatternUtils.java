@@ -49,7 +49,7 @@ public class PatternUtils {
         regex = replaceAllLiteral(regex, dstar, "(.+?)");   // One wildcard test requires the argument to be allowably empty.
         regex = replaceAllLiteral(regex, star, "([^/]+)");
         regex = replaceAllLiteral(regex, estar, "*\\??)");  // Although we replaced with + above, we mean *
-        regex = replaceAllLiteral(regex, internal, "\\\\$");  // Convert internal class symbols to regular expressions
+        regex = replaceAllLiteral(regex, internal, "\\$");  // Convert internal class symbols to regular expressions
         return Pattern.compile("\\A" + regex + "\\Z");
         // this.count = this.pattern.matcher("foo").groupCount();
     }
