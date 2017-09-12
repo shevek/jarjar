@@ -7,6 +7,7 @@ stdproject {
 }
 
 subprojects {
+        version = '1.1.1'
 	apply plugin: 'org.anarres.stdmodule'
 	stdmodule {
 		description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
@@ -21,11 +22,13 @@ subprojects {
 		compile 'org.slf4j:slf4j-api:1.7.12'
 	}
 
-	sourceCompatibility = 1.5
+	sourceCompatibility = 1.7
 	animalsniffer {
 		signature = "org.codehaus.mojo.signature:java15:+@signature"
 	}
 }
+
+version = '1.1.1'
 
 project(':jarjar-testdata') {
 	dependencies {
