@@ -86,24 +86,6 @@ project(':jarjar-core') {
 	}
 }
 
-project(':jarjar-ant') {
-	dependencies {
-		compile project(':jarjar-core')
-		compile 'org.apache.ant:ant:1.7.0'
-
-		testCompile project(':jarjar-core').sourceSets.test.output
-	}
-}
-
-project(':jarjar-maven') {
-	dependencies {
-		compile project(':jarjar-core')
-		compile 'org.apache.maven:maven-plugin-api:2.0'
-
-		testCompile project(':jarjar-core').sourceSets.test.output
-	}
-}
-
 project(':jarjar-gradle') {
 	apply plugin: 'org.anarres.stdplugin'
 
