@@ -166,7 +166,7 @@ public class JarjarTask extends ConventionTask {
      * @param files The input FileCollection to consume.
      */
     public void from(@Nonnull FileCollection files) {
-        sourceFiles.from(files);
+        sourceFiles.from(getProject().files(files.getFiles()));
     }
 
     /**
