@@ -29,6 +29,7 @@ public class PatternUtils {
     private static final Pattern dstar = Pattern.compile("\\*\\*");
     private static final Pattern star = Pattern.compile("\\*");
     private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
+    private static final Pattern internal  = Pattern.compile("\\$");
 
     @Nonnull
     private static String replaceAllLiteral(@Nonnull String value, @Nonnull Pattern pattern, @Nonnull String replace) {
@@ -48,6 +49,7 @@ public class PatternUtils {
         regex = replaceAllLiteral(regex, dstar, "(.+?)");   // One wildcard test requires the argument to be allowably empty.
         regex = replaceAllLiteral(regex, star, "([^/]+)");
         regex = replaceAllLiteral(regex, estar, "*\\??)");  // Although we replaced with + above, we mean *
+        regex = replaceAllLiteral(regex, internal, "\\$");  // Convert internal class symbols to regular expressions
         return Pattern.compile("\\A" + regex + "\\Z");
         // this.count = this.pattern.matcher("foo").groupCount();
     }

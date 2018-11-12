@@ -7,6 +7,8 @@ package com.tonicsystems.jarjar.classpath;
 
 import com.tonicsystems.jarjar.util.ClassNameUtils;
 import com.tonicsystems.jarjar.util.RuntimeIOException;
+
+import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -21,10 +23,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.annotation.Nonnull;
 
 /**
- *
  * @author shevek
  */
 public abstract class ClassPathArchive implements Iterable<ClassPathResource> {
@@ -70,7 +70,11 @@ public abstract class ClassPathArchive implements Iterable<ClassPathResource> {
         @Override
         public boolean hasNext() {
             if (!zipEntries.hasMoreElements()) {
-                // close();
+                try {
+                    close();
+                } catch (IOException e) {
+                    // ignore
+                }
                 return false;
             } else {
                 return true;
