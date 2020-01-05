@@ -5,12 +5,8 @@
  */
 package org.anarres.gradle.plugin.jarjar;
 
-import groovy.lang.Closure;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.file.FileCollection;
-import static org.bouncycastle.asn1.x500.style.RFC4519Style.c;
-import static org.gradle.internal.Transformers.name;
 
 /**
  *

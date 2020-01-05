@@ -1,5 +1,16 @@
 buildscript {
-	apply from: file('gradle/buildscript.gradle'), to: buildscript
+	// Executed in context of buildscript
+	repositories {
+		// mavenLocal()
+		mavenCentral()
+		// jcenter()
+		// maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+		gradlePluginPortal()
+	}
+
+	dependencies {
+		classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.10'
+	}
 }
 
 apply plugin: 'org.anarres.stdproject'
@@ -22,9 +33,6 @@ subprojects {
 	}
 
 	sourceCompatibility = 1.5
-	animalsniffer {
-		signature = "org.codehaus.mojo.signature:java15:+@signature"
-	}
 }
 
 project(':jarjar-testdata') {
@@ -127,10 +135,6 @@ project(':jarjar-gradle') {
 		compile 'oro:oro:2.0.8'
 
 		testCompile project(':jarjar-core').sourceSets.test.output
-	}
-
-	animalsniffer {
-		skip = true
 	}
 }
 
