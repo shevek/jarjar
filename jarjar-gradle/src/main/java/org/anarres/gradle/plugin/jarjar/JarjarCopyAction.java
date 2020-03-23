@@ -80,7 +80,7 @@ public class JarjarCopyAction implements CopyAction {
         return new DefaultWorkResult(true, null);
     }
 
-    private class ScanAction implements CopyActionProcessingStreamAction {
+    private static class ScanAction implements CopyActionProcessingStreamAction {
 
         @Override
         public void processFile(FileCopyDetailsInternal details) {

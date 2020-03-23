@@ -78,6 +78,8 @@ public class JarjarTask extends ConventionTask {
             }
         }
         return false;
+  
+    
     }
 
     @Nonnull
@@ -91,17 +93,24 @@ public class JarjarTask extends ConventionTask {
     }
 
     private final ConfigurableFileCollection sourceFiles;
+
     @Input
     private final Set<String> archiveBypasses = new HashSet<String>();
+
     @Input
     private final Set<String> archiveExcludes = new HashSet<String>();
+
+    @OutputFile
     private File destinationDir;
+
+    @Input
     private String destinationName;
 
     private final DefaultJarProcessor processor = new DefaultJarProcessor();
 
     @Input
     private final List<String> commands = new ArrayList<String>();
+
     public JarjarTask() {
         sourceFiles = getProject().files();
     }
@@ -226,9 +235,16 @@ public class JarjarTask extends ConventionTask {
         commands.add("addClassKeepTransitive " + pattern);
     }
 
-
     public List<String> getCommands() {
         return commands;
+    }
+
+    public Set<String> getArchiveBypasses() {
+        return archiveBypasses;
+    }
+
+    public Set<String> getArchiveExcludes() {
+        return archiveExcludes;
     }
 
     @TaskAction
