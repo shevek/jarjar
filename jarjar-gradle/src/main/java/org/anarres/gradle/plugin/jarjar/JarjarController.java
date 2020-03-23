@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.internal.ClosureBackedAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

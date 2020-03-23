@@ -2,12 +2,14 @@ buildscript {
 	repositories {
 		mavenLocal()
 		mavenCentral()
+		jcenter()
 	}
 
 	dependencies {
 		def properties = new Properties();
 		file('../../gradle.properties').withReader { properties.load(it); }
 		classpath "org.anarres.jarjar:jarjar-gradle:${properties.version}"
+		classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
 	}
 }
 
@@ -117,6 +119,58 @@ project(':sub2') {
 		}
 	}
 
+}
+
+project(':sub3') {
+	apply plugin: 'com.github.johnrengelman.shadow'
+
+	shadowJar {
+		mergeServiceFiles()
+
+		dependencies {
+			include dependency("org.apache.hive:.*:.*")
+			include dependency("org.apache.hadoop:.*:.*")
+			include dependency("com.google.guava:guava:.*")
+		}
+
+		// Exclusions from hive-exec
+		exclude "org/apache/commons/**"
+		exclude "org/apache/thrift/**"
+		exclude "org/slf4j/**"
+		exclude "org/json/**"
+		exclude "org/codehaus/jackson/**"
+		exclude "parquet/org/codehaus/jackson/**"
+		// Some random WAT from hive-exec.
+		exclude "minlog-1.2.jar"
+		exclude "objenesis-1.2.jar"
+		exclude "reflectasm-1.07-shaded.jar"
+		exclude "META-INF/maven/**"
+
+		// exclude "*.jar"
+		// exclude "org/log4j/**"
+
+		def target = "org.anarres.hadoop"
+		// relocate "org.json", "${target}.json"	// From hive-exec
+		// relocate "org.iq80", "${target}.iq80"	// From hive-exec
+		relocate "com.google",                "${target}.google"
+		relocate "parquet",                   "${target}.parquet"
+		relocate "javolution",                "${target}.javolution"
+		relocate "com.esotericsoftware.kryo", "${target}.kryo"
+
+	}
+
+	dependencies {
+		compile 'org.apache.hive:hive-exec:0.13.0.2.1.5.0-695', {
+			exclude group: 'net.hydromatic', module: 'optiq-core'
+		}
+	}
+}
+
+project(':sub4') {
+	dependencies {
+		compile project(path: ':sub3', configuration: 'shadow')
+		// compile project(':sub3')
+	}
 }
 
 /*

@@ -1,6 +1,18 @@
 buildscript {
-	apply from: file('gradle/buildscript.gradle'), to: buildscript
+	// Executed in context of buildscript
+	repositories {
+		// mavenLocal()
+		mavenCentral()
+		// jcenter()
+		// maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+		gradlePluginPortal()
+	}
+
+	dependencies {
+		classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.10'
+	}
 }
+
 
 apply plugin: 'org.anarres.stdproject'
 stdproject {
@@ -9,6 +21,7 @@ stdproject {
 subprojects {
         version = '1.1.1'
 	apply plugin: 'org.anarres.stdmodule'
+	apply plugin: 'eclipse'
 	stdmodule {
 		description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
 		author id: 'shevek', name: 'Shevek', email: 'github@anarres.org'
@@ -18,14 +31,11 @@ subprojects {
 	group = "org.anarres.jarjar"
 
 	dependencies {
-		compile 'com.google.code.findbugs:jsr305:2.0.2'
+		compile 'com.google.code.findbugs:annotations:3.0.1'
 		compile 'org.slf4j:slf4j-api:1.7.12'
 	}
 
 	sourceCompatibility = 1.7
-	animalsniffer {
-		signature = "org.codehaus.mojo.signature:java15:+@signature"
-	}
 }
 
 version = '1.1.1'
@@ -48,21 +58,6 @@ project(':jarjar-testdata') {
 			archives t
 		}
 	}
-
-/*
-	assemble << {
-		println configurations.archives.dump()
-		println "\nArtifacts:\n" + configurations.archives.artifacts.dump()
-		println "\nFiles:\n" + configurations.archives.files.dump()
-		println "\nEach:\n"
-		for (Object o : configurations.archives.artifacts.files) {
-			println o.dump()
-		}
-		// println configurations.archives
-		println jar0.dump()
-		println jar0.archivePath
-	}
-*/
 
 	uploadArchives.enabled = false
 }
@@ -93,18 +88,6 @@ project(':jarjar-gradle') {
 		implementation "org.anarres.jarjar", "org.anarres.gradle.plugin.jarjar.JarjarPlugin"
 	}
 
-/*
-	tasks.removeAll {
-		// println it.dump();
-		// println it.name;
-		return it.name == "sourcesJar";
-	}
-
-	// apply plugin: 'java-gradle-plugin'
-	// apply plugin: 'nu.studer.plugindev'
-	// apply from: file('../gradle/plugin.gradle')
-*/
-
 	dependencies {
 		compile project(':jarjar-core')
 		compile 'org.apache.commons:commons-compress:1.9'
@@ -112,10 +95,6 @@ project(':jarjar-gradle') {
 		compile 'oro:oro:2.0.8'
 
 		testCompile project(':jarjar-core').sourceSets.test.output
-	}
-
-	animalsniffer {
-		skip = true
 	}
 }
 

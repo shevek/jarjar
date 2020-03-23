@@ -11,14 +11,14 @@ import javax.annotation.Nonnull;
 import org.gradle.api.Buildable;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.internal.artifacts.ResolvableDependency;
+import org.gradle.api.internal.artifacts.dependencies.AbstractDependency;
 import org.gradle.api.tasks.TaskDependency;
 
 /**
  *
  * @author shevek
  */
-public class JarjarDependency implements /* ResolvableDependency, */ Dependency, Buildable {
+public class JarjarDependency extends AbstractDependency implements /* ResolvableDependency, */ Dependency, Buildable {
 
     private final Dependency delegate;
 

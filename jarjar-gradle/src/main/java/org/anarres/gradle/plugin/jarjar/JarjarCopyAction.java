@@ -21,11 +21,11 @@ import org.gradle.api.internal.file.copy.CopyAction;
 import org.gradle.api.internal.file.copy.CopyActionProcessingStream;
 import org.gradle.api.internal.file.copy.FileCopyDetailsInternal;
 import org.gradle.api.internal.file.copy.ZipCompressor;
-import org.gradle.api.internal.tasks.SimpleWorkResult;
 import org.gradle.api.tasks.WorkResult;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.api.tasks.bundling.internal.Zip64RequiredException;
 import org.gradle.internal.IoActions;
+import org.gradle.workers.internal.DefaultWorkResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +77,7 @@ public class JarjarCopyAction implements CopyAction {
             }
         }
 
-        return new SimpleWorkResult(true);
+        return new DefaultWorkResult(true, null);
     }
 
     private class ScanAction implements CopyActionProcessingStreamAction {

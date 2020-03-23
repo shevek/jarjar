@@ -29,11 +29,32 @@ public class PatternUtils {
     private static final Pattern dstar = Pattern.compile("\\*\\*");
     private static final Pattern star = Pattern.compile("\\*");
     private static final Pattern estar = Pattern.compile("\\+\\??\\)\\Z");
+    private static final Pattern internal  = Pattern.compile("\\$");
 
     @Nonnull
     private static String replaceAllLiteral(@Nonnull String value, @Nonnull Pattern pattern, @Nonnull String replace) {
         return pattern.matcher(value).replaceAll(Matcher.quoteReplacement(replace));
     }
+
+
+    @Nonnull
+    private static String escapeComponents(String s) {
+        String[] parts = s.split("\\.");
+        StringBuilder b = new StringBuilder();
+
+        for (int i = 0; i < parts.length; i++) {
+            if (i != 0)
+                b.append('.');
+
+            if (parts[i].contains("*"))
+                b.append(parts[i]);
+            else
+                b.append(Pattern.quote(parts[i]));
+        }
+
+        return b.toString();
+    }
+
 
     @Nonnull
     public static Pattern newPattern(@Nonnull String pattern) {
@@ -44,10 +65,11 @@ public class PatternUtils {
         if (pattern.indexOf("***") >= 0)
             throw new IllegalArgumentException("The sequence '***' is invalid in a package pattern");
 
-        String regex = pattern;
+        String regex = escapeComponents(pattern);
         regex = replaceAllLiteral(regex, dstar, "(.+?)");   // One wildcard test requires the argument to be allowably empty.
         regex = replaceAllLiteral(regex, star, "([^/]+)");
         regex = replaceAllLiteral(regex, estar, "*\\??)");  // Although we replaced with + above, we mean *
+        regex = replaceAllLiteral(regex, internal, "\\$");  // Convert internal class symbols to regular expressions
         return Pattern.compile("\\A" + regex + "\\Z");
         // this.count = this.pattern.matcher("foo").groupCount();
     }

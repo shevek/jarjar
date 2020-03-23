@@ -5,11 +5,8 @@
  */
 package org.anarres.gradle.plugin.jarjar;
 
-import groovy.lang.Closure;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.file.FileCollection;
-import org.gradle.api.internal.ClosureBackedAction;
 
 /**
  *
@@ -20,19 +17,6 @@ public class JarjarPlugin implements Plugin<Project> {
     @Override
     public void apply(final Project project) {
         project.getLogger().info("Applying " + this);
-        // project.getExtensions().getExtraProperties().set("Jarjar", JarjarTask.class);
-        /*
-         project.getExtensions().getExtraProperties().set("jarjarDependency", new Closure<FileCollection>(JarjarPlugin.this) {
-         @Override
-         public FileCollection call(Object... args) {
-         JarjarTask jarjar = project.getTasks().create(
-         name,
-         JarjarTask.class,
-         new ClosureBackedAction<JarjarTask>(c));
-         return jarjar.getOutputs().getFiles();
-         }
-         });
-         */
         project.getExtensions().create("jarjar", JarjarController.class, project);
     }
 
