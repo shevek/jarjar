@@ -64,8 +64,8 @@ project(':jarjar-testdata') {
 
 project(':jarjar-core') {
 	dependencies {
-		compile 'org.ow2.asm:asm-commons:5.0.3'
-		compile 'org.ow2.asm:asm-util:5.0.3'
+		compile 'org.ow2.asm:asm-commons:8.0.1'
+		compile 'org.ow2.asm:asm-util:8.0.1'
 		// compile 'org.ow2.asm:asm-commons:4.0'
 
 		// testCompile project(':jarjar-testdata')

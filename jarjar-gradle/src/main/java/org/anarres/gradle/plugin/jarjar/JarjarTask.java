@@ -31,6 +31,7 @@ import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.TaskAction;
@@ -100,7 +101,7 @@ public class JarjarTask extends ConventionTask {
     @Input
     private final Set<String> archiveExcludes = new HashSet<String>();
 
-    @OutputFile
+    @OutputDirectory
     private File destinationDir;
 
     @Input

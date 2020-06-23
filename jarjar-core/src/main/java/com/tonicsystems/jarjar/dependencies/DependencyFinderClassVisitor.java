@@ -18,10 +18,11 @@ package com.tonicsystems.jarjar.dependencies;
 import com.tonicsystems.jarjar.util.RuntimeIOException;
 import java.io.IOException;
 import java.util.Map;
-import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.commons.RemappingClassAdapter;
 
-class DependencyFinderClassVisitor extends RemappingClassAdapter {
+import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.commons.Remapper;
+
+class DependencyFinderClassVisitor extends ClassRemapper {
 
     public DependencyFinderClassVisitor(Map<String, String> classToArchiveMap, String archiveName, DependencyHandler handler) throws IOException {
         super(null, new DependencyFinderRemapper(classToArchiveMap, archiveName, handler));
