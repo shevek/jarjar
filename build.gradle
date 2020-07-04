@@ -13,12 +13,15 @@ buildscript {
 	}
 }
 
+
 apply plugin: 'org.anarres.stdproject'
 stdproject {
 }
 
 subprojects {
+        version = '1.1.1'
 	apply plugin: 'org.anarres.stdmodule'
+	apply plugin: 'eclipse'
 	stdmodule {
 		description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
 		author id: 'shevek', name: 'Shevek', email: 'github@anarres.org'
@@ -32,8 +35,10 @@ subprojects {
 		compile 'org.slf4j:slf4j-api:1.7.12'
 	}
 
-	sourceCompatibility = 1.5
+	sourceCompatibility = 1.7
 }
+
+version = '1.1.1'
 
 project(':jarjar-testdata') {
 	dependencies {
@@ -54,28 +59,13 @@ project(':jarjar-testdata') {
 		}
 	}
 
-/*
-	assemble << {
-		println configurations.archives.dump()
-		println "\nArtifacts:\n" + configurations.archives.artifacts.dump()
-		println "\nFiles:\n" + configurations.archives.files.dump()
-		println "\nEach:\n"
-		for (Object o : configurations.archives.artifacts.files) {
-			println o.dump()
-		}
-		// println configurations.archives
-		println jar0.dump()
-		println jar0.archivePath
-	}
-*/
-
 	uploadArchives.enabled = false
 }
 
 project(':jarjar-core') {
 	dependencies {
-		compile 'org.ow2.asm:asm-commons:5.0.3'
-		compile 'org.ow2.asm:asm-util:5.0.3'
+		compile 'org.ow2.asm:asm-commons:8.0.1'
+		compile 'org.ow2.asm:asm-util:8.0.1'
 		// compile 'org.ow2.asm:asm-commons:4.0'
 
 		// testCompile project(':jarjar-testdata')
@@ -91,42 +81,12 @@ project(':jarjar-core') {
 	}
 }
 
-project(':jarjar-ant') {
-	dependencies {
-		compile project(':jarjar-core')
-		compile 'org.apache.ant:ant:1.7.0'
-
-		testCompile project(':jarjar-core').sourceSets.test.output
-	}
-}
-
-project(':jarjar-maven') {
-	dependencies {
-		compile project(':jarjar-core')
-		compile 'org.apache.maven:maven-plugin-api:2.0'
-
-		testCompile project(':jarjar-core').sourceSets.test.output
-	}
-}
-
 project(':jarjar-gradle') {
 	apply plugin: 'org.anarres.stdplugin'
 
 	stdplugin {
 		implementation "org.anarres.jarjar", "org.anarres.gradle.plugin.jarjar.JarjarPlugin"
 	}
-
-/*
-	tasks.removeAll {
-		// println it.dump();
-		// println it.name;
-		return it.name == "sourcesJar";
-	}
-
-	// apply plugin: 'java-gradle-plugin'
-	// apply plugin: 'nu.studer.plugindev'
-	// apply from: file('../gradle/plugin.gradle')
-*/
 
 	dependencies {
 		compile project(':jarjar-core')

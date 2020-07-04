@@ -7,8 +7,8 @@ package com.tonicsystems.jarjar.transform.asm;
 
 import javax.annotation.Nonnull;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.commons.RemappingClassAdapter;
 
 /**
  *
@@ -24,7 +24,7 @@ public class RemappingClassTransformer implements ClassTransformer {
 
     @Override
     public ClassVisitor transform(ClassVisitor v) {
-        return new RemappingClassAdapter(v, remapper);
+        return new ClassRemapper(v, remapper);
     }
 
 }
