@@ -1,16 +1,16 @@
 buildscript {
-	// Executed in context of buildscript
-	repositories {
-		// mavenLocal()
-		mavenCentral()
-		// jcenter()
-		// maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-		gradlePluginPortal()
-	}
+    // Executed in context of buildscript
+    repositories {
+        // mavenLocal()
+        mavenCentral()
+        // jcenter()
+        // maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        gradlePluginPortal()
+    }
 
-	dependencies {
-		classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.10'
-	}
+    dependencies {
+        classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.10'
+    }
 }
 
 
@@ -19,94 +19,115 @@ stdproject {
 }
 
 subprojects {
-        version = '1.1.1'
-	apply plugin: 'org.anarres.stdmodule'
-	apply plugin: 'eclipse'
-	stdmodule {
-		description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
-		author id: 'shevek', name: 'Shevek', email: 'github@anarres.org'
-		license 'Apache-2.0'
-	}
+    version = getTag()
+    apply plugin: 'org.anarres.stdmodule'
+    apply plugin: 'eclipse'
+    stdmodule {
+        description "Jar Jar Links is a utility that makes it easy to repackage Java libraries and embed them into your own distribution."
+        author id: 'shevek', name: 'Shevek', email: 'github@anarres.org'
+        license 'Apache-2.0'
+    }
 
-	group = "org.anarres.jarjar"
+    group = "org.anarres.jarjar"
 
-	dependencies {
-		compile 'com.google.code.findbugs:annotations:3.0.1'
-		compile 'org.slf4j:slf4j-api:1.7.12'
-	}
+    dependencies {
+        compile 'com.google.code.findbugs:annotations:3.0.1'
+        compile 'org.slf4j:slf4j-api:1.7.12'
+    }
 
-	sourceCompatibility = 1.7
+    sourceCompatibility = 1.7
 }
 
-version = '1.1.1'
+version = getTag()
 
 project(':jarjar-testdata') {
-	dependencies {
-		compile 'com.google.guava:guava:17.0'
-	}
+    dependencies {
+        compile 'com.google.guava:guava:17.0'
+    }
 
-	for (int i = 0; i < 4; i++) {
-		String name = "jar$i";
-		Task t = task(name, type: Jar) {
-			classifier = name
-			from(sourceSets.main.output) {
-				include "**/pkg$i/**";
-			}
-		}
+    for (int i = 0; i < 4; i++) {
+        String name = "jar$i";
+        Task t = task(name, type: Jar) {
+            classifier = name
+            from(sourceSets.main.output) {
+                include "**/pkg$i/**";
+            }
+        }
 
-		artifacts {
-			archives t
-		}
-	}
+        artifacts {
+            archives t
+        }
+    }
 
-	uploadArchives.enabled = false
+    uploadArchives.enabled = false
 }
 
 project(':jarjar-core') {
-	dependencies {
-		compile 'org.ow2.asm:asm-commons:8.0.1'
-		compile 'org.ow2.asm:asm-util:8.0.1'
-		// compile 'org.ow2.asm:asm-commons:4.0'
+    dependencies {
+        compile 'org.ow2.asm:asm-commons:8.0.1'
+        compile 'org.ow2.asm:asm-util:8.0.1'
+        // compile 'org.ow2.asm:asm-commons:4.0'
 
-		// testCompile project(':jarjar-testdata')
-	}
+        // testCompile project(':jarjar-testdata')
+    }
 
-	def samplesProject = project(':jarjar-testdata')
-	test.dependsOn samplesProject.tasks['assemble']
-	test {
-		systemProperty "jar", samplesProject.jar.archivePath
-		for (int i = 0; i < 4; i++) {
-			systemProperty "jar$i", samplesProject."jar$i".archivePath
-		}
-	}
+    def samplesProject = project(':jarjar-testdata')
+    test.dependsOn samplesProject.tasks['assemble']
+    test {
+        systemProperty "jar", samplesProject.jar.archivePath
+        for (int i = 0; i < 4; i++) {
+            systemProperty "jar$i", samplesProject."jar$i".archivePath
+        }
+    }
 }
 
 project(':jarjar-gradle') {
-	apply plugin: 'org.anarres.stdplugin'
+    apply plugin: 'org.anarres.stdplugin'
 
-	stdplugin {
-		implementation "org.anarres.jarjar", "org.anarres.gradle.plugin.jarjar.JarjarPlugin"
-	}
+    stdplugin {
+        implementation "org.anarres.jarjar", "org.anarres.gradle.plugin.jarjar.JarjarPlugin"
+    }
 
-	dependencies {
-		compile project(':jarjar-core')
-		compile 'org.apache.commons:commons-compress:1.9'
-		compile gradleApi()
-		compile 'oro:oro:2.0.8'
+    dependencies {
+        compile project(':jarjar-core')
+        compile 'org.apache.commons:commons-compress:1.9'
+        compile gradleApi()
+        compile 'oro:oro:2.0.8'
 
-		testCompile project(':jarjar-core').sourceSets.test.output
-	}
+        testCompile project(':jarjar-core').sourceSets.test.output
+    }
 }
 
 project(':jarjar-command') {
-	dependencies {
-		compile project(':jarjar-core')
-		compile 'net.sf.jopt-simple:jopt-simple:4.8'
+    dependencies {
+        compile project(':jarjar-core')
+        compile 'net.sf.jopt-simple:jopt-simple:4.8'
 
-		testCompile project(':jarjar-core').sourceSets.test.output
-	}
+        testCompile project(':jarjar-core').sourceSets.test.output
+    }
 
-	apply plugin: 'application'
+    apply plugin: 'application'
 
-	mainClassName = "com.tonicsystems.jarjar.Main"
+    mainClassName = "com.tonicsystems.jarjar.Main"
+}
+
+static def getTag() {
+    def tagVersion = "$System.env.VERSION"
+    if (tagVersion == "null") {
+        // with local un-commited changes a -DIRTY is added
+        def processChanges = "git diff-index --name-only HEAD --".execute()
+        def dirty = ""
+        if (!processChanges.text.toString().trim().isEmpty())
+            dirty = "-DIRTY"
+
+        def process = "git describe --tags".execute()
+        tagVersion = process.text.toString().trim() + dirty
+    } else {
+        def tagVersionToken = tagVersion.split("/")
+        if (tagVersionToken.size() > 2)
+            tagVersion = tagVersionToken[2]
+        else
+            tagVersion = tagVersionToken[0]
+    }
+    return tagVersion
 }
