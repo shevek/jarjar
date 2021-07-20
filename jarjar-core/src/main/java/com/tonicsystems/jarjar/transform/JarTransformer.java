@@ -76,10 +76,15 @@ public class JarTransformer {
         int dirIdx = name.lastIndexOf('/');
         if (dirIdx == -1)
             return;
-        String dirName = name.substring(0, dirIdx + 1);
-        if (dirs.add(dirName)) {
-            JarEntry dirEntry = new JarEntry(dirName);
-            outputJarStream.putNextEntry(dirEntry);
+        String[] split = name.split("/");
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < split.length - 1; i++) {
+            builder.append(split[i]).append('/');
+            String dirName = builder.toString();
+            if (dirs.add(dirName)){
+                ZipEntry dirEntry = new ZipEntry(dirName);
+                outputJarStream.putNextEntry(dirEntry);
+            }
         }
     }
 
